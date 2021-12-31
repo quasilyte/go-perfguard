@@ -11,6 +11,8 @@ func Warn() {
 
 	copy(b, []byte(s)) // want `copy(b, []byte(s)) => copy(b, s)`
 
+	b = append(b, []byte(s)...) // want `append(b, []byte(s)...) => append(b, s...)`
+
 	_ = len(string(b))      // want `len(string(b)) => len(b)`
 	_ = len(string(b)) == 0 // want `len(string(b)) => len(b)`
 
