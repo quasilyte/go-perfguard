@@ -657,6 +657,94 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		ir.RuleGroup{
+			Line:        181,
+			Name:        "fprint",
+			MatcherName: "m",
+			DocTags: []string{
+				"o1",
+			},
+			DocSummary: "Detects fmt.Sprint(f/ln) calls which can be replaced with fmt.Fprint(f/ln)",
+			DocBefore:  "w.Write([]byte(fmt.Sprintf(\"%x\", 10)))",
+			DocAfter:   "fmt.Fprintf(w, \"%x\", 10)",
+			Rules: []ir.Rule{
+				ir.Rule{
+					Line: 182,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 182, Value: "$w.Write([]byte(fmt.Sprint($*args)))"},
+					},
+					ReportTemplate:  "$$ => fmt.Fprint($w, $args)",
+					SuggestTemplate: "fmt.Fprint($w, $args)",
+					WhereExpr: ir.FilterExpr{
+						Line:  183,
+						Op:    ir.FilterVarTypeImplementsOp,
+						Src:   "m[\"w\"].Type.Implements(\"io.Writer\")",
+						Value: "w",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{Line: 183, Op: ir.FilterStringOp, Src: "\"io.Writer\"", Value: "io.Writer"},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 186,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 186, Value: "$w.Write([]byte(fmt.Sprintf($*args)))"},
+					},
+					ReportTemplate:  "$$ => fmt.Fprintf($w, $args)",
+					SuggestTemplate: "fmt.Fprintf($w, $args)",
+					WhereExpr: ir.FilterExpr{
+						Line:  187,
+						Op:    ir.FilterVarTypeImplementsOp,
+						Src:   "m[\"w\"].Type.Implements(\"io.Writer\")",
+						Value: "w",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{Line: 187, Op: ir.FilterStringOp, Src: "\"io.Writer\"", Value: "io.Writer"},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 190,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 190, Value: "$w.Write([]byte(fmt.Sprintln($*args)))"},
+					},
+					ReportTemplate:  "$$ => fmt.Fprintln($w, $args)",
+					SuggestTemplate: "fmt.Fprintln($w, $args)",
+					WhereExpr: ir.FilterExpr{
+						Line:  191,
+						Op:    ir.FilterVarTypeImplementsOp,
+						Src:   "m[\"w\"].Type.Implements(\"io.Writer\")",
+						Value: "w",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{Line: 191, Op: ir.FilterStringOp, Src: "\"io.Writer\"", Value: "io.Writer"},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 194,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 194, Value: "io.WriteString($w, fmt.Sprint($*args))"},
+					},
+					ReportTemplate:  "$$ => fmt.Fprint($w, $args)",
+					SuggestTemplate: "fmt.Fprint($w, $args)",
+				},
+				ir.Rule{
+					Line: 197,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 197, Value: "io.WriteString($w, fmt.Sprintf($*args))"},
+					},
+					ReportTemplate:  "$$ => fmt.Fprintf($w, $args)",
+					SuggestTemplate: "fmt.Fprintf($w, $args)",
+				},
+				ir.Rule{
+					Line: 200,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 200, Value: "io.WriteString($w, fmt.Sprintln($*args))"},
+					},
+					ReportTemplate:  "$$ => fmt.Fprintln($w, $args)",
+					SuggestTemplate: "fmt.Fprintln($w, $args)",
+				},
+			},
+		},
 	},
 }
 

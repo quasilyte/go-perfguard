@@ -173,3 +173,30 @@ func utf8DecodeRune(m dsl.Matcher) {
 		Where(m["s"].Type.Is(`string`) && !m.File().Imports(`unicode/utf8`)).
 		Report(`use utf8.DecodeRuneInString($s) here`)
 }
+
+//doc:summary Detects fmt.Sprint(f/ln) calls which can be replaced with fmt.Fprint(f/ln)
+//doc:tags    o1
+//doc:before  w.Write([]byte(fmt.Sprintf("%x", 10)))
+//doc:after   fmt.Fprintf(w, "%x", 10)
+func fprint(m dsl.Matcher) {
+	m.Match(`$w.Write([]byte(fmt.Sprint($*args)))`).
+		Where(m["w"].Type.Implements("io.Writer")).
+		Suggest(`fmt.Fprint($w, $args)`)
+
+	m.Match(`$w.Write([]byte(fmt.Sprintf($*args)))`).
+		Where(m["w"].Type.Implements("io.Writer")).
+		Suggest(`fmt.Fprintf($w, $args)`)
+
+	m.Match(`$w.Write([]byte(fmt.Sprintln($*args)))`).
+		Where(m["w"].Type.Implements("io.Writer")).
+		Suggest(`fmt.Fprintln($w, $args)`)
+
+	m.Match(`io.WriteString($w, fmt.Sprint($*args))`).
+		Suggest(`fmt.Fprint($w, $args)`)
+
+	m.Match(`io.WriteString($w, fmt.Sprintf($*args))`).
+		Suggest(`fmt.Fprintf($w, $args)`)
+
+	m.Match(`io.WriteString($w, fmt.Sprintln($*args))`).
+		Suggest(`fmt.Fprintln($w, $args)`)
+}
