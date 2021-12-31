@@ -210,3 +210,25 @@ func writeString(m dsl.Matcher) {
 		Where(m["w"].Type.Implements("io.StringWriter") && m["s"].Type.Is(`string`)).
 		Suggest("$w.WriteString($s)")
 }
+
+//doc:summary Detects w.WriteString calls which can be replaced with w.Write
+//doc:tags    o1
+//doc:before  w.WriteString(buf.String())
+//doc:after   w.Write(buf.Bytes())
+func writeBytes(m dsl.Matcher) {
+	isBuffer := func(v dsl.Var) bool {
+		return v.Type.Is(`bytes.Buffer`) || v.Type.Is(`*bytes.Buffer`)
+	}
+
+	m.Match(`io.WriteString($w, $buf.String())`).
+		Where(isBuffer(m["buf"])).
+		Suggest(`$w.Write($buf.Bytes())`)
+
+	m.Match(`io.WriteString($w, string($buf.Bytes()))`).
+		Where(isBuffer(m["buf"])).
+		Suggest(`$w.Write($buf.Bytes())`)
+
+	m.Match(`$w.WriteString($buf.String())`).
+		Where(m["w"].Type.Implements("io.Writer") && isBuffer(m["buf"])).
+		Suggest(`$w.Write($buf.Bytes())`)
+}

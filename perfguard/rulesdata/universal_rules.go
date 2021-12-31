@@ -791,6 +791,134 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		ir.RuleGroup{
+			Line:        218,
+			Name:        "writeBytes",
+			MatcherName: "m",
+			DocTags: []string{
+				"o1",
+			},
+			DocSummary: "Detects w.WriteString calls which can be replaced with w.Write",
+			DocBefore:  "w.WriteString(buf.String())",
+			DocAfter:   "w.Write(buf.Bytes())",
+			Rules: []ir.Rule{
+				ir.Rule{
+					Line: 223,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 223, Value: "io.WriteString($w, $buf.String())"},
+					},
+					ReportTemplate:  "$$ => $w.Write($buf.Bytes())",
+					SuggestTemplate: "$w.Write($buf.Bytes())",
+					WhereExpr: ir.FilterExpr{
+						Line: 224,
+						Op:   ir.FilterOrOp,
+						Src:  "isBuffer(m[\"buf\"])",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  224,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
+								Value: "buf",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 220, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  224,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
+								Value: "buf",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 220, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 227,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 227, Value: "io.WriteString($w, string($buf.Bytes()))"},
+					},
+					ReportTemplate:  "$$ => $w.Write($buf.Bytes())",
+					SuggestTemplate: "$w.Write($buf.Bytes())",
+					WhereExpr: ir.FilterExpr{
+						Line: 228,
+						Op:   ir.FilterOrOp,
+						Src:  "isBuffer(m[\"buf\"])",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  228,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
+								Value: "buf",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 220, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  228,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
+								Value: "buf",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 220, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 231,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 231, Value: "$w.WriteString($buf.String())"},
+					},
+					ReportTemplate:  "$$ => $w.Write($buf.Bytes())",
+					SuggestTemplate: "$w.Write($buf.Bytes())",
+					WhereExpr: ir.FilterExpr{
+						Line: 232,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"w\"].Type.Implements(\"io.Writer\") && isBuffer(m[\"buf\"])",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  232,
+								Op:    ir.FilterVarTypeImplementsOp,
+								Src:   "m[\"w\"].Type.Implements(\"io.Writer\")",
+								Value: "w",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 232, Op: ir.FilterStringOp, Src: "\"io.Writer\"", Value: "io.Writer"},
+								},
+							},
+							ir.FilterExpr{
+								Line: 232,
+								Op:   ir.FilterOrOp,
+								Src:  "isBuffer(m[\"buf\"])",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{
+										Line:  232,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
+										Value: "buf",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 220, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+										},
+									},
+									ir.FilterExpr{
+										Line:  232,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
+										Value: "buf",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 220, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	},
 }
 
