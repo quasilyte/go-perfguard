@@ -88,6 +88,20 @@ func stringsJoinConcat(m dsl.Matcher) {
 		Suggest(`$x + $glue + $y + $glue + $z`)
 }
 
+//doc:summary Detects sprint calls that can be rewritten as a string concat
+//doc:tags    o1
+//doc:before  fmt.Sprintf("%s%s", x, y)
+//doc:after   x + y
+func sprintConcat(m dsl.Matcher) {
+	m.Match(`fmt.Sprintf("%s%s", $x, $y)`).
+		Where(m["x"].Type.Is(`string`) && m["y"].Type.Is(`string`)).
+		Suggest(`$x + $y`)
+
+	m.Match(`fmt.Sprintf("%s%s", $x, $y)`).
+		Where(m["x"].Type.Implements(`fmt.Stringer`) && m["y"].Type.Implements(`fmt.Stringer`)).
+		Suggest(`$x.String() + $y.String()`)
+}
+
 //doc:summary Detects redundant conversions between string and []byte
 //doc:tags    o1
 //doc:before  copy(b, []byte(s))

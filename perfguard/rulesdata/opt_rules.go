@@ -33,6 +33,182 @@ var Opt = &ir.File{
 				},
 			},
 		},
+		ir.RuleGroup{
+			Line:        29,
+			Name:        "sprintConcat2",
+			MatcherName: "m",
+			DocTags: []string{
+				"o2",
+			},
+			DocSummary: "Detects sprint calls that can be rewritten as a string concat",
+			Rules: []ir.Rule{
+				ir.Rule{
+					Line: 34,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 34, Value: "fmt.Sprintf(\"%s=%s\", $x, $y)"},
+					},
+					ReportTemplate:  "$$ => $x + \"=\" + $y",
+					SuggestTemplate: "$x + \"=\" + $y",
+					WhereExpr: ir.FilterExpr{
+						Line: 35,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"x\"].Type.Is(`string`) && m[\"y\"].Type.Is(`string`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  35,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"x\"].Type.Is(`string`)",
+								Value: "x",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 35, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  35,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"y\"].Type.Is(`string`)",
+								Value: "y",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 35, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 38,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 38, Value: "fmt.Sprintf(\"%s.%s\", $x, $y)"},
+					},
+					ReportTemplate:  "$$ => $x + \".\" + $y",
+					SuggestTemplate: "$x + \".\" + $y",
+					WhereExpr: ir.FilterExpr{
+						Line: 39,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"x\"].Type.Is(`string`) && m[\"y\"].Type.Is(`string`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  39,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"x\"].Type.Is(`string`)",
+								Value: "x",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 39, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  39,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"y\"].Type.Is(`string`)",
+								Value: "y",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 39, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 42,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 42, Value: "fmt.Sprintf(\"%s/%s\", $x, $y)"},
+					},
+					ReportTemplate:  "$$ => $x + \"/\" + $y",
+					SuggestTemplate: "$x + \"/\" + $y",
+					WhereExpr: ir.FilterExpr{
+						Line: 43,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"x\"].Type.Is(`string`) && m[\"y\"].Type.Is(`string`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  43,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"x\"].Type.Is(`string`)",
+								Value: "x",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 43, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  43,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"y\"].Type.Is(`string`)",
+								Value: "y",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 43, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 46,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 46, Value: "fmt.Sprintf(\"%s:%s\", $x, $y)"},
+					},
+					ReportTemplate:  "$$ => $x + \":\" + $y",
+					SuggestTemplate: "$x + \":\" + $y",
+					WhereExpr: ir.FilterExpr{
+						Line: 47,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"x\"].Type.Is(`string`) && m[\"y\"].Type.Is(`string`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  47,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"x\"].Type.Is(`string`)",
+								Value: "x",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 47, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  47,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"y\"].Type.Is(`string`)",
+								Value: "y",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 47, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 50,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 50, Value: "fmt.Sprintf(\"%s: %s\", $x, $y)"},
+					},
+					ReportTemplate:  "$$ => $x + \": \" + $y",
+					SuggestTemplate: "$x + \": \" + $y",
+					WhereExpr: ir.FilterExpr{
+						Line: 51,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"x\"].Type.Is(`string`) && m[\"y\"].Type.Is(`string`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  51,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"x\"].Type.Is(`string`)",
+								Value: "x",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 51, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  51,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"y\"].Type.Is(`string`)",
+								Value: "y",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 51, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	},
 }
 
