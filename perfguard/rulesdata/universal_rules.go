@@ -745,6 +745,52 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		ir.RuleGroup{
+			Line:        208,
+			Name:        "writeString",
+			MatcherName: "m",
+			DocTags: []string{
+				"o1",
+			},
+			DocSummary: "Detects w.Write calls which can be replaced with w.WriteString",
+			DocBefore:  "w.Write([]byte(\"foo\"))",
+			DocAfter:   "w.WriteString(\"foo\")",
+			Rules: []ir.Rule{
+				ir.Rule{
+					Line: 209,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 209, Value: "$w.Write([]byte($s))"},
+					},
+					ReportTemplate:  "$$ => $w.WriteString($s)",
+					SuggestTemplate: "$w.WriteString($s)",
+					WhereExpr: ir.FilterExpr{
+						Line: 210,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"w\"].Type.Implements(\"io.StringWriter\") && m[\"s\"].Type.Is(`string`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  210,
+								Op:    ir.FilterVarTypeImplementsOp,
+								Src:   "m[\"w\"].Type.Implements(\"io.StringWriter\")",
+								Value: "w",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 210, Op: ir.FilterStringOp, Src: "\"io.StringWriter\"", Value: "io.StringWriter"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  210,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"s\"].Type.Is(`string`)",
+								Value: "s",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 210, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	},
 }
 

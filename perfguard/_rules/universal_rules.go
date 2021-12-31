@@ -200,3 +200,13 @@ func fprint(m dsl.Matcher) {
 	m.Match(`io.WriteString($w, fmt.Sprintln($*args))`).
 		Suggest(`fmt.Fprintln($w, $args)`)
 }
+
+//doc:summary Detects w.Write calls which can be replaced with w.WriteString
+//doc:tags    o1
+//doc:before  w.Write([]byte("foo"))
+//doc:after   w.WriteString("foo")
+func writeString(m dsl.Matcher) {
+	m.Match(`$w.Write([]byte($s))`).
+		Where(m["w"].Type.Implements("io.StringWriter") && m["s"].Type.Is(`string`)).
+		Suggest("$w.WriteString($s)")
+}
