@@ -20,6 +20,9 @@ func Warn() {
 	{
 		_ = []byte(strings.ToUpper(string(b))) // want `[]byte(strings.ToUpper(string(b))) => bytes.ToUpper(b)`
 		_ = []byte(strings.ToLower(string(b))) // want `[]byte(strings.ToLower(string(b))) => bytes.ToLower(b)`
+
+		_ = []byte(strings.TrimSuffix(string(b), s))                          // want `[]byte(strings.TrimSuffix(string(b), s)) => bytes.TrimSuffix(b, []byte(s))`
+		_ = []byte(strings.TrimSuffix(string(b), strings.TrimPrefix(s, "/"))) // want `[]byte(strings.TrimSuffix(string(b), strings.TrimPrefix(s, "/"))) => bytes.TrimSuffix(b, []byte(strings.TrimPrefix(s, "/")))`
 	}
 }
 
@@ -38,5 +41,8 @@ func Ignore() {
 		_ = bytes.ToUpper(b)
 		_ = bytes.ToLower(b)
 		_ = bytes.TrimSpace(b)
+
+		_ = bytes.TrimSuffix(b, []byte(s))
+		_ = bytes.TrimSuffix(b, []byte(strings.TrimPrefix(s, "/")))
 	}
 }
