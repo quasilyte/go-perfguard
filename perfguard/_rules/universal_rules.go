@@ -290,6 +290,16 @@ func indexAlloc(m dsl.Matcher) {
 	// These rules work on the observation that substr/search item
 	// is usually smaller than the containing string.
 
+	m.Match(`strings.$f(string($b1), string($b2))`).
+		Where(m["f"].Text.Matches(`Contains|HasPrefix|HasSuffix|EqualFold`) &&
+			m["b1"].Type.Is(`[]byte`) && m["b2"].Type.Is(`[]byte`)).
+		Suggest(`bytes.$f($b1, $b2)`)
+
+	m.Match(`bytes.$f([]byte($s1), []byte($s2))`).
+		Where(m["f"].Text.Matches(`Contains|HasPrefix|HasSuffix|EqualFold`) &&
+			m["s1"].Type.Is(`string`) && m["s2"].Type.Is(`string`)).
+		Suggest(`strings.$f($s1, $s2)`)
+
 	canOptimizeStrings := func(m dsl.Matcher) bool {
 		return m["x"].Pure && m["y"].Pure &&
 			!m["y"].Node.Is(`CallExpr`) &&

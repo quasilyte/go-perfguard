@@ -7,7 +7,9 @@ import (
 
 func Warn() {
 	var b []byte
+	var b2 []byte
 	var s string
+	var s2 string
 
 	_ = strings.Index(string(b), s) // want `strings.Index(string(b), s) => bytes.Index(b, []byte(s))`
 
@@ -24,11 +26,35 @@ func Warn() {
 	_ = strings.HasSuffix(string(b), s) // want `strings.HasSuffix(string(b), s) => bytes.HasSuffix(b, []byte(s))`
 	_ = bytes.HasPrefix([]byte(s), b)   // want `bytes.HasPrefix([]byte(s), b) => strings.HasPrefix(s, string(b))`
 	_ = bytes.HasSuffix([]byte(s), b)   // want `bytes.HasSuffix([]byte(s), b) => strings.HasSuffix(s, string(b))`
+
+	{
+		var tag []byte
+		var tagName string
+		_ = strings.Contains(string(tag), tagName+":") // want `strings.Contains(string(tag), tagName+":") => bytes.Contains(tag, []byte(tagName+":"))`
+	}
+
+	{
+		_ = strings.Contains(string(b), "too many layers of packets") // want `strings.Contains(string(b), "too many layers of packets") => bytes.Contains(b, []byte("too many layers of packets")`
+	}
+
+	{
+		_ = strings.Contains(string(b), string(b2))  // want `strings.Contains(string(b), string(b2)) => bytes.Contains(b, b2)`
+		_ = strings.HasPrefix(string(b), string(b2)) // want `strings.HasPrefix(string(b), string(b2)) => bytes.HasPrefix(b, b2)`
+		_ = strings.HasSuffix(string(b), string(b2)) // want `strings.HasSuffix(string(b), string(b2)) => bytes.HasSuffix(b, b2)`
+		_ = strings.EqualFold(string(b), string(b2)) // want `strings.EqualFold(string(b), string(b2)) => bytes.EqualFold(b, b2)`
+
+		_ = bytes.Contains([]byte(s), []byte(s2))  // want `bytes.Contains([]byte(s), []byte(s2)) => strings.Contains(s, s2)`
+		_ = bytes.HasPrefix([]byte(s), []byte(s2)) // want `bytes.HasPrefix([]byte(s), []byte(s2)) => strings.HasPrefix(s, s2)`
+		_ = bytes.HasSuffix([]byte(s), []byte(s2)) // want `bytes.HasSuffix([]byte(s), []byte(s2)) => strings.HasSuffix(s, s2)`
+		_ = bytes.EqualFold([]byte(s), []byte(s2)) // want `bytes.EqualFold([]byte(s), []byte(s2)) => strings.EqualFold(s, s2)`
+	}
 }
 
 func Ignore() {
+	var b []byte
 	var b1 []byte
 	var b2 []byte
+	var s string
 	var s1 string
 	var s2 string
 
@@ -64,6 +90,29 @@ func Ignore() {
 		_ = bytes.HasSuffix(b, []byte(s))
 		_ = strings.HasPrefix(s, string(b))
 		_ = strings.HasSuffix(s, string(b))
+	}
+
+	{
+		var tag []byte
+		var tagName string
+		_ = bytes.Contains(tag, []byte(tagName+":"))
+	}
+	{
+		var tag string
+		var tagName string
+		_ = strings.Contains(string(tag), tagName+":")
+	}
+
+	{
+		_ = bytes.Contains(b, b2)
+		_ = bytes.HasPrefix(b, b2)
+		_ = bytes.HasSuffix(b, b2)
+		_ = bytes.EqualFold(b, b2)
+
+		_ = strings.Contains(s, s2)
+		_ = strings.HasPrefix(s, s2)
+		_ = strings.HasSuffix(s, s2)
+		_ = strings.EqualFold(s, s2)
 	}
 }
 
