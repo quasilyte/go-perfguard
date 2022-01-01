@@ -219,6 +219,11 @@ func stringCopyElim(m dsl.Matcher) {
 		Suggest(`append($b, $s...)`)
 
 	m.Match(`len(string($b))`).Where(m["b"].Type.Is(`[]byte`)).Suggest(`len($b)`)
+
+	m.Match(`[]byte(strings.$f(string($b)))`).
+		Where(m["b"].Type.Is(`[]byte`) &&
+			m["f"].Text.Matches(`ToUpper|ToLower|TrimSpace`)).
+		Suggest(`bytes.$f($b)`)
 }
 
 //doc:summary Detects inefficient regexp usage in regard to string/[]byte conversions
