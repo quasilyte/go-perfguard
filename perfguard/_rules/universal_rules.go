@@ -186,6 +186,25 @@ func appendAPI(m dsl.Matcher) {
 		Suggest(`$b = $v.Append($b, $base)`)
 }
 
+//doc:summary Detects patterns that can be reordered to make the code faster
+//doc:tags    o1
+//doc:before  strings.TrimSpace(string(b))
+//doc:after   string(bytes.TrimSpace(b))
+func convReorder(m dsl.Matcher) {
+	// When we trim some string/bytes part, the result data is smaller
+	// than it was before (or it's the same if nothing was trimmed).
+	// This means that it's beneficial to apply a copying (allocationg)
+	// conversion over the trim result, so we allocate and copy less data.
+
+	m.Match(`strings.TrimSpace(string($b))`).
+		Where(m["b"].Type.Is(`[]byte`)).
+		Suggest(`string(bytes.TrimSpace($b))`)
+
+	m.Match(`bytes.TrimSpace([]byte($s))`).
+		Where(m["s"].Type.Is(`string`)).
+		Suggest(`[]byte(strings.TrimSpace($s))`)
+}
+
 //doc:summary Detects redundant conversions between string and []byte
 //doc:tags    o1
 //doc:before  copy(b, []byte(s))
