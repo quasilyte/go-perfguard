@@ -1,9 +1,5 @@
 package rulestest
 
-import (
-	"regexp"
-)
-
 func Warn() {
 	var b []byte
 	var b2 []byte
@@ -15,12 +11,6 @@ func Warn() {
 
 	_ = len(string(b))       // want `len(string(b)) => len(b)`
 	_ = len(string(b2)) == 0 // want `len(string(b2)) => len(b2)`
-
-	re := regexp.MustCompile(`\w+`)
-
-	_ = re.Match([]byte(s))            // want `re.Match([]byte(s)) => re.MatchString(s)`
-	_ = re.FindIndex([]byte(s))        // want `re.FindIndex([]byte(s)) => re.FindStringIndex(s)`
-	_ = re.FindAllIndex([]byte(s), -1) // want `re.FindAllIndex([]byte(s), -1) => re.FindAllStringIndex(s, -1)`
 }
 
 func Ignore() {
@@ -32,14 +22,5 @@ func Ignore() {
 	{
 		copy := func(int) {}
 		copy(1)
-
-		var s string
-		re := regexp.MustCompile(`\w+`)
-
-		_ = re.MatchString(s)
-
-		_ = re.FindStringIndex(s)
-
-		_ = re.FindAllStringIndex(s, -1)
 	}
 }

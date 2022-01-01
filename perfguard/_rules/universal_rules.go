@@ -200,6 +200,14 @@ func stringCopyElim(m dsl.Matcher) {
 		Suggest(`append($b, $s...)`)
 
 	m.Match(`len(string($b))`).Where(m["b"].Type.Is(`[]byte`)).Suggest(`len($b)`)
+}
+
+//doc:summary Detects inefficient regexp usage in regard to string/[]byte conversions
+//doc:tags    o1
+//doc:before  regexp.ReplaceAll([]byte(s), []byte("foo"))
+//doc:after   regexp.ReplaceAllString(s, "foo")
+func regexpStringCopyElim(m dsl.Matcher) {
+	// Cases where []byte(s) is used.
 
 	m.Match(`$re.Match([]byte($s))`).
 		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["s"].Type.Is(`string`)).
@@ -212,6 +220,28 @@ func stringCopyElim(m dsl.Matcher) {
 	m.Match(`$re.FindAllIndex([]byte($s), $n)`).
 		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["s"].Type.Is(`string`)).
 		Suggest(`$re.FindAllStringIndex($s, $n)`)
+
+	m.Match(`string($re.ReplaceAll([]byte($s), []byte($s2)))`).
+		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["s"].Type.Is(`string`) && m["s2"].Type.Is(`string`)).
+		Suggest(`$re.ReplaceAllString($s, $s2)`)
+
+	// Cases where string(b) is used.
+
+	m.Match(`$re.MatchString(string($b))`).
+		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["b"].Type.Is(`[]byte`)).
+		Suggest(`$re.Match($b)`)
+
+	m.Match(`$re.FindStringIndex(string($b))`).
+		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["b"].Type.Is(`[]byte`)).
+		Suggest(`$re.FindIndex($b)`)
+
+	m.Match(`$re.FindAllStringIndex(string($b), $n)`).
+		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["b"].Type.Is(`[]byte`)).
+		Suggest(`$re.FindAllIndex($b, $n)`)
+
+	m.Match(`[]byte($re.ReplaceAllString(string($b), string($b2)))`).
+		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["b"].Type.Is(`[]byte`) && m["b2"].Type.Is(`[]byte`)).
+		Suggest(`$re.ReplaceAll($b, $b2)`)
 }
 
 //doc:summary Detects strings.Index()-like calls that may allocate more than they should
