@@ -5,8 +5,8 @@ go 1.17
 require (
 	github.com/cespare/subcmd v1.1.0
 	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd
-	github.com/quasilyte/go-ruleguard v0.3.15-0.20220101014345-135dd93114a0
-	github.com/quasilyte/go-ruleguard/dsl v0.3.12-0.20220101014345-135dd93114a0
+	github.com/quasilyte/go-ruleguard v0.3.15-0.20220101152245-3db0900f752c
+	github.com/quasilyte/go-ruleguard/dsl v0.3.12-0.20220101152245-3db0900f752c
 	github.com/quasilyte/perf-heatmap v0.0.0-20211220153856-7361377975b8
 	golang.org/x/tools v0.1.8
 )

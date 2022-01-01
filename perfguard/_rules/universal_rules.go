@@ -75,6 +75,19 @@ func redundantSprint(m dsl.Matcher) {
 		Suggest(`$x`)
 }
 
+//doc:summary Detects slice copying patterns that can be optimized
+//doc:tags    o2
+//doc:before  dst := append([]int(nil), src...)
+//doc:after   dst := make([]int, len(src)); copy(dst, src)
+func sliceClone(m dsl.Matcher) {
+	m.Match(`$dst = append([]$elem(nil), $src...)`, `$dst = append([]$elem{}, $src...)`).
+		Where(!m["elem"].Type.HasPointers()).
+		Suggest(`$dst = make([]$elem, len($src)); copy($dst, $src)`)
+	m.Match(`$dst := append([]$elem(nil), $src...)`, `$dst := append([]$elem{}, $src...)`).
+		Where(!m["elem"].Type.HasPointers()).
+		Suggest(`$dst := make([]$elem, len($src)); copy($dst, $src)`)
+}
+
 //doc:summary Detect strings.Join usages that can be rewritten as a string concat
 //doc:tags    o1
 func stringsJoinConcat(m dsl.Matcher) {
