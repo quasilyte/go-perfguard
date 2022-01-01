@@ -254,6 +254,10 @@ func regexpStringCopyElim(m dsl.Matcher) {
 		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["s"].Type.Is(`string`) && m["s2"].Type.Is(`string`)).
 		Suggest(`$re.ReplaceAllString($s, $s2)`)
 
+	m.Match(`string($re.ReplaceAll([]byte($s), $b))`).
+		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["s"].Type.Is(`string`) && m["b"].Type.Is(`[]byte`)).
+		Suggest(`$re.ReplaceAllString($s, string($b))`)
+
 	// Cases where string(b) is used.
 
 	m.Match(`$re.MatchString(string($b))`).
@@ -271,6 +275,10 @@ func regexpStringCopyElim(m dsl.Matcher) {
 	m.Match(`[]byte($re.ReplaceAllString(string($b), string($b2)))`).
 		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["b"].Type.Is(`[]byte`) && m["b2"].Type.Is(`[]byte`)).
 		Suggest(`$re.ReplaceAll($b, $b2)`)
+
+	m.Match(`[]byte($re.ReplaceAllString(string($b), $s))`).
+		Where(m["re"].Type.Is(`*regexp.Regexp`) && m["b"].Type.Is(`[]byte`) && m["s"].Type.Is(`string`)).
+		Suggest(`$re.ReplaceAll($b, []byte($s))`)
 }
 
 //doc:summary Detects strings.Index()-like calls that may allocate more than they should
