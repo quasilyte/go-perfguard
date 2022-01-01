@@ -201,15 +201,36 @@ func stringCopyElim(m dsl.Matcher) {
 		Suggest(`$re.FindAllStringIndex($s, $n)`)
 }
 
-//doc:summary Detects strings.Index calls that may cause unwanted allocs
+//doc:summary Detects strings.Index()-like calls that may allocate more than they should
 //doc:tags    o1
 //doc:before  strings.Index(string(x), y)
 //doc:after   bytes.Index(x, []byte(y))
 //doc:note    See Go issue for details: https://github.com/golang/go/issues/25864
 func indexAlloc(m dsl.Matcher) {
-	m.Match(`strings.Index(string($x), $y)`).
-		Where(m["x"].Pure && m["y"].Pure && m.File().Imports(`bytes`)).
-		Suggest(`bytes.Index($x, []byte($y))`)
+	// These rules work on the observation that substr/search item
+	// is usually smaller than the containing string.
+
+	canOptimizeStrings := func(m dsl.Matcher) bool {
+		return m["x"].Pure && m["y"].Pure &&
+			!m["y"].Node.Is(`CallExpr`) &&
+			m["x"].Type.Is(`[]byte`)
+	}
+
+	m.Match(`strings.Index(string($x), $y)`).Where(canOptimizeStrings(m)).Suggest(`bytes.Index($x, []byte($y))`)
+	m.Match(`strings.Contains(string($x), $y)`).Where(canOptimizeStrings(m)).Suggest(`bytes.Contains($x, []byte($y))`)
+	m.Match(`strings.HasPrefix(string($x), $y)`).Where(canOptimizeStrings(m)).Suggest(`bytes.HasPrefix($x, []byte($y))`)
+	m.Match(`strings.HasSuffix(string($x), $y)`).Where(canOptimizeStrings(m)).Suggest(`bytes.HasSuffix($x, []byte($y))`)
+
+	canOptimizeBytes := func(m dsl.Matcher) bool {
+		return m["x"].Pure && m["y"].Pure &&
+			!m["y"].Node.Is(`CallExpr`) &&
+			m["x"].Type.Is(`string`)
+	}
+
+	m.Match(`bytes.Index([]byte($x), $y)`).Where(canOptimizeBytes(m)).Suggest(`strings.Index($x, string($y))`)
+	m.Match(`bytes.Contains([]byte($x), $y)`).Where(canOptimizeBytes(m)).Suggest(`strings.Contains($x, string($y))`)
+	m.Match(`bytes.HasPrefix([]byte($x), $y)`).Where(canOptimizeBytes(m)).Suggest(`strings.HasPrefix($x, string($y))`)
+	m.Match(`bytes.HasSuffix([]byte($x), $y)`).Where(canOptimizeBytes(m)).Suggest(`strings.HasSuffix($x, string($y))`)
 }
 
 //doc:summary Detects WriteRune calls with rune literal argument that is single byte and reports to use WriteByte instead
