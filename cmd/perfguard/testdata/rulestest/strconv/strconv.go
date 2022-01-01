@@ -17,7 +17,7 @@ func Warn() {
 	var u32 uint32
 	var u64 uint64
 
-	_ = fmt.Sprintf("%d", i)   // want `fmt.Sprintf("%d", i) => strconv.Atoi(i)`
+	_ = fmt.Sprintf("%d", i)   // want `fmt.Sprintf("%d", i) => strconv.Itoa(i)`
 	_ = fmt.Sprintf("%d", i8)  // want `fmt.Sprintf("%d", i8) => strconv.FormatInt(int64(i8), 10)`
 	_ = fmt.Sprintf("%d", i16) // want `fmt.Sprintf("%d", i16) => strconv.FormatInt(int64(i16), 10)`
 	_ = fmt.Sprintf("%d", i32) // want `fmt.Sprintf("%d", i32) => strconv.FormatInt(int64(i32), 10)`
@@ -28,7 +28,7 @@ func Warn() {
 	_ = fmt.Sprintf("%d", u32) // want `fmt.Sprintf("%d", u32) => strconv.FormatUint(uint64(u32), 10)`
 	_ = fmt.Sprintf("%d", u64) // want `fmt.Sprintf("%d", u64) => strconv.FormatUint(u64, 10)`
 
-	_ = fmt.Sprintf("%v", i)   // want `fmt.Sprintf("%v", i) => strconv.Atoi(i)`
+	_ = fmt.Sprintf("%v", i)   // want `fmt.Sprintf("%v", i) => strconv.Itoa(i)`
 	_ = fmt.Sprintf("%v", i8)  // want `fmt.Sprintf("%v", i8) => strconv.FormatInt(int64(i8), 10)`
 	_ = fmt.Sprintf("%v", i16) // want `fmt.Sprintf("%v", i16) => strconv.FormatInt(int64(i16), 10)`
 	_ = fmt.Sprintf("%v", i32) // want `fmt.Sprintf("%v", i32) => strconv.FormatInt(int64(i32), 10)`
@@ -39,7 +39,7 @@ func Warn() {
 	_ = fmt.Sprintf("%v", u32) // want `fmt.Sprintf("%v", u32) => strconv.FormatUint(uint64(u32), 10)`
 	_ = fmt.Sprintf("%v", u64) // want `fmt.Sprintf("%v", u64) => strconv.FormatUint(u64, 10)`
 
-	_ = fmt.Sprint(i)   // want `fmt.Sprint(i) => strconv.Atoi(i)`
+	_ = fmt.Sprint(i)   // want `fmt.Sprint(i) => strconv.Itoa(i)`
 	_ = fmt.Sprint(i8)  // want `fmt.Sprint(i8) => strconv.FormatInt(int64(i8), 10)`
 	_ = fmt.Sprint(i16) // want `fmt.Sprint(i16) => strconv.FormatInt(int64(i16), 10)`
 	_ = fmt.Sprint(i32) // want `fmt.Sprint(i32) => strconv.FormatInt(int64(i32), 10)`
@@ -74,7 +74,7 @@ func Ignore() {
 	var u32 uint32
 	var u64 uint64
 
-	_ = strconv.Atoi(i)
+	_ = strconv.Itoa(i)
 	_ = strconv.FormatInt(int64(i8), 10)
 	_ = strconv.FormatInt(int64(i16), 10)
 	_ = strconv.FormatInt(int64(i32), 10)
@@ -85,7 +85,7 @@ func Ignore() {
 	_ = strconv.FormatUint(uint64(u32), 10)
 	_ = strconv.FormatUint(u64, 10)
 
-	_ = strconv.Atoi(i)
+	_ = strconv.Itoa(i)
 	_ = strconv.FormatInt(int64(i8), 10)
 	_ = strconv.FormatInt(int64(i16), 10)
 	_ = strconv.FormatInt(int64(i32), 10)
@@ -96,7 +96,7 @@ func Ignore() {
 	_ = strconv.FormatUint(uint64(u32), 10)
 	_ = strconv.FormatUint(u64, 10)
 
-	_ = strconv.Atoi(i)
+	_ = strconv.Itoa(i)
 	_ = strconv.FormatInt(int64(i8), 10)
 	_ = strconv.FormatInt(int64(i16), 10)
 	_ = strconv.FormatInt(int64(i32), 10)

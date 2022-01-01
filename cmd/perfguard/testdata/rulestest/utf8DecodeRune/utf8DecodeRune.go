@@ -31,6 +31,7 @@ func Ignore() {
 
 	{
 		// OK: let's allow using int32 for now?
+		var s string
 		_ = []int32(s)[0]
 	}
 }

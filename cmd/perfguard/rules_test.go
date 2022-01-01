@@ -38,6 +38,9 @@ func TestRules(t *testing.T) {
 			if err := cmdLint(&stdout, &stderr, args); err != nil {
 				t.Fatal(err)
 			}
+			if stderr.Len() != 0 {
+				t.Fatalf("errors:\n%s", stderr.String())
+			}
 
 			filenames := readdir(t, dir)
 

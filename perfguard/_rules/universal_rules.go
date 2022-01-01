@@ -105,13 +105,13 @@ func sprintConcat(m dsl.Matcher) {
 //doc:summary Detects fmt uses that can be replaced with strconv
 //doc:tags    o1
 //doc:before  fmt.Sprintf("%d", i)
-//doc:after   strconv.Atoi(i)
+//doc:after   strconv.Itoa(i)
 func strconv(m dsl.Matcher) {
 	// Sprint(x) is basically Sprintf("%v", x), so we treat it identically.
 
-	// The most simple cases that can be converted to Atoi.
+	// The most simple cases that can be converted to Itoa.
 	m.Match(`fmt.Sprintf("%d", $x)`, `fmt.Sprintf("%v", $x)`, `fmt.Sprint($x)`).
-		Where(m["x"].Type.Is(`int`)).Suggest(`strconv.Atoi($x)`)
+		Where(m["x"].Type.Is(`int`)).Suggest(`strconv.Itoa($x)`)
 
 	// Patterns for int64 and uint64 go first,
 	// so we don't insert unnecessary conversions by the rules below.
@@ -133,6 +133,44 @@ func strconv(m dsl.Matcher) {
 		Where(m["x"].Type.OfKind(`uint`)).Suggest(`strconv.FormatUint(uint64($x), 10)`)
 	m.Match(`fmt.Sprintf("%x", $x)`).
 		Where(m["x"].Type.OfKind(`uint`)).Suggest(`strconv.FormatUint(uint64($x), 16)`)
+}
+
+//doc:summary Detects cases that can benefit from append-friendly APIs
+//doc:tags    o1
+//doc:before  b = append(b, strconv.Itoa(v)...)
+//doc:after   b = strconv.AppendInt(b, v, 10)
+func appendAPI(m dsl.Matcher) {
+	// append functions are generally much better than alternatives,
+	// but we can only go so far with the rules.
+	// Maybe it's worthwhile to implement more thorough analysis
+	// that detects where append-style APIs can be used.
+
+	// Not checking the fmt.Sprint cases and alike as they
+	// should be handled by other rule.
+	m.Match(`$b = append($b, strconv.Itoa($x)...)`).
+		Suggest(`$b = strconv.AppendInt($b, int64($x), 10)`)
+	m.Match(`$b = append($b, strconv.FormatInt($x, $base)...)`).
+		Suggest(`$b = strconv.AppendInt($b, $x, $base)`)
+	m.Match(`$b = append($b, strconv.FormatUint($x, $base)...)`).
+		Suggest(`$b = strconv.AppendUint($b, $x, $base)`)
+
+	m.Match(`$b = append($b, $t.Format($layout)...)`).
+		Where(m["t"].Type.Is(`time.Time`) || m["t"].Type.Is(`*time.Time`)).
+		Suggest(`$b = $t.AppendFormat($b, $layout)`)
+
+	m.Match(`$b = append($b, $v.String()...)`).
+		Where(m["v"].Type.Is(`big.Float`) || m["v"].Type.Is(`*big.Float`)).
+		Suggest(`$b = $v.Append($b, 'g', 10)`)
+	m.Match(`$b = append($b, $v.Text($format, $prec)...)`).
+		Where(m["v"].Type.Is(`big.Float`) || m["v"].Type.Is(`*big.Float`)).
+		Suggest(`$b = $v.Append($b, $format, $prec)`)
+
+	m.Match(`$b = append($b, $v.String()...)`).
+		Where(m["v"].Type.Is(`big.Int`) || m["v"].Type.Is(`*big.Int`)).
+		Suggest(`$b = $v.Append($b, 10)`)
+	m.Match(`$b = append($b, $v.Text($base)...)`).
+		Where(m["v"].Type.Is(`big.Int`) || m["v"].Type.Is(`*big.Int`)).
+		Suggest(`$b = $v.Append($b, $base)`)
 }
 
 //doc:summary Detects redundant conversions between string and []byte

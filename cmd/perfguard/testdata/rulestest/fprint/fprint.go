@@ -8,7 +8,7 @@ import (
 )
 
 func Warn(w io.Writer) {
-	w.Write([]byte(fmt.Sprintf("%x", 10))) // want `w.Write([]byte(fmt.Sprintf("%x", 10))) => fmt.Fprintf(w, "%x", 10)`
+	w.Write([]byte(fmt.Sprintf("%+x", 10))) // want `w.Write([]byte(fmt.Sprintf("%+x", 10))) => fmt.Fprintf(w, "%+x", 10)`
 
 	w.Write([]byte(fmt.Sprint(1, 2, 3, 4))) // want `w.Write([]byte(fmt.Sprint(1, 2, 3, 4))) => fmt.Fprint(w, 1, 2, 3, 4)`
 
@@ -16,13 +16,13 @@ func Warn(w io.Writer) {
 
 	buf := &bytes.Buffer{}
 
-	buf.Write([]byte(fmt.Sprintf("%x", 10))) // want `buf.Write([]byte(fmt.Sprintf("%x", 10))) => fmt.Fprintf(buf, "%x", 10)`
+	buf.Write([]byte(fmt.Sprintf("%+x", 10))) // want `buf.Write([]byte(fmt.Sprintf("%+x", 10))) => fmt.Fprintf(buf, "%+x", 10)`
 
 	buf.Write([]byte(fmt.Sprint(1, 2, 3, 4))) // want `buf.Write([]byte(fmt.Sprint(1, 2, 3, 4))) => fmt.Fprint(buf, 1, 2, 3, 4)`
 
 	buf.Write([]byte(fmt.Sprintln(1, 2, 3, 4))) // want `buf.Write([]byte(fmt.Sprintln(1, 2, 3, 4))) => fmt.Fprintln(buf, 1, 2, 3, 4)`
 
-	var i int
+	var i uintptr
 
 	io.WriteString(buf, fmt.Sprint(i)) // want `io.WriteString(buf, fmt.Sprint(i)) => fmt.Fprint(buf, i)`
 
@@ -36,6 +36,7 @@ func Warn(w io.Writer) {
 func Ignore() {
 	{
 		var fmt formatter
+		var w io.Writer
 		w.Write([]byte(fmt.Sprintf()))
 		w.Write([]byte(fmt.Sprint()))
 		w.Write([]byte(fmt.Sprintln()))

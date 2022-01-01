@@ -6,6 +6,9 @@ import (
 )
 
 func Warn() {
+	var x []byte
+	var y string
+
 	_ = strings.Index(string(x), y) // want `strings.Index(string(x), y) => bytes.Index(x, []byte(y))`
 
 	_ = strings.Index(string([]byte("12")), y) // want `strings.Index(string([]byte("12")), y) => bytes.Index([]byte("12"), []byte(y))`
@@ -16,6 +19,9 @@ func Warn() {
 }
 
 func Ignore() {
+	var x []byte
+	var y string
+
 	_ = bytes.Index(x, []byte(y))
 	_ = bytes.Index([]byte("12"), []byte(y))
 	_ = bytes.Index([]byte{'1', '2'}, []byte(y))

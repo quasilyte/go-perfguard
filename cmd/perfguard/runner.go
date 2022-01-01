@@ -138,6 +138,10 @@ func (r *runner) loadPackages(ctx context.Context, fset *token.FileSet, targets 
 			continue
 		}
 
+		for _, err := range pkg.Errors {
+			fmt.Fprintf(r.stderr, "load %s package: %v\n", pkg.Name, err)
+		}
+
 		if _, ok := packageSet[pkg.PkgPath]; ok {
 			continue
 		}
