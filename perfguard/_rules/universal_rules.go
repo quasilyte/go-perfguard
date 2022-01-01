@@ -102,6 +102,39 @@ func sprintConcat(m dsl.Matcher) {
 		Suggest(`$x.String() + $y.String()`)
 }
 
+//doc:summary Detects fmt uses that can be replaced with strconv
+//doc:tags    o1
+//doc:before  fmt.Sprintf("%d", i)
+//doc:after   strconv.Atoi(i)
+func strconv(m dsl.Matcher) {
+	// Sprint(x) is basically Sprintf("%v", x), so we treat it identically.
+
+	// The most simple cases that can be converted to Atoi.
+	m.Match(`fmt.Sprintf("%d", $x)`, `fmt.Sprintf("%v", $x)`, `fmt.Sprint($x)`).
+		Where(m["x"].Type.Is(`int`)).Suggest(`strconv.Atoi($x)`)
+
+	// Patterns for int64 and uint64 go first,
+	// so we don't insert unnecessary conversions by the rules below.
+	m.Match(`fmt.Sprintf("%d", $x)`, `fmt.Sprintf("%v", $x)`, `fmt.Sprint($x)`).
+		Where(m["x"].Type.Is(`int64`)).Suggest(`strconv.FormatInt($x, 10)`)
+	m.Match(`fmt.Sprintf("%x", $x)`).
+		Where(m["x"].Type.Is(`int64`)).Suggest(`strconv.FormatInt($x, 16)`)
+	m.Match(`fmt.Sprintf("%d", $x)`, `fmt.Sprintf("%v", $x)`, `fmt.Sprint($x)`).
+		Where(m["x"].Type.Is(`uint64`)).Suggest(`strconv.FormatUint($x, 10)`)
+	m.Match(`fmt.Sprintf("%x", $x)`).
+		Where(m["x"].Type.Is(`uint64`)).Suggest(`strconv.FormatUint($x, 16)`)
+
+	m.Match(`fmt.Sprintf("%d", $x)`, `fmt.Sprintf("%v", $x)`, `fmt.Sprint($x)`).
+		Where(m["x"].Type.OfKind(`int`)).Suggest(`strconv.FormatInt(int64($x), 10)`)
+	m.Match(`fmt.Sprintf("%x", $x)`).
+		Where(m["x"].Type.OfKind(`int`)).Suggest(`strconv.FormatInt(int64($x), 16)`)
+
+	m.Match(`fmt.Sprintf("%d", $x)`, `fmt.Sprintf("%v", $x)`, `fmt.Sprint($x)`).
+		Where(m["x"].Type.OfKind(`uint`)).Suggest(`strconv.FormatUint(uint64($x), 10)`)
+	m.Match(`fmt.Sprintf("%x", $x)`).
+		Where(m["x"].Type.OfKind(`uint`)).Suggest(`strconv.FormatUint(uint64($x), 16)`)
+}
+
 //doc:summary Detects redundant conversions between string and []byte
 //doc:tags    o1
 //doc:before  copy(b, []byte(s))

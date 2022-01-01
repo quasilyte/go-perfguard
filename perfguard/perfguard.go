@@ -4,7 +4,12 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+
+	"github.com/quasilyte/go-ruleguard/dsl"
 )
+
+// This is a temporary kludge to make DSL a direct dependency.
+var _ = dsl.Matcher{}
 
 type Analyzer struct {
 	impl *analyzer
