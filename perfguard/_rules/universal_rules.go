@@ -20,6 +20,26 @@ import (
 //
 // Lint mode ignores o1 and o2 tags completely.
 
+//doc:summary Detects use cases for strings.Cut
+//doc:tags    o1
+//doc:before  email := strings.Split(s, "@")[0]
+//doc:after   email, _, _ := strings.Cut(s, "@")
+func stringsCut(m dsl.Matcher) {
+	m.Match(`$dst := strings.Split($s, $sep)[0]`).
+		Where(m.GoVersion().GreaterEqThan("1.18")).
+		Suggest(`$dst, _, _ := strings.Cut($s, $sep)`)
+	m.Match(`$dst = strings.Split($s, $sep)[0]`).
+		Where(m.GoVersion().GreaterEqThan("1.18")).
+		Suggest(`$dst, _, _ = strings.Cut($s, $sep)`)
+
+	m.Match(`$dst := bytes.Split($b, $sep)[0]`).
+		Where(m.GoVersion().GreaterEqThan("1.18")).
+		Suggest(`$dst, _, _ := bytes.Cut($b, $sep)`)
+	m.Match(`$dst = bytes.Split($b, $sep)[0]`).
+		Where(m.GoVersion().GreaterEqThan("1.18")).
+		Suggest(`$dst, _, _ = bytes.Cut($b, $sep)`)
+}
+
 //doc:summary Detects unoptimal strings/bytes case-insensitive comparison
 //doc:tags    o1
 //doc:before  strings.ToLower(x) == strings.ToLower(y)
