@@ -21,6 +21,8 @@ type runner struct {
 	loadLintRules bool
 	loadOptRules  bool
 
+	goVersion string
+
 	stdout io.Writer
 	stderr io.Writer
 }
@@ -73,7 +75,8 @@ func (r *runner) createAnalyzer() (*perfguard.Analyzer, error) {
 		HeatmapFile:      r.heatmapFile,
 		HeatmapThreshold: r.heatmapThreshold,
 
-		Autofix: r.autofix,
+		Autofix:   r.autofix,
+		GoVersion: r.goVersion,
 
 		Warn: r.reportWarning,
 

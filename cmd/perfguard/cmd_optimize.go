@@ -16,6 +16,8 @@ func cmdOptimize(stdout, stderr io.Writer, args []string) error {
 		`a threshold argument used to create a heatmap, see perf-heatmap docs on it`)
 	fs.BoolVar(&r.autofix, "fix", false,
 		`apply the suggested fixes automatically, where possible`)
+	fs.StringVar(&r.goVersion, "go", "",
+		`select the Go version to target; leave as string for the latest`)
 	_ = fs.Parse(args)
 
 	r.targets = fs.Args()

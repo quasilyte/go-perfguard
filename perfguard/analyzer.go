@@ -2,6 +2,7 @@ package perfguard
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/token"
 	"os"
@@ -20,6 +21,7 @@ import (
 
 type analyzer struct {
 	rulesEngine *ruleguard.Engine
+	goVersion   ruleguard.GoVersion
 	heatmap     *heatmap.Index
 	config      *Config
 }
@@ -62,6 +64,12 @@ func (a *analyzer) initHeatmap(config *Config) error {
 }
 
 func (a *analyzer) initRulesEngine() error {
+	goVersion, err := ruleguard.ParseGoVersion(a.config.GoVersion)
+	if err != nil {
+		return fmt.Errorf("parse target Go version: %w", err)
+	}
+	a.goVersion = goVersion
+
 	rulesEngine := ruleguard.NewEngine()
 
 	fset := token.NewFileSet()
@@ -137,10 +145,11 @@ func (a *analyzer) minHeatLevel(info *ruleguard.GoRuleInfo) int {
 
 func (a *analyzer) runRules(target *Target) error {
 	runContext := ruleguard.RunContext{
-		Pkg:   target.Pkg,
-		Types: target.Types,
-		Sizes: target.Sizes,
-		Fset:  target.Fset,
+		Pkg:       target.Pkg,
+		Types:     target.Types,
+		Sizes:     target.Sizes,
+		Fset:      target.Fset,
+		GoVersion: a.goVersion,
 	}
 
 	var currentFile *SourceFile

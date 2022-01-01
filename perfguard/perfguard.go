@@ -34,6 +34,8 @@ type Config struct {
 
 	Autofix bool
 
+	GoVersion string
+
 	LoadOptRules       bool
 	LoadLintRules      bool
 	LoadUniversalRules bool
