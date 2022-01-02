@@ -452,3 +452,35 @@ func writeBytes(m dsl.Matcher) {
 		Where(m["w"].Type.Implements("io.Writer") && isBuffer(m["buf"])).
 		Suggest(`$w.Write($buf.Bytes())`)
 }
+
+func bufferString(m dsl.Matcher) {
+	isBuffer := func(v dsl.Var) bool {
+		return v.Type.Is(`bytes.Buffer`) || v.Type.Is(`*bytes.Buffer`)
+	}
+
+	m.Match(`strings.Contains($buf.String(), string($b))`).
+		Where(isBuffer(m["buf"]) && m["b"].Type.Is(`[]byte`)).
+		Suggest(`bytes.Contains($buf.Bytes(), $b)`)
+	m.Match(`strings.HasPrefix($buf.String(), string($b))`).
+		Where(isBuffer(m["buf"]) && m["b"].Type.Is(`[]byte`)).
+		Suggest(`bytes.HasPrefix($buf.Bytes(), $b)`)
+	m.Match(`strings.HasSuffix($buf.String(), string($b))`).
+		Where(isBuffer(m["buf"]) && m["b"].Type.Is(`[]byte`)).
+		Suggest(`bytes.HasSuffix($buf.Bytes(), $b)`)
+	m.Match(`strings.Count($buf.String(), string($b))`).
+		Where(isBuffer(m["buf"]) && m["b"].Type.Is(`[]byte`)).
+		Suggest(`bytes.Count($buf.Bytes(), $b)`)
+
+	m.Match(`strings.Contains($buf.String(), $s)`).
+		Where(isBuffer(m["buf"]) && m["s"].Type.Is(`string`)).
+		Suggest(`bytes.Contains($buf.Bytes(), []byte($s))`)
+	m.Match(`strings.HasPrefix($buf.String(), $s)`).
+		Where(isBuffer(m["buf"]) && m["s"].Type.Is(`string`)).
+		Suggest(`bytes.HasPrefix($buf.Bytes(), []byte($s))`)
+	m.Match(`strings.HasSuffix($buf.String(), $s)`).
+		Where(isBuffer(m["buf"]) && m["s"].Type.Is(`string`)).
+		Suggest(`bytes.HasSuffix($buf.Bytes(), []byte($s))`)
+	m.Match(`strings.Count($buf.String(), $s)`).
+		Where(isBuffer(m["buf"]) && m["s"].Type.Is(`string`)).
+		Suggest(`bytes.Count($buf.Bytes(), []byte($s))`)
+}
