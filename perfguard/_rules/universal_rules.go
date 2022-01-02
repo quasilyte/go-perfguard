@@ -453,6 +453,10 @@ func writeBytes(m dsl.Matcher) {
 		Suggest(`$w.Write($buf.Bytes())`)
 }
 
+//doc:summary Detects bytes.Buffer String() calls where Bytes() could be used instead
+//doc:tags    o1
+//doc:before  strings.Contains(buf.String(), string(b))
+//doc:after   bytes.Contains(buf.Bytes(), b)
 func bufferString(m dsl.Matcher) {
 	isBuffer := func(v dsl.Var) bool {
 		return v.Type.Is(`bytes.Buffer`) || v.Type.Is(`*bytes.Buffer`)
