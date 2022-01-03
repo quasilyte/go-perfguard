@@ -31,7 +31,13 @@ func stringsCut(m dsl.Matcher) {
 	m.Match(`$dst = strings.Split($s, $sep)[0]`).
 		Where(m.GoVersion().GreaterEqThan("1.18")).
 		Suggest(`$dst, _, _ = strings.Cut($s, $sep)`)
+}
 
+//doc:summary Detects use cases for bytes.Cut
+//doc:tags    o1
+//doc:before  email := bytes.Split(b, "@")[0]
+//doc:after   email, _, _ := bytes.Cut(b, []byte("@"))
+func bytesCut(m dsl.Matcher) {
 	m.Match(`$dst := bytes.Split($b, $sep)[0]`).
 		Where(m.GoVersion().GreaterEqThan("1.18")).
 		Suggest(`$dst, _, _ := bytes.Cut($b, $sep)`)
