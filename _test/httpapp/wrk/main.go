@@ -21,6 +21,7 @@ func main() {
 		"stats":              1,
 		"jsonInspect":        4,
 		"validateIdentError": 4,
+		"objectsSum":         5,
 		"validateIdent":      10,
 		"formatDate":         15,
 	}
@@ -53,6 +54,8 @@ func main() {
 					doValidateIdent(true)
 				case "validateIdentError":
 					doValidateIdent(false)
+				case "objectsSum":
+					doObjectsSum()
 				}
 				delayRand := rand.Intn(150)
 				if delayRand >= 140 {
@@ -102,4 +105,8 @@ func doValidateIdent(valid bool) {
 	} else {
 		getRequest("http://localhost:8080/validateIdent?arg=This_Is_InvalidThis_Is_InvalidThis_Is_InvalidThis_Is_InvalidThis_Is_InvalidThis_Is_Invalid")
 	}
+}
+
+func doObjectsSum() {
+	getRequest("http://localhost:8080/objectsSum")
 }
