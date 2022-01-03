@@ -31,6 +31,7 @@ func main() {
 	http.HandleFunc("/formatDate", h.makeHandler("formatDate", h.handleFormatDate))
 	http.HandleFunc("/jsonInspect", h.makeHandler("jsonInspect", h.handleJsonInspect))
 	http.HandleFunc("/validateIdent", h.makeHandler("validateIdent", h.handleValidateIdent))
+	http.HandleFunc("/objectsSum", h.makeHandler("objectsSum", h.handleObjectsSum))
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -178,5 +179,33 @@ func (h *appHandler) handleValidateIdent(w http.ResponseWriter, req *http.Reques
 
 	w.Write([]byte("OK\n"))
 
+	return nil
+}
+
+type bigObject struct {
+	str  string
+	x    int
+	y    int
+	data [512]byte
+}
+
+var bigObjectList []bigObject
+
+func init() {
+	for i := 0; i < 3000; i++ {
+		bigObjectList = append(bigObjectList, bigObject{
+			str: fmt.Sprintf("[%d]", i),
+			x:   i,
+			y:   i * 2,
+		})
+	}
+}
+
+func (h *appHandler) handleObjectsSum(w http.ResponseWriter, req *http.Request) error {
+	sum := 0
+	for _, obj := range bigObjectList {
+		sum += obj.x + obj.y
+	}
+	fmt.Fprintf(w, "sum=%d", sum)
 	return nil
 }
