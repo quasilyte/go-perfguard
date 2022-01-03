@@ -12,59 +12,55 @@ import (
 	"github.com/quasilyte/go-perfguard/internal/testfile"
 )
 
+var testVersionConstraints = map[string]string{
+	"stringsCut": "1.18",
+}
+
 func TestRules(t *testing.T) {
-	readdir := func(t *testing.T, dir string) []string {
-		var filenames []string
-		files, err := os.ReadDir(dir)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, f := range files {
-			filenames = append(filenames, filepath.Join(dir, f.Name()))
-		}
-		return filenames
-	}
-
-	runRulesTest := func(t *testing.T, name string) {
-		t.Helper()
-		t.Run(name, func(t *testing.T) {
-			dir := filepath.Join("testdata", "rulestest", name)
-			args := []string{
-				"./testdata/rulestest/" + name + "/...",
-			}
-
-			var stdout bytes.Buffer
-			var stderr bytes.Buffer
-			if err := cmdLint(&stdout, &stderr, args); err != nil {
-				t.Fatal(err)
-			}
-			if stderr.Len() != 0 {
-				t.Fatalf("errors:\n%s", stderr.String())
-			}
-
-			filenames := readdir(t, dir)
-
-			var annotations []testfile.Annotation
-			for _, filename := range filenames {
-				data, err := os.ReadFile(filename)
-				if err != nil {
-					t.Fatal(err)
-				}
-				fileAnnotations, err := testfile.Parse(filename, data)
-				if err != nil {
-					t.Fatalf("parse test file annotations: %v", err)
-				}
-				annotations = append(annotations, fileAnnotations...)
-			}
-
-			compareTestResults(t, annotations, stdout.Bytes())
-		})
-	}
-
 	rules := readdir(t, filepath.Join("testdata", "rulestest"))
 	for _, name := range rules {
-		runRulesTest(t, filepath.Base(name))
+		key := filepath.Base(name)
+		if _, ok := testVersionConstraints[key]; ok {
+			continue
+		}
+		runRulesTest(t, key)
 	}
+}
+
+func runRulesTest(t *testing.T, name string) {
+	t.Helper()
+	t.Run(name, func(t *testing.T) {
+		dir := filepath.Join("testdata", "rulestest", name)
+		args := []string{
+			"./testdata/rulestest/" + name + "/...",
+		}
+
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+		if err := cmdLint(&stdout, &stderr, args); err != nil {
+			t.Fatal(err)
+		}
+		if stderr.Len() != 0 {
+			t.Fatalf("errors:\n%s", stderr.String())
+		}
+
+		filenames := readdir(t, dir)
+
+		var annotations []testfile.Annotation
+		for _, filename := range filenames {
+			data, err := os.ReadFile(filename)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fileAnnotations, err := testfile.Parse(filename, data)
+			if err != nil {
+				t.Fatalf("parse test file annotations: %v", err)
+			}
+			annotations = append(annotations, fileAnnotations...)
+		}
+
+		compareTestResults(t, annotations, stdout.Bytes())
+	})
 }
 
 var outputLineRegexp = regexp.MustCompile(`(.*?):(\d+): (\w+): (.*)`)
@@ -164,4 +160,16 @@ func compareTestResults(t *testing.T, annotations []testfile.Annotation, output 
 	for loc, w := range unmatched {
 		t.Errorf("%s:%d: unmatched warn: %s", loc.filename, loc.line, w)
 	}
+}
+
+func readdir(t *testing.T, dir string) []string {
+	var filenames []string
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range files {
+		filenames = append(filenames, filepath.Join(dir, f.Name()))
+	}
+	return filenames
 }
