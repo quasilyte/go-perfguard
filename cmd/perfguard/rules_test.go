@@ -124,9 +124,7 @@ func compareTestResults(t *testing.T, annotations []testfile.Annotation, output 
 	for loc, warnings := range haveWarnings {
 		want, ok := wantWarnings[loc]
 		if !ok {
-			for _, w := range warnings {
-				unexected[loc] = append(unexected[loc], w)
-			}
+			unexected[loc] = append(unexected[loc], warnings...)
 			continue
 		}
 		matched := false
