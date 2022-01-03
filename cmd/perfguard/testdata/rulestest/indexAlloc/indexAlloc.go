@@ -77,7 +77,7 @@ func Ignore() {
 	_ = strings.Index(string(getBytes()), s1)
 	_ = strings.Index(string(getBytes()), "a"+s1)
 	_ = strings.Index(string(b1), getString())
-	_ = strings.Index(string([]byte(getString())), getString())
+	_ = strings.Index(string(getString()), getString())
 	_ = strings.Index(string(b1), "a"+getString())
 
 	{

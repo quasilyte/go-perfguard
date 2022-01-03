@@ -40,6 +40,18 @@ func stringsCut(m dsl.Matcher) {
 		Suggest(`$dst, _, _ = bytes.Cut($b, $sep)`)
 }
 
+//doc:summary Detects use cases for strings.Clone
+//doc:tags    o1
+//doc:before  s2 := string([]byte(s1))
+//doc:after   s2 := strings.Clone(s1)
+func stringsClone(m dsl.Matcher) {
+	m.Match(`string([]byte($s))`).
+		Where(m["s"].Type.Is(`string`) &&
+			!m["s"].Const &&
+			m.GoVersion().GreaterEqThan("1.18")).
+		Suggest(`strings.Clone($s)`)
+}
+
 //doc:summary Detects unoptimal strings/bytes case-insensitive comparison
 //doc:tags    o1
 //doc:before  strings.ToLower(x) == strings.ToLower(y)
