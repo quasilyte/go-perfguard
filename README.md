@@ -1,3 +1,6 @@
+![Build Status](https://github.com/quasilyte/go-perfguard/workflows/Go/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/quasilyte/go-perfguard)](https://goreportcard.com/report/github.com/quasilyte/go-perfguard)
+
 # perfguard
 
 > This tool is a work in progress.
