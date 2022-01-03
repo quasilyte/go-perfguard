@@ -1,0 +1,44 @@
+package rulestest
+
+func Warn() {
+	var dstBytes []byte
+	var srcBytes []byte
+
+	mapOfBytes := make(map[string][]byte)
+
+	for _, b := range srcBytes { // want `for ... { ... } => dstBytes = append(dstBytes, srcBytes...)`
+		dstBytes = append(dstBytes, b)
+	}
+
+	for _, b := range srcBytes { // want `for ... { ... } => mapOfBytes["k"] = append(mapOfBytes["k"], srcBytes...)`
+		mapOfBytes["k"] = append(mapOfBytes["k"], b)
+	}
+
+	for _, b := range srcBytes { // want `for ... { ... } => srcBytes = append(srcBytes, srcBytes...)`
+		srcBytes = append(srcBytes, b)
+	}
+}
+
+func Ignore() {
+	var dstBytes []byte
+	var srcBytes []byte
+
+	mapOfBytes := make(map[string][]byte)
+
+	dstBytes = append(dstBytes, srcBytes...)
+	mapOfBytes["k"] = append(mapOfBytes["k"], srcBytes...)
+
+	for _, b := range srcBytes {
+		dstBytes = append(dstBytes, b)
+		println(b)
+	}
+
+	for _, b := range srcBytes {
+		println(b)
+	}
+
+	srcBytes = append(srcBytes, srcBytes...)
+
+	_ = srcBytes
+	_ = dstBytes
+}
