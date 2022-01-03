@@ -15,6 +15,9 @@ func Ignore(s1, s2 string) {
 	_ = s1 + s2
 	_ = s1 + "_" + s2
 	_ = strings.Join([]string{s1, s2, s1}, concat("<", ">"))
+	_ = strings.Join([]string{"x", "y"}, "")
+	_ = strings.Join([]string{"x", "y"}, "|")
+	_ = strings.Join([]string{"x", "y", "z"}, "|")
 }
 
 func concat(x, y string) string {

@@ -127,13 +127,19 @@ func sliceClone(m dsl.Matcher) {
 //doc:summary Detect strings.Join usages that can be rewritten as a string concat
 //doc:tags    o1
 func stringsJoinConcat(m dsl.Matcher) {
-	m.Match(`strings.Join([]string{$x, $y}, "")`).Suggest(`$x + $y`)
-	m.Match(`strings.Join([]string{$x, $y, $z}, "")`).Suggest(`$x + $y + $z`)
+	m.Match(`strings.Join([]string{$x, $y}, "")`).
+		Where(!m["x"].Const && !m["y"].Const).
+		Suggest(`$x + $y`)
+	m.Match(`strings.Join([]string{$x, $y, $z}, "")`).
+		Where(!m["x"].Const && !m["y"].Const && !m["z"].Const).
+		Suggest(`$x + $y + $z`)
 
-	m.Match(`strings.Join([]string{$x, $y}, $glue)`).Suggest(`$x + $glue + $y`)
+	m.Match(`strings.Join([]string{$x, $y}, $glue)`).
+		Where(!m["x"].Const && !m["y"].Const).
+		Suggest(`$x + $glue + $y`)
 
 	m.Match(`strings.Join([]string{$x, $y, $z}, $glue)`).
-		Where(m["glue"].Pure).
+		Where(m["glue"].Pure && !m["x"].Const && !m["y"].Const && !m["z"].Const).
 		Suggest(`$x + $glue + $y + $glue + $z`)
 }
 
