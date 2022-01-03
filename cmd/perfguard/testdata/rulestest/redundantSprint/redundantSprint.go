@@ -27,6 +27,33 @@ func Warn() {
 		_ = fmt.Sprintf("%s", "x") // want `fmt.Sprintf("%s", "x") => "x"`
 		_ = fmt.Sprintf("%v", "x") // want `fmt.Sprintf("%v", "x") => "x"`
 	}
+
+	{
+		var b []byte
+		_ = fmt.Sprint(b)        // want `fmt.Sprint(b) => string(b)`
+		_ = fmt.Sprintf("%s", b) // want `fmt.Sprintf("%s", b) => string(b)`
+		_ = fmt.Sprintf("%v", b) // want `fmt.Sprintf("%v", b) => string(b)`
+	}
+	{
+		var runes []rune
+		_ = fmt.Sprint(runes)        // want `fmt.Sprint(runes) => string(runes)`
+		_ = fmt.Sprintf("%s", runes) // want `fmt.Sprintf("%s", runes) => string(runes)`
+		_ = fmt.Sprintf("%v", runes) // want `fmt.Sprintf("%v", runes) => string(runes)`
+	}
+	{
+		type myBytes []byte
+		var b myBytes
+		_ = fmt.Sprint(b)        // want `fmt.Sprint(b) => string(b)`
+		_ = fmt.Sprintf("%s", b) // want `fmt.Sprintf("%s", b) => string(b)`
+		_ = fmt.Sprintf("%v", b) // want `fmt.Sprintf("%v", b) => string(b)`
+	}
+	{
+		type myString string
+		var s myString
+		_ = fmt.Sprint(s)        // want `fmt.Sprint(s) => string(s)`
+		_ = fmt.Sprintf("%s", s) // want `fmt.Sprintf("%s", s) => string(s)`
+		_ = fmt.Sprintf("%v", s) // want `fmt.Sprintf("%v", s) => string(s)`
+	}
 }
 
 func Ignore() {
@@ -44,6 +71,25 @@ func Ignore() {
 		var s string
 		_ = s
 		_ = "x"
+	}
+
+	{
+		var b []byte
+		_ = string(b)
+	}
+	{
+		var runes []rune
+		_ = string(runes)
+	}
+	{
+		type myBytes []byte
+		var b myBytes
+		_ = string(b)
+	}
+	{
+		type myString string
+		var s myString
+		_ = string(s)
 	}
 }
 
