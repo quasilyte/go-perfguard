@@ -2974,6 +2974,25 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		ir.RuleGroup{
+			Line:        510,
+			Name:        "rangeToAppend",
+			MatcherName: "m",
+			DocTags: []string{
+				"o1",
+			},
+			DocSummary: "Detects range loops that can be turned into a single append call",
+			Rules: []ir.Rule{
+				ir.Rule{
+					Line: 511,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 511, Value: "for $_, $x := range $src { $dst = append($dst, $x) }"},
+					},
+					ReportTemplate:  "for ... { ... } => $dst = append($dst, $src...)",
+					SuggestTemplate: "$dst = append($dst, $src...)",
+				},
+			},
+		},
 	},
 }
 

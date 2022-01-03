@@ -504,3 +504,11 @@ func rangeExprCopy(m dsl.Matcher) {
 		Report(`range over big array value expression is ineffective`).
 		At(m["e"])
 }
+
+//doc:summary Detects range loops that can be turned into a single append call
+//doc:tags    o1
+func rangeToAppend(m dsl.Matcher) {
+	m.Match(`for $_, $x := range $src { $dst = append($dst, $x) }`).
+		Suggest(`$dst = append($dst, $src...)`).
+		Report(`for ... { ... } => $dst = append($dst, $src...)`)
+}
