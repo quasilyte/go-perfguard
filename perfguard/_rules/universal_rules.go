@@ -105,6 +105,10 @@ func redundantSprint(m dsl.Matcher) {
 	m.Match(`fmt.Sprint($x)`, `fmt.Sprintf("%s", $x)`, `fmt.Sprintf("%v", $x)`).
 		Where(m["x"].Type.Is(`string`)).
 		Suggest(`$x`)
+
+	m.Match(`fmt.Sprint($x)`, `fmt.Sprintf("%s", $x)`, `fmt.Sprintf("%v", $x)`).
+		Where(m["x"].Type.ConvertibleTo(`string`) && !m["x"].Type.OfKind("numeric")).
+		Suggest(`string($x)`)
 }
 
 //doc:summary Detects slice copying patterns that can be optimized
