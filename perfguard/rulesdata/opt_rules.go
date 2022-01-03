@@ -209,6 +209,44 @@ var Opt = &ir.File{
 				},
 			},
 		},
+		ir.RuleGroup{
+			Line:        57,
+			Name:        "rangeValueCopy",
+			MatcherName: "m",
+			DocTags: []string{
+				"o1",
+			},
+			DocSummary: "Detects range loops that copy large value on every iteration",
+			Rules: []ir.Rule{
+				ir.Rule{
+					Line: 58,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 58, Value: "for $_, $v := range $_ { $*_ }"},
+						ir.PatternString{Line: 58, Value: "for $_, $v = range $_ { $*_ }"},
+					},
+					ReportTemplate: "every iteration copies a large object into $v",
+					WhereExpr: ir.FilterExpr{
+						Line: 59,
+						Op:   ir.FilterGtOp,
+						Src:  "m[\"v\"].Type.Size > 128",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  59,
+								Op:    ir.FilterVarTypeSizeOp,
+								Src:   "m[\"v\"].Type.Size",
+								Value: "v",
+							},
+							ir.FilterExpr{
+								Line:  59,
+								Op:    ir.FilterIntOp,
+								Src:   "128",
+								Value: int64(128),
+							},
+						},
+					},
+				},
+			},
+		},
 	},
 }
 

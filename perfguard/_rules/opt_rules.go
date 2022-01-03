@@ -51,3 +51,11 @@ func sprintConcat2(m dsl.Matcher) {
 		Where(m["x"].Type.Is(`string`) && m["y"].Type.Is(`string`)).
 		Suggest(`$x + ": " + $y`)
 }
+
+//doc:summary Detects range loops that copy large value on every iteration
+//doc:tags    o1
+func rangeValueCopy(m dsl.Matcher) {
+	m.Match(`for $_, $v := range $_ { $*_ }`, `for $_, $v = range $_ { $*_ }`).
+		Where(m["v"].Type.Size > 128).
+		Report(`every iteration copies a large object into $v`)
+}

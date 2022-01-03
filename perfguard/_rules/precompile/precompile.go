@@ -74,7 +74,11 @@ func precompile() error {
 		for j := range g.Rules {
 			rule := &g.Rules[j]
 			if strings.HasPrefix(rule.ReportTemplate, "suggestion: ") {
-				rule.ReportTemplate = "$$ => " + strings.TrimPrefix(rule.ReportTemplate, "suggestion: ")
+				leftVar := "$$"
+				if rule.LocationVar != "" {
+					leftVar = "$" + rule.LocationVar
+				}
+				rule.ReportTemplate = leftVar + " => " + strings.TrimPrefix(rule.ReportTemplate, "suggestion: ")
 			}
 		}
 	}

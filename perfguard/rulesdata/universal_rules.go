@@ -2861,6 +2861,119 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		ir.RuleGroup{
+			Line:        494,
+			Name:        "rangeExprCopy",
+			MatcherName: "m",
+			DocTags: []string{
+				"o1",
+			},
+			DocSummary: "Detects array range loops that result in an excessive full data copy",
+			Rules: []ir.Rule{
+				ir.Rule{
+					Line: 495,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 495, Value: "for $_, $_ := range $e { $*_ }"},
+						ir.PatternString{Line: 495, Value: "for $_, $_ = range $e { $*_ }"},
+					},
+					ReportTemplate:  "$e => &$e",
+					SuggestTemplate: "&$e",
+					WhereExpr: ir.FilterExpr{
+						Line: 496,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"e\"].Addressable && m[\"e\"].Type.Is(`[$_]$_`) && m[\"e\"].Type.Size > 2048",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line: 496,
+								Op:   ir.FilterAndOp,
+								Src:  "m[\"e\"].Addressable && m[\"e\"].Type.Is(`[$_]$_`)",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{
+										Line:  496,
+										Op:    ir.FilterVarAddressableOp,
+										Src:   "m[\"e\"].Addressable",
+										Value: "e",
+									},
+									ir.FilterExpr{
+										Line:  496,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"e\"].Type.Is(`[$_]$_`)",
+										Value: "e",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 496, Op: ir.FilterStringOp, Src: "`[$_]$_`", Value: "[$_]$_"},
+										},
+									},
+								},
+							},
+							ir.FilterExpr{
+								Line: 496,
+								Op:   ir.FilterGtOp,
+								Src:  "m[\"e\"].Type.Size > 2048",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{
+										Line:  496,
+										Op:    ir.FilterVarTypeSizeOp,
+										Src:   "m[\"e\"].Type.Size",
+										Value: "e",
+									},
+									ir.FilterExpr{
+										Line:  496,
+										Op:    ir.FilterIntOp,
+										Src:   "2048",
+										Value: int64(2048),
+									},
+								},
+							},
+						},
+					},
+					LocationVar: "e",
+				},
+				ir.Rule{
+					Line: 502,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 502, Value: "for $_, $_ := range $e { $*_ }"},
+						ir.PatternString{Line: 502, Value: "for $_, $_ = range $e { $*_ }"},
+					},
+					ReportTemplate: "range over big array value expression is ineffective",
+					WhereExpr: ir.FilterExpr{
+						Line: 503,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"e\"].Type.Is(`[$_]$_`) && m[\"e\"].Type.Size > 2048",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  503,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"e\"].Type.Is(`[$_]$_`)",
+								Value: "e",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 503, Op: ir.FilterStringOp, Src: "`[$_]$_`", Value: "[$_]$_"},
+								},
+							},
+							ir.FilterExpr{
+								Line: 503,
+								Op:   ir.FilterGtOp,
+								Src:  "m[\"e\"].Type.Size > 2048",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{
+										Line:  503,
+										Op:    ir.FilterVarTypeSizeOp,
+										Src:   "m[\"e\"].Type.Size",
+										Value: "e",
+									},
+									ir.FilterExpr{
+										Line:  503,
+										Op:    ir.FilterIntOp,
+										Src:   "2048",
+										Value: int64(2048),
+									},
+								},
+							},
+						},
+					},
+					LocationVar: "e",
+				},
+			},
+		},
 	},
 }
 
