@@ -13,7 +13,8 @@ import (
 )
 
 var testVersionConstraints = map[string]string{
-	"stringsCut": "1.18",
+	"stringsCut":   "1.18",
+	"stringsClone": "1.18",
 }
 
 func TestRules(t *testing.T) {
