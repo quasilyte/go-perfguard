@@ -525,6 +525,7 @@ func rangeExprCopy(m dsl.Matcher) {
 //doc:tags    o1
 func rangeToAppend(m dsl.Matcher) {
 	m.Match(`for $_, $x := range $src { $dst = append($dst, $x) }`).
+		Where(m["src"].Type.Is(`[]$_`)).
 		Suggest(`$dst = append($dst, $src...)`).
 		Report(`for ... { ... } => $dst = append($dst, $src...)`)
 }

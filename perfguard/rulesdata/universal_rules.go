@@ -3095,11 +3095,20 @@ var Universal = &ir.File{
 					},
 					ReportTemplate:  "for ... { ... } => $dst = append($dst, $src...)",
 					SuggestTemplate: "$dst = append($dst, $src...)",
+					WhereExpr: ir.FilterExpr{
+						Line:  528,
+						Op:    ir.FilterVarTypeIsOp,
+						Src:   "m[\"src\"].Type.Is(`[]$_`)",
+						Value: "src",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{Line: 528, Op: ir.FilterStringOp, Src: "`[]$_`", Value: "[]$_"},
+						},
+					},
 				},
 			},
 		},
 		ir.RuleGroup{
-			Line:        534,
+			Line:        535,
 			Name:        "rangeRuneSlice",
 			MatcherName: "m",
 			DocTags: []string{
@@ -3108,87 +3117,87 @@ var Universal = &ir.File{
 			DocSummary: "Detects a range over []rune(string) where copying to a new slice is redundant",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 535,
+					Line: 536,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 535, Value: "for _, $r := range []rune($s) { $*body }"},
+						ir.PatternString{Line: 536, Value: "for _, $r := range []rune($s) { $*body }"},
 					},
 					ReportTemplate:  "range []rune($s) => range $s",
 					SuggestTemplate: "for _, $r := range $s { $body }",
 					WhereExpr: ir.FilterExpr{
-						Line:  536,
+						Line:  537,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
 						Src:   "m[\"s\"].Type.Underlying().Is(`string`)",
 						Value: "s",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 536, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+							ir.FilterExpr{Line: 537, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 540,
+					Line: 541,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 540, Value: "for _, $r = range []rune($s) { $*body }"},
+						ir.PatternString{Line: 541, Value: "for _, $r = range []rune($s) { $*body }"},
 					},
 					ReportTemplate:  "range []rune($s) => range $s",
 					SuggestTemplate: "for _, $r = range $s { $body }",
 					WhereExpr: ir.FilterExpr{
-						Line:  541,
+						Line:  542,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
 						Src:   "m[\"s\"].Type.Underlying().Is(`string`)",
 						Value: "s",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 541, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+							ir.FilterExpr{Line: 542, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 545,
+					Line: 546,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 545, Value: "for range []rune($s) { $*body }"},
+						ir.PatternString{Line: 546, Value: "for range []rune($s) { $*body }"},
 					},
 					ReportTemplate:  "range []rune($s) => range $s",
 					SuggestTemplate: "for range $s { $body }",
 					WhereExpr: ir.FilterExpr{
-						Line:  546,
+						Line:  547,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
 						Src:   "m[\"s\"].Type.Underlying().Is(`string`)",
 						Value: "s",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 546, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+							ir.FilterExpr{Line: 547, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 550,
+					Line: 551,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 550, Value: "for _, $r := range string($runes) { $*body }"},
+						ir.PatternString{Line: 551, Value: "for _, $r := range string($runes) { $*body }"},
 					},
 					ReportTemplate:  "range string($runes) => range $runes",
 					SuggestTemplate: "for _, $r := range $runes { $body }",
 					WhereExpr: ir.FilterExpr{
-						Line:  551,
+						Line:  552,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
 						Src:   "m[\"runes\"].Type.Underlying().Is(`[]rune`)",
 						Value: "runes",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 551, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
+							ir.FilterExpr{Line: 552, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 555,
+					Line: 556,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 555, Value: "for _, $r = range string($runes) { $*body }"},
+						ir.PatternString{Line: 556, Value: "for _, $r = range string($runes) { $*body }"},
 					},
 					ReportTemplate:  "range string($runes) => range $runes",
 					SuggestTemplate: "for _, $r = range $runes { $body }",
 					WhereExpr: ir.FilterExpr{
-						Line:  556,
+						Line:  557,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
 						Src:   "m[\"runes\"].Type.Underlying().Is(`[]rune`)",
 						Value: "runes",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 556, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
+							ir.FilterExpr{Line: 557, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
 						},
 					},
 				},

@@ -39,6 +39,19 @@ func Ignore() {
 
 	srcBytes = append(srcBytes, srcBytes...)
 
+	{
+		var arr [10]byte
+		for _, b := range arr {
+			dstBytes = append(dstBytes, b)
+		}
+	}
+	{
+		m := make(map[string]byte)
+		for _, b := range m {
+			dstBytes = append(dstBytes, b)
+		}
+	}
+
 	_ = srcBytes
 	_ = dstBytes
 }
