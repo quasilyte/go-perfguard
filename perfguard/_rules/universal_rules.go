@@ -512,3 +512,32 @@ func rangeToAppend(m dsl.Matcher) {
 		Suggest(`$dst = append($dst, $src...)`).
 		Report(`for ... { ... } => $dst = append($dst, $src...)`)
 }
+
+//doc:summary Detects a range over []rune(string) where copying to a new slice is redundant
+//doc:tags    o1
+func rangeRuneSlice(m dsl.Matcher) {
+	m.Match(`for _, $r := range []rune($s) { $*body }`).
+		Where(m["s"].Type.Underlying().Is(`string`)).
+		Suggest(`for _, $r := range $s { $body }`).
+		Report(`range []rune($s) => range $s`)
+
+	m.Match(`for _, $r = range []rune($s) { $*body }`).
+		Where(m["s"].Type.Underlying().Is(`string`)).
+		Suggest(`for _, $r = range $s { $body }`).
+		Report(`range []rune($s) => range $s`)
+
+	m.Match(`for range []rune($s) { $*body }`).
+		Where(m["s"].Type.Underlying().Is(`string`)).
+		Suggest(`for range $s { $body }`).
+		Report(`range []rune($s) => range $s`)
+
+	m.Match(`for _, $r := range string($runes) { $*body }`).
+		Where(m["runes"].Type.Underlying().Is(`[]rune`)).
+		Suggest(`for _, $r := range $runes { $body }`).
+		Report(`range string($runes) => range $runes`)
+
+	m.Match(`for _, $r = range string($runes) { $*body }`).
+		Where(m["runes"].Type.Underlying().Is(`[]rune`)).
+		Suggest(`for _, $r = range $runes { $body }`).
+		Report(`range string($runes) => range $runes`)
+}
