@@ -14,6 +14,7 @@ import (
 
 var testVersionConstraints = map[string]string{
 	"stringsCut":   "1.18",
+	"bytesCut":     "1.18",
 	"stringsClone": "1.18",
 }
 

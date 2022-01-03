@@ -12,5 +12,5 @@ func Ignore(s string, b []byte) {
 	_ = strings.Clone(s)
 	_ = string(b)
 	_ = string([]byte(b))
-	_ = strings([]byte("literal"))
+	_ = string([]byte("literal"))
 }
