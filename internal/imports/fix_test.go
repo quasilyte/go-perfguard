@@ -179,12 +179,18 @@ func f() string { return "" }`,
 		{`
 package example
 
+// Comment1
 import "io"
+// Comment2
 import "bytes"
+// Comment3
 
 func f() string { return "" }`, `
 package example
 
+// Comment1
+// Comment2
+// Comment3
 
 func f() string { return "" }`,
 		},
@@ -205,7 +211,7 @@ func f() string { return "" }`,
 
 		// Removed all imports.
 		{`
-package example
+package example//OK
 
 import (
 	"io"
@@ -215,7 +221,7 @@ import (
 )
 
 func f() string { return "" }`, `
-package example
+package example//OK
 
 
 func f() string { return "" }`,
@@ -241,6 +247,108 @@ import (
 
 func f() int { return rand.Intn(10) }`,
 		},
+
+		// Add package from non-std list.
+		{`
+package example // OK
+
+func f() error {
+	return errors.New("ok")
+}`, `
+package example 
+import (
+	"github.com/pkg/errors"
+)
+// OK
+
+func f() error {
+	return errors.New("ok")
+}`,
+		},
+
+		// Remove package from non-std list.
+		{`
+package example
+
+import (
+	"github.com/pkg/errors"
+)
+
+func f() string {
+	return ""
+}`, `
+package example
+
+
+func f() string {
+	return ""
+}`,
+		},
+
+		// Remove renamed package import.
+		{`
+package example
+
+// This is a comment.
+import (
+	xerrors "github.com/pkg/errors"
+)
+
+func f() string {
+	return ""
+}`, `
+package example
+
+// This is a comment.
+
+func f() string {
+	return ""
+}`,
+		},
+
+		// Do not remove package that is used via local name.
+		{`
+package example
+
+import (
+	pkgerrors "github.com/pkg/errors"
+)
+
+func f() error {
+	return pkgerrors.New("ok")
+}`, `
+package example
+
+import (
+	pkgerrors "github.com/pkg/errors"
+)
+
+func f() error {
+	return pkgerrors.New("ok")
+}`,
+		},
+
+		// Do not remove "_" packages.
+		{`
+package example
+
+import (
+	_ "image/png"
+)
+import (
+	"bytes"
+)
+
+func f() int { return rand.Intn(10) }`, `
+package example
+
+import (
+	_ "image/png"
+	"math/rand"
+)
+
+func f() int { return rand.Intn(10) }`,
+		},
 	}
 
 	for i := range tests {
@@ -251,6 +359,10 @@ func f() int { return rand.Intn(10) }`,
 					"strings": "strings",
 					"bytes":   "bytes",
 					"rand":    "math/rand",
+					"errors":  "errors",
+				},
+				Packages: map[string]string{
+					"errors": "github.com/pkg/errors",
 				},
 			}
 			fixed, err := Fix(config, []byte(test.before))
