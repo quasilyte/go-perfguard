@@ -520,14 +520,14 @@ func bufferString(m dsl.Matcher) {
 //doc:summary Detects array range loops that result in an excessive full data copy
 //doc:tags    o1
 func rangeExprCopy(m dsl.Matcher) {
-	m.Match(`for $_, $_ := range $e { $*_ }`, `for $_, $_ = range $e { $*_ }`).
+	m.Match(`for $_, $_ := range $e`, `for $_, $_ = range $e`).
 		Where(m["e"].Addressable && m["e"].Type.Is(`[$_]$_`) && m["e"].Type.Size > 2048).
 		Suggest(`&$e`).
 		At(m["e"])
 
 	// Same rule, but without Addressable requirement.
 	// We can't suggest a simple fix, but we'll give a warning anyway.
-	m.Match(`for $_, $_ := range $e { $*_ }`, `for $_, $_ = range $e { $*_ }`).
+	m.Match(`for $_, $_ := range $e`, `for $_, $_ = range $e`).
 		Where(m["e"].Type.Is(`[$_]$_`) && m["e"].Type.Size > 2048).
 		Report(`range over big array value expression is ineffective`).
 		At(m["e"])
