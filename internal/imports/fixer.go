@@ -83,6 +83,9 @@ func (f *fixer) Fix(src []byte) ([]byte, error) {
 		if pkgPath == "" {
 			continue
 		}
+		if _, ok := imports[pkgPath]; ok {
+			continue
+		}
 		missingImports = append(missingImports, pkgPath)
 	}
 	sort.Strings(missingImports)
@@ -99,6 +102,10 @@ func (f *fixer) Fix(src []byte) ([]byte, error) {
 		if !isUsed {
 			unusedImports[pkgPath] = struct{}{}
 		}
+	}
+
+	if len(unusedImports) == 0 && len(missingImports) == 0 {
+		return src, nil
 	}
 
 	var buf bytes.Buffer
