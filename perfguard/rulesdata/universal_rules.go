@@ -3311,10 +3311,10 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 548,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 548, Value: "for _, $r := range []rune($s) { $*body }"},
+						ir.PatternString{Line: 548, Value: "for _, $r := range []rune($s)"},
 					},
-					ReportTemplate:  "range []rune($s) => range $s",
-					SuggestTemplate: "for _, $r := range $s { $body }",
+					ReportTemplate:  "$$ => for _, $r := range $s",
+					SuggestTemplate: "for _, $r := range $s",
 					WhereExpr: ir.FilterExpr{
 						Line:  549,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
@@ -3326,70 +3326,70 @@ var Universal = &ir.File{
 					},
 				},
 				ir.Rule{
-					Line: 553,
+					Line: 552,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 553, Value: "for _, $r = range []rune($s) { $*body }"},
+						ir.PatternString{Line: 552, Value: "for _, $r = range []rune($s)"},
 					},
-					ReportTemplate:  "range []rune($s) => range $s",
-					SuggestTemplate: "for _, $r = range $s { $body }",
+					ReportTemplate:  "$$ => for _, $r = range $s",
+					SuggestTemplate: "for _, $r = range $s",
 					WhereExpr: ir.FilterExpr{
-						Line:  554,
+						Line:  553,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
 						Src:   "m[\"s\"].Type.Underlying().Is(`string`)",
 						Value: "s",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 554, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+							ir.FilterExpr{Line: 553, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 558,
+					Line: 556,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 558, Value: "for range []rune($s) { $*body }"},
+						ir.PatternString{Line: 556, Value: "for range []rune($s)"},
 					},
-					ReportTemplate:  "range []rune($s) => range $s",
-					SuggestTemplate: "for range $s { $body }",
+					ReportTemplate:  "$$ => for range $s",
+					SuggestTemplate: "for range $s",
 					WhereExpr: ir.FilterExpr{
-						Line:  559,
+						Line:  557,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
 						Src:   "m[\"s\"].Type.Underlying().Is(`string`)",
 						Value: "s",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 559, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+							ir.FilterExpr{Line: 557, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 563,
+					Line: 560,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 563, Value: "for _, $r := range string($runes) { $*body }"},
+						ir.PatternString{Line: 560, Value: "for _, $r := range string($runes)"},
 					},
-					ReportTemplate:  "range string($runes) => range $runes",
-					SuggestTemplate: "for _, $r := range $runes { $body }",
+					ReportTemplate:  "$$ => for _, $r := range $runes",
+					SuggestTemplate: "for _, $r := range $runes",
 					WhereExpr: ir.FilterExpr{
-						Line:  564,
+						Line:  561,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
 						Src:   "m[\"runes\"].Type.Underlying().Is(`[]rune`)",
 						Value: "runes",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 564, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
+							ir.FilterExpr{Line: 561, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 568,
+					Line: 564,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 568, Value: "for _, $r = range string($runes) { $*body }"},
+						ir.PatternString{Line: 564, Value: "for _, $r = range string($runes)"},
 					},
-					ReportTemplate:  "range string($runes) => range $runes",
-					SuggestTemplate: "for _, $r = range $runes { $body }",
+					ReportTemplate:  "$$ => for _, $r = range $runes",
+					SuggestTemplate: "for _, $r = range $runes",
 					WhereExpr: ir.FilterExpr{
-						Line:  569,
+						Line:  565,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
 						Src:   "m[\"runes\"].Type.Underlying().Is(`[]rune`)",
 						Value: "runes",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 569, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
+							ir.FilterExpr{Line: 565, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
 						},
 					},
 				},

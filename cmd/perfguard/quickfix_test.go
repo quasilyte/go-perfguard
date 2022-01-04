@@ -64,12 +64,12 @@ func TestQuickFix(t *testing.T) {
 				t.Fatal(err)
 			}
 			if diff := cmp.Diff(have, want); diff != "" {
-				t.Errorf("quick fixes result mismatch (+want -have):\n%s", diff)
+				t.Fatalf("quick fixes result mismatch (+want -have):\n%s", diff)
 			}
 			oldOutput := goRun(t, filepath.Join(testDir, "target.go"))
 			newOutput := goRun(t, filepath.Join(testDir, "out", "after.go"))
 			if diff := cmp.Diff(newOutput, oldOutput); diff != "" {
-				t.Errorf("go run results mismatch (+old -new):\n%s", diff)
+				t.Fatalf("go run results mismatch (+old -new):\n%s", diff)
 			}
 		})
 	}
