@@ -3,10 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"go/format"
 	"go/token"
 	"io"
+	"os"
 	"strings"
 
+	"github.com/quasilyte/go-perfguard/internal/imports"
+	"github.com/quasilyte/go-perfguard/internal/quickfix"
 	"github.com/quasilyte/go-perfguard/perfguard"
 	"golang.org/x/tools/go/packages"
 )
@@ -25,6 +29,8 @@ type runner struct {
 
 	stdout io.Writer
 	stderr io.Writer
+
+	pkgFixes []*perfguard.QuickFix
 }
 
 func newRunner(stdout, stderr io.Writer) *runner {
@@ -51,6 +57,7 @@ func (r *runner) Run() error {
 
 	target := &perfguard.Target{}
 	for _, pkg := range loadedPackages {
+		r.pkgFixes = r.pkgFixes[:0]
 		target.Files = target.Files[:0]
 		for _, f := range pkg.Syntax {
 			target.Files = append(target.Files, perfguard.SourceFile{
@@ -64,6 +71,11 @@ func (r *runner) Run() error {
 		if err := analyzer.CheckPackage(target); err != nil {
 			return fmt.Errorf("checking %s: %w", pkg.PkgPath, err)
 		}
+		if len(r.pkgFixes) != 0 {
+			if err := r.applyFixes(target); err != nil {
+				return fmt.Errorf("apply fixes: %w", err)
+			}
+		}
 	}
 
 	return nil
@@ -75,10 +87,9 @@ func (r *runner) createAnalyzer() (*perfguard.Analyzer, error) {
 		HeatmapFile:      r.heatmapFile,
 		HeatmapThreshold: r.heatmapThreshold,
 
-		Autofix:   r.autofix,
 		GoVersion: r.goVersion,
 
-		Warn: r.reportWarning,
+		Warn: r.handleWarning,
 
 		LoadUniversalRules: true,
 		LoadOptRules:       r.loadOptRules,
@@ -91,8 +102,60 @@ func (r *runner) createAnalyzer() (*perfguard.Analyzer, error) {
 	return a, nil
 }
 
-func (r *runner) reportWarning(w perfguard.Warning) {
-	fmt.Fprintf(r.stdout, "%s:%d: %s: %s\n", w.Filename, w.Line, w.Tag, w.Text)
+func (r *runner) handleWarning(w perfguard.Warning) {
+	if r.autofix && w.Fix != nil {
+		r.pkgFixes = append(r.pkgFixes, w.Fix)
+	} else {
+		fmt.Fprintf(r.stdout, "%s:%d: %s: %s\n", w.Filename, w.Line, w.Tag, w.Text)
+	}
+}
+
+func (r *runner) applyFixes(target *perfguard.Target) error {
+	// TODO: don't run imports fixing for every modified file?
+	// We can infer which rules may affect the imports set.
+
+	needFmt := make(map[string]struct{})
+	editsPerFile := make(map[string][]quickfix.TextEdit)
+	for _, fix := range r.pkgFixes {
+		pos := target.Fset.Position(fix.From)
+		from := pos.Offset
+		filename := pos.Filename
+		endPos := target.Fset.Position(fix.To)
+		to := endPos.Offset
+		if pos.Line != endPos.Line {
+			needFmt[filename] = struct{}{}
+		}
+		editsPerFile[filename] = append(editsPerFile[filename], quickfix.TextEdit{
+			StartOffset: from,
+			EndOffset:   to,
+			Replacement: fix.Replacement,
+		})
+	}
+
+	// TODO.
+	importsConfig := imports.FixConfig{}
+
+	for filename, edits := range editsPerFile {
+		fileText, err := os.ReadFile(filename)
+		if err != nil {
+			return err
+		}
+		afterQuickFixes := quickfix.Apply(fileText, edits)
+		newText, err := imports.Fix(importsConfig, afterQuickFixes)
+		if err != nil {
+			return err
+		}
+		if _, ok := needFmt[filename]; ok {
+			newText, err = format.Source(newText)
+			if err != nil {
+				return fmt.Errorf("gofmt: %w", err)
+			}
+		}
+		if err := os.WriteFile(filename, newText, 0o600); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *runner) loadPackages(ctx context.Context, fset *token.FileSet, targets []string) ([]*packages.Package, error) {

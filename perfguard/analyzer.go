@@ -184,12 +184,24 @@ func (a *analyzer) runRules(target *Target) error {
 			}
 		}
 
+		var fix *QuickFix
+		if data.Suggestion != nil {
+			s := data.Suggestion
+			fix = &QuickFix{
+				From:        s.From,
+				To:          s.To,
+				Replacement: make([]byte, len(s.Replacement)),
+			}
+			copy(fix.Replacement, s.Replacement)
+		}
+
 		message := strings.ReplaceAll(data.Message, "\n", `\n`)
 		a.config.Warn(Warning{
 			Filename: startPos.Filename,
 			Line:     startPos.Line,
 			Tag:      data.RuleInfo.Group.Name,
 			Text:     message,
+			Fix:      fix,
 		})
 	}
 
