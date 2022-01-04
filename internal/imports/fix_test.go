@@ -349,6 +349,91 @@ import (
 
 func f() int { return rand.Intn(10) }`,
 		},
+
+		// No changes in imports: 0 imports.
+		{`
+package example
+
+func f() int { return 10 }`, `
+package example
+
+func f() int { return 10 }`,
+		},
+
+		// No changes in imports: 1 import.
+		{`
+package example
+
+import "io"
+
+func f(r io.Reader) int { return 10 }`, `
+package example
+
+import "io"
+
+func f(r io.Reader) int { return 10 }`,
+		},
+
+		// No changes in imports: 1 import.
+		{`
+package example
+
+import (
+	"io"
+)
+
+func f(r io.Reader) int { return 10 }`, `
+package example
+
+import (
+	"io"
+)
+
+func f(r io.Reader) int { return 10 }`,
+		},
+
+		// No changes in imports: 2 imports.
+		{`
+package example
+
+import (
+	"io"
+	"strings"
+)
+
+func f(r io.Reader) string { return strings.Repeat("x", 10) }`, `
+package example
+
+import (
+	"io"
+	"strings"
+)
+
+func f(r io.Reader) string { return strings.Repeat("x", 10) }`,
+		},
+
+		// Add second entry due to the first one being renamed.
+		{`
+package example
+
+import (
+	"io"
+	str "strings"
+)
+
+func f(r io.Reader) string { return str.Repeat("x", 10) }
+func f2(r io.Reader) string { return strings.Repeat("x", 10) }`, `
+package example
+
+import (
+	"io"
+	str "strings"
+	"strings"
+)
+
+func f(r io.Reader) string { return str.Repeat("x", 10) }
+func f2(r io.Reader) string { return strings.Repeat("x", 10) }`,
+		},
 	}
 
 	for i := range tests {
@@ -360,6 +445,7 @@ func f() int { return rand.Intn(10) }`,
 					"bytes":   "bytes",
 					"rand":    "math/rand",
 					"errors":  "errors",
+					"io":      "io",
 				},
 				Packages: map[string]string{
 					"errors": "github.com/pkg/errors",
