@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestQuickfixNested(t *testing.T) {
+func TestQuickFixNested(t *testing.T) {
 	// Test that we don't end up with broken code if one replacement
 	// occurs inside another one.
 
@@ -47,7 +47,7 @@ func TestQuickfixNested(t *testing.T) {
 	runTest(`g(10);`, []TextEdit{fix2, fix1, fix2, fix2})
 }
 
-func TestQuickfix(t *testing.T) {
+func TestQuickFix(t *testing.T) {
 	tests := map[string][]string{
 		// No replacements.
 		``:      {},

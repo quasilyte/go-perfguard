@@ -15,3 +15,18 @@ so the first file can be named `cmd/perfguard/testdata/rulestest/$name/$name.go`
 Now you can the tests with `go test -run /$name ./cmd/perfguard`.
 
 If you want to run all rules, not just the new rule, omit the `-run` parameter.
+
+## Testing -fix
+
+Tests inside `cmd/perfguard/testdata/quickfix` are structured like this:
+
+* `cmd/perfguard/testdata/quickfix/$name` is a test directory.
+* `cmd/perfguard/testdata/quickfix/$name/before.go` is a target Go file.
+* `cmd/perfguard/testdata/quickfix/$name/out/after.go` is expected output file.
+
+`before.go` file should be executable by `go run`, so it must be a main package.
+
+QuickFix tests not only check for the replacements to be correct, it also runs
+old and new code forms to check whether they produce identical results.
+
+So, add some `println()` statements to your QuickFix tests to validate the semantics.

@@ -26,13 +26,18 @@ type Warning struct {
 	Line     int
 	Tag      string
 	Text     string
+	Fix      *QuickFix
+}
+
+type QuickFix struct {
+	From        token.Pos
+	To          token.Pos
+	Replacement []byte
 }
 
 type Config struct {
 	HeatmapFile      string
 	HeatmapThreshold float64
-
-	Autofix bool
 
 	GoVersion string
 
