@@ -3170,8 +3170,8 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 523,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 523, Value: "for $_, $_ := range $e { $*_ }"},
-						ir.PatternString{Line: 523, Value: "for $_, $_ = range $e { $*_ }"},
+						ir.PatternString{Line: 523, Value: "for $_, $_ := range $e"},
+						ir.PatternString{Line: 523, Value: "for $_, $_ = range $e"},
 					},
 					ReportTemplate:  "$e => &$e",
 					SuggestTemplate: "&$e",
@@ -3228,8 +3228,8 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 530,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 530, Value: "for $_, $_ := range $e { $*_ }"},
-						ir.PatternString{Line: 530, Value: "for $_, $_ = range $e { $*_ }"},
+						ir.PatternString{Line: 530, Value: "for $_, $_ := range $e"},
+						ir.PatternString{Line: 530, Value: "for $_, $_ = range $e"},
 					},
 					ReportTemplate: "range over big array value expression is ineffective",
 					WhereExpr: ir.FilterExpr{
