@@ -2,6 +2,7 @@ package rulestest
 
 import (
 	"bytes"
+	"net"
 	"strings"
 )
 
@@ -117,6 +118,11 @@ func Ignore() {
 		_ = strings.HasSuffix(s, s2)
 		_ = strings.EqualFold(s, s2)
 		_ = strings.Compare(s, s2)
+	}
+
+	{
+		var ip1, ip2 net.IP
+		_ = bytes.Compare([]byte(ip1), []byte(ip2))
 	}
 }
 
