@@ -747,19 +747,24 @@ var Universal = &ir.File{
 					WhereExpr: ir.FilterExpr{
 						Line: 170,
 						Op:   ir.FilterAndOp,
-						Src:  "m[\"glue\"].Pure && !m[\"x\"].Const && !m[\"y\"].Const && !m[\"z\"].Const",
+						Src:  "m[\"glue\"].Const && !m[\"x\"].Const && !m[\"y\"].Const && !m[\"z\"].Const",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
 								Line: 170,
 								Op:   ir.FilterAndOp,
-								Src:  "m[\"glue\"].Pure && !m[\"x\"].Const && !m[\"y\"].Const",
+								Src:  "m[\"glue\"].Const && !m[\"x\"].Const && !m[\"y\"].Const",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
 										Line: 170,
 										Op:   ir.FilterAndOp,
-										Src:  "m[\"glue\"].Pure && !m[\"x\"].Const",
+										Src:  "m[\"glue\"].Const && !m[\"x\"].Const",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 170, Op: ir.FilterVarPureOp, Src: "m[\"glue\"].Pure", Value: "glue"},
+											ir.FilterExpr{
+												Line:  170,
+												Op:    ir.FilterVarConstOp,
+												Src:   "m[\"glue\"].Const",
+												Value: "glue",
+											},
 											ir.FilterExpr{
 												Line: 170,
 												Op:   ir.FilterNotOp,

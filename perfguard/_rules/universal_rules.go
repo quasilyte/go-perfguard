@@ -167,7 +167,7 @@ func stringsJoinConcat(m dsl.Matcher) {
 		Suggest(`$x + $glue + $y`)
 
 	m.Match(`strings.Join([]string{$x, $y, $z}, $glue)`).
-		Where(m["glue"].Pure && !m["x"].Const && !m["y"].Const && !m["z"].Const).
+		Where(m["glue"].Const && !m["x"].Const && !m["y"].Const && !m["z"].Const).
 		Suggest(`$x + $glue + $y + $glue + $z`)
 }
 
