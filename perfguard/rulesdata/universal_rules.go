@@ -1173,10 +1173,76 @@ var Universal = &ir.File{
 						},
 					},
 				},
+				ir.Rule{
+					Line: 255,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 255, Value: "strings.TrimPrefix(string($b1), string($b2))"},
+					},
+					ReportTemplate:  "$$ => string(bytes.TrimPrefix($b1, $b2))",
+					SuggestTemplate: "string(bytes.TrimPrefix($b1, $b2))",
+					WhereExpr: ir.FilterExpr{
+						Line: 256,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"b1\"].Type.Is(`[]byte`) && m[\"b2\"].Type.Is(`[]byte`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  256,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"b1\"].Type.Is(`[]byte`)",
+								Value: "b1",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 256, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  256,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"b2\"].Type.Is(`[]byte`)",
+								Value: "b2",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 256, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 259,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 259, Value: "bytes.TrimPrefix([]byte($s1), []byte($s2))"},
+					},
+					ReportTemplate:  "$$ => []byte(strings.TrimPrefix($s1, $s2))",
+					SuggestTemplate: "[]byte(strings.TrimPrefix($s1, $s2))",
+					WhereExpr: ir.FilterExpr{
+						Line: 260,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"s1\"].Type.Is(`string`) && m[\"s2\"].Type.Is(`string`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  260,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"s1\"].Type.Is(`string`)",
+								Value: "s1",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 260, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  260,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"s2\"].Type.Is(`string`)",
+								Value: "s2",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 260, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 		ir.RuleGroup{
-			Line:        260,
+			Line:        268,
 			Name:        "stringCopyElim",
 			MatcherName: "m",
 			DocTags: []string{
@@ -1187,117 +1253,117 @@ var Universal = &ir.File{
 			DocAfter:   "copy(b, s)",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 261,
+					Line: 269,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 261, Value: "copy($b, []byte($s))"},
+						ir.PatternString{Line: 269, Value: "copy($b, []byte($s))"},
 					},
 					ReportTemplate:  "$$ => copy($b, $s)",
 					SuggestTemplate: "copy($b, $s)",
 					WhereExpr: ir.FilterExpr{
-						Line:  262,
+						Line:  270,
 						Op:    ir.FilterVarTypeIsOp,
 						Src:   "m[\"s\"].Type.Is(`string`)",
 						Value: "s",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 262, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+							ir.FilterExpr{Line: 270, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 265,
+					Line: 273,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 265, Value: "append($b, []byte($s)...)"},
+						ir.PatternString{Line: 273, Value: "append($b, []byte($s)...)"},
 					},
 					ReportTemplate:  "$$ => append($b, $s...)",
 					SuggestTemplate: "append($b, $s...)",
 					WhereExpr: ir.FilterExpr{
-						Line:  266,
+						Line:  274,
 						Op:    ir.FilterVarTypeIsOp,
 						Src:   "m[\"s\"].Type.Is(`string`)",
 						Value: "s",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 266, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+							ir.FilterExpr{Line: 274, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 269,
+					Line: 277,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 269, Value: "len(string($b))"},
+						ir.PatternString{Line: 277, Value: "len(string($b))"},
 					},
 					ReportTemplate:  "$$ => len($b)",
 					SuggestTemplate: "len($b)",
 					WhereExpr: ir.FilterExpr{
-						Line:  269,
+						Line:  277,
 						Op:    ir.FilterVarTypeIsOp,
 						Src:   "m[\"b\"].Type.Is(`[]byte`)",
 						Value: "b",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 269, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+							ir.FilterExpr{Line: 277, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 271,
+					Line: 279,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 271, Value: "[]byte(strings.$f(string($b)))"},
+						ir.PatternString{Line: 279, Value: "[]byte(strings.$f(string($b)))"},
 					},
 					ReportTemplate:  "$$ => bytes.$f($b)",
 					SuggestTemplate: "bytes.$f($b)",
 					WhereExpr: ir.FilterExpr{
-						Line: 272,
+						Line: 280,
 						Op:   ir.FilterAndOp,
 						Src:  "m[\"b\"].Type.Is(`[]byte`) &&\n\tm[\"f\"].Text.Matches(`ToUpper|ToLower|TrimSpace`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  272,
+								Line:  280,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"b\"].Type.Is(`[]byte`)",
 								Value: "b",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 272, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 280, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 							ir.FilterExpr{
-								Line:  273,
+								Line:  281,
 								Op:    ir.FilterVarTextMatchesOp,
 								Src:   "m[\"f\"].Text.Matches(`ToUpper|ToLower|TrimSpace`)",
 								Value: "f",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 273, Op: ir.FilterStringOp, Src: "`ToUpper|ToLower|TrimSpace`", Value: "ToUpper|ToLower|TrimSpace"},
+									ir.FilterExpr{Line: 281, Op: ir.FilterStringOp, Src: "`ToUpper|ToLower|TrimSpace`", Value: "ToUpper|ToLower|TrimSpace"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 276,
+					Line: 284,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 276, Value: "[]byte(strings.$f(string($b), $s2))"},
+						ir.PatternString{Line: 284, Value: "[]byte(strings.$f(string($b), $s2))"},
 					},
 					ReportTemplate:  "$$ => bytes.$f($b, []byte($s2))",
 					SuggestTemplate: "bytes.$f($b, []byte($s2))",
 					WhereExpr: ir.FilterExpr{
-						Line: 277,
+						Line: 285,
 						Op:   ir.FilterAndOp,
 						Src:  "m[\"b\"].Type.Is(`[]byte`) &&\n\tm[\"f\"].Text.Matches(`TrimPrefix|TrimSuffix`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  277,
+								Line:  285,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"b\"].Type.Is(`[]byte`)",
 								Value: "b",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 277, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 285, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 							ir.FilterExpr{
-								Line:  278,
+								Line:  286,
 								Op:    ir.FilterVarTextMatchesOp,
 								Src:   "m[\"f\"].Text.Matches(`TrimPrefix|TrimSuffix`)",
 								Value: "f",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 278, Op: ir.FilterStringOp, Src: "`TrimPrefix|TrimSuffix`", Value: "TrimPrefix|TrimSuffix"},
+									ir.FilterExpr{Line: 286, Op: ir.FilterStringOp, Src: "`TrimPrefix|TrimSuffix`", Value: "TrimPrefix|TrimSuffix"},
 								},
 							},
 						},
@@ -1306,7 +1372,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        286,
+			Line:        294,
 			Name:        "regexpStringCopyElim",
 			MatcherName: "m",
 			DocTags: []string{
@@ -1317,78 +1383,12 @@ var Universal = &ir.File{
 			DocAfter:   "regexp.ReplaceAllString(s, \"foo\")",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 289,
+					Line: 297,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 289, Value: "$re.Match([]byte($s))"},
+						ir.PatternString{Line: 297, Value: "$re.Match([]byte($s))"},
 					},
 					ReportTemplate:  "$$ => $re.MatchString($s)",
 					SuggestTemplate: "$re.MatchString($s)",
-					WhereExpr: ir.FilterExpr{
-						Line: 290,
-						Op:   ir.FilterAndOp,
-						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`)",
-						Args: []ir.FilterExpr{
-							ir.FilterExpr{
-								Line:  290,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
-								Value: "re",
-								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 290, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
-								},
-							},
-							ir.FilterExpr{
-								Line:  290,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"s\"].Type.Is(`string`)",
-								Value: "s",
-								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 290, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
-								},
-							},
-						},
-					},
-				},
-				ir.Rule{
-					Line: 293,
-					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 293, Value: "$re.FindIndex([]byte($s))"},
-					},
-					ReportTemplate:  "$$ => $re.FindStringIndex($s)",
-					SuggestTemplate: "$re.FindStringIndex($s)",
-					WhereExpr: ir.FilterExpr{
-						Line: 294,
-						Op:   ir.FilterAndOp,
-						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`)",
-						Args: []ir.FilterExpr{
-							ir.FilterExpr{
-								Line:  294,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
-								Value: "re",
-								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 294, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
-								},
-							},
-							ir.FilterExpr{
-								Line:  294,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"s\"].Type.Is(`string`)",
-								Value: "s",
-								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 294, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
-								},
-							},
-						},
-					},
-				},
-				ir.Rule{
-					Line: 297,
-					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 297, Value: "$re.FindAllIndex([]byte($s), $n)"},
-					},
-					ReportTemplate:  "$$ => $re.FindAllStringIndex($s, $n)",
-					SuggestTemplate: "$re.FindAllStringIndex($s, $n)",
 					WhereExpr: ir.FilterExpr{
 						Line: 298,
 						Op:   ir.FilterAndOp,
@@ -1418,45 +1418,29 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 301,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 301, Value: "string($re.ReplaceAll([]byte($s), []byte($s2)))"},
+						ir.PatternString{Line: 301, Value: "$re.FindIndex([]byte($s))"},
 					},
-					ReportTemplate:  "$$ => $re.ReplaceAllString($s, $s2)",
-					SuggestTemplate: "$re.ReplaceAllString($s, $s2)",
+					ReportTemplate:  "$$ => $re.FindStringIndex($s)",
+					SuggestTemplate: "$re.FindStringIndex($s)",
 					WhereExpr: ir.FilterExpr{
 						Line: 302,
 						Op:   ir.FilterAndOp,
-						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`) && m[\"s2\"].Type.Is(`string`)",
+						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 302,
-								Op:   ir.FilterAndOp,
-								Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`)",
+								Line:  302,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
+								Value: "re",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{
-										Line:  302,
-										Op:    ir.FilterVarTypeIsOp,
-										Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
-										Value: "re",
-										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 302, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
-										},
-									},
-									ir.FilterExpr{
-										Line:  302,
-										Op:    ir.FilterVarTypeIsOp,
-										Src:   "m[\"s\"].Type.Is(`string`)",
-										Value: "s",
-										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 302, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
-										},
-									},
+									ir.FilterExpr{Line: 302, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
 								},
 							},
 							ir.FilterExpr{
 								Line:  302,
 								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"s2\"].Type.Is(`string`)",
-								Value: "s2",
+								Src:   "m[\"s\"].Type.Is(`string`)",
+								Value: "s",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{Line: 302, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
@@ -1467,113 +1451,129 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 305,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 305, Value: "string($re.ReplaceAll([]byte($s), $b))"},
+						ir.PatternString{Line: 305, Value: "$re.FindAllIndex([]byte($s), $n)"},
 					},
-					ReportTemplate:  "$$ => $re.ReplaceAllString($s, string($b))",
-					SuggestTemplate: "$re.ReplaceAllString($s, string($b))",
+					ReportTemplate:  "$$ => $re.FindAllStringIndex($s, $n)",
+					SuggestTemplate: "$re.FindAllStringIndex($s, $n)",
 					WhereExpr: ir.FilterExpr{
 						Line: 306,
 						Op:   ir.FilterAndOp,
-						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`) && m[\"b\"].Type.Is(`[]byte`)",
+						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 306,
-								Op:   ir.FilterAndOp,
-								Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`)",
+								Line:  306,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
+								Value: "re",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{
-										Line:  306,
-										Op:    ir.FilterVarTypeIsOp,
-										Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
-										Value: "re",
-										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 306, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
-										},
-									},
-									ir.FilterExpr{
-										Line:  306,
-										Op:    ir.FilterVarTypeIsOp,
-										Src:   "m[\"s\"].Type.Is(`string`)",
-										Value: "s",
-										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 306, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
-										},
-									},
+									ir.FilterExpr{Line: 306, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
 								},
 							},
 							ir.FilterExpr{
 								Line:  306,
 								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"b\"].Type.Is(`[]byte`)",
-								Value: "b",
+								Src:   "m[\"s\"].Type.Is(`string`)",
+								Value: "s",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 306, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 306, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 311,
+					Line: 309,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 311, Value: "$re.MatchString(string($b))"},
+						ir.PatternString{Line: 309, Value: "string($re.ReplaceAll([]byte($s), []byte($s2)))"},
 					},
-					ReportTemplate:  "$$ => $re.Match($b)",
-					SuggestTemplate: "$re.Match($b)",
+					ReportTemplate:  "$$ => $re.ReplaceAllString($s, $s2)",
+					SuggestTemplate: "$re.ReplaceAllString($s, $s2)",
 					WhereExpr: ir.FilterExpr{
-						Line: 312,
+						Line: 310,
 						Op:   ir.FilterAndOp,
-						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`)",
+						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`) && m[\"s2\"].Type.Is(`string`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  312,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
-								Value: "re",
+								Line: 310,
+								Op:   ir.FilterAndOp,
+								Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`)",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 312, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
+									ir.FilterExpr{
+										Line:  310,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
+										Value: "re",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 310, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
+										},
+									},
+									ir.FilterExpr{
+										Line:  310,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"s\"].Type.Is(`string`)",
+										Value: "s",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 310, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+										},
+									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  312,
+								Line:  310,
 								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"b\"].Type.Is(`[]byte`)",
-								Value: "b",
+								Src:   "m[\"s2\"].Type.Is(`string`)",
+								Value: "s2",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 312, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 310, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 315,
+					Line: 313,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 315, Value: "$re.FindStringIndex(string($b))"},
+						ir.PatternString{Line: 313, Value: "string($re.ReplaceAll([]byte($s), $b))"},
 					},
-					ReportTemplate:  "$$ => $re.FindIndex($b)",
-					SuggestTemplate: "$re.FindIndex($b)",
+					ReportTemplate:  "$$ => $re.ReplaceAllString($s, string($b))",
+					SuggestTemplate: "$re.ReplaceAllString($s, string($b))",
 					WhereExpr: ir.FilterExpr{
-						Line: 316,
+						Line: 314,
 						Op:   ir.FilterAndOp,
-						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`)",
+						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`) && m[\"b\"].Type.Is(`[]byte`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  316,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
-								Value: "re",
+								Line: 314,
+								Op:   ir.FilterAndOp,
+								Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"s\"].Type.Is(`string`)",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 316, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
+									ir.FilterExpr{
+										Line:  314,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
+										Value: "re",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 314, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
+										},
+									},
+									ir.FilterExpr{
+										Line:  314,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"s\"].Type.Is(`string`)",
+										Value: "s",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 314, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+										},
+									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  316,
+								Line:  314,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"b\"].Type.Is(`[]byte`)",
 								Value: "b",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 316, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 314, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 						},
@@ -1582,10 +1582,10 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 319,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 319, Value: "$re.FindAllStringIndex(string($b), $n)"},
+						ir.PatternString{Line: 319, Value: "$re.MatchString(string($b))"},
 					},
-					ReportTemplate:  "$$ => $re.FindAllIndex($b, $n)",
-					SuggestTemplate: "$re.FindAllIndex($b, $n)",
+					ReportTemplate:  "$$ => $re.Match($b)",
+					SuggestTemplate: "$re.Match($b)",
 					WhereExpr: ir.FilterExpr{
 						Line: 320,
 						Op:   ir.FilterAndOp,
@@ -1615,45 +1615,29 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 323,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 323, Value: "[]byte($re.ReplaceAllString(string($b), string($b2)))"},
+						ir.PatternString{Line: 323, Value: "$re.FindStringIndex(string($b))"},
 					},
-					ReportTemplate:  "$$ => $re.ReplaceAll($b, $b2)",
-					SuggestTemplate: "$re.ReplaceAll($b, $b2)",
+					ReportTemplate:  "$$ => $re.FindIndex($b)",
+					SuggestTemplate: "$re.FindIndex($b)",
 					WhereExpr: ir.FilterExpr{
 						Line: 324,
 						Op:   ir.FilterAndOp,
-						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`) && m[\"b2\"].Type.Is(`[]byte`)",
+						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 324,
-								Op:   ir.FilterAndOp,
-								Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`)",
+								Line:  324,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
+								Value: "re",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{
-										Line:  324,
-										Op:    ir.FilterVarTypeIsOp,
-										Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
-										Value: "re",
-										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 324, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
-										},
-									},
-									ir.FilterExpr{
-										Line:  324,
-										Op:    ir.FilterVarTypeIsOp,
-										Src:   "m[\"b\"].Type.Is(`[]byte`)",
-										Value: "b",
-										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 324, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
-										},
-									},
+									ir.FilterExpr{Line: 324, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
 								},
 							},
 							ir.FilterExpr{
 								Line:  324,
 								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"b2\"].Type.Is(`[]byte`)",
-								Value: "b2",
+								Src:   "m[\"b\"].Type.Is(`[]byte`)",
+								Value: "b",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{Line: 324, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
@@ -1664,47 +1648,129 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 327,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 327, Value: "[]byte($re.ReplaceAllString(string($b), $s))"},
+						ir.PatternString{Line: 327, Value: "$re.FindAllStringIndex(string($b), $n)"},
 					},
-					ReportTemplate:  "$$ => $re.ReplaceAll($b, []byte($s))",
-					SuggestTemplate: "$re.ReplaceAll($b, []byte($s))",
+					ReportTemplate:  "$$ => $re.FindAllIndex($b, $n)",
+					SuggestTemplate: "$re.FindAllIndex($b, $n)",
 					WhereExpr: ir.FilterExpr{
 						Line: 328,
 						Op:   ir.FilterAndOp,
-						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`) && m[\"s\"].Type.Is(`string`)",
+						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 328,
-								Op:   ir.FilterAndOp,
-								Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`)",
+								Line:  328,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
+								Value: "re",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{
-										Line:  328,
-										Op:    ir.FilterVarTypeIsOp,
-										Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
-										Value: "re",
-										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 328, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
-										},
-									},
-									ir.FilterExpr{
-										Line:  328,
-										Op:    ir.FilterVarTypeIsOp,
-										Src:   "m[\"b\"].Type.Is(`[]byte`)",
-										Value: "b",
-										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 328, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
-										},
-									},
+									ir.FilterExpr{Line: 328, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
 								},
 							},
 							ir.FilterExpr{
 								Line:  328,
 								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"b\"].Type.Is(`[]byte`)",
+								Value: "b",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 328, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 331,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 331, Value: "[]byte($re.ReplaceAllString(string($b), string($b2)))"},
+					},
+					ReportTemplate:  "$$ => $re.ReplaceAll($b, $b2)",
+					SuggestTemplate: "$re.ReplaceAll($b, $b2)",
+					WhereExpr: ir.FilterExpr{
+						Line: 332,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`) && m[\"b2\"].Type.Is(`[]byte`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line: 332,
+								Op:   ir.FilterAndOp,
+								Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`)",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{
+										Line:  332,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
+										Value: "re",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 332, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
+										},
+									},
+									ir.FilterExpr{
+										Line:  332,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"b\"].Type.Is(`[]byte`)",
+										Value: "b",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 332, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+										},
+									},
+								},
+							},
+							ir.FilterExpr{
+								Line:  332,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"b2\"].Type.Is(`[]byte`)",
+								Value: "b2",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 332, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 335,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 335, Value: "[]byte($re.ReplaceAllString(string($b), $s))"},
+					},
+					ReportTemplate:  "$$ => $re.ReplaceAll($b, []byte($s))",
+					SuggestTemplate: "$re.ReplaceAll($b, []byte($s))",
+					WhereExpr: ir.FilterExpr{
+						Line: 336,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`) && m[\"s\"].Type.Is(`string`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line: 336,
+								Op:   ir.FilterAndOp,
+								Src:  "m[\"re\"].Type.Is(`*regexp.Regexp`) && m[\"b\"].Type.Is(`[]byte`)",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{
+										Line:  336,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"re\"].Type.Is(`*regexp.Regexp`)",
+										Value: "re",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 336, Op: ir.FilterStringOp, Src: "`*regexp.Regexp`", Value: "*regexp.Regexp"},
+										},
+									},
+									ir.FilterExpr{
+										Line:  336,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"b\"].Type.Is(`[]byte`)",
+										Value: "b",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 336, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+										},
+									},
+								},
+							},
+							ir.FilterExpr{
+								Line:  336,
+								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"s\"].Type.Is(`string`)",
 								Value: "s",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 328, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 336, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
@@ -1713,7 +1779,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        337,
+			Line:        345,
 			Name:        "indexAlloc",
 			MatcherName: "m",
 			DocTags: []string{
@@ -1725,141 +1791,141 @@ var Universal = &ir.File{
 			DocNote:    "See Go issue for details: https://github.com/golang/go/issues/25864",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 341,
+					Line: 349,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 341, Value: "strings.$f(string($b1), string($b2))"},
+						ir.PatternString{Line: 349, Value: "strings.$f(string($b1), string($b2))"},
 					},
 					ReportTemplate:  "$$ => bytes.$f($b1, $b2)",
 					SuggestTemplate: "bytes.$f($b1, $b2)",
 					WhereExpr: ir.FilterExpr{
-						Line: 342,
+						Line: 350,
 						Op:   ir.FilterAndOp,
-						Src:  "m[\"f\"].Text.Matches(`Contains|HasPrefix|HasSuffix|EqualFold`) &&\n\tm[\"b1\"].Type.Is(`[]byte`) && m[\"b2\"].Type.Is(`[]byte`)",
+						Src:  "m[\"f\"].Text.Matches(`Compare|Contains|HasPrefix|HasSuffix|EqualFold`) &&\n\tm[\"b1\"].Type.Is(`[]byte`) && m[\"b2\"].Type.Is(`[]byte`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 342,
+								Line: 350,
 								Op:   ir.FilterAndOp,
-								Src:  "m[\"f\"].Text.Matches(`Contains|HasPrefix|HasSuffix|EqualFold`) &&\n\tm[\"b1\"].Type.Is(`[]byte`)",
+								Src:  "m[\"f\"].Text.Matches(`Compare|Contains|HasPrefix|HasSuffix|EqualFold`) &&\n\tm[\"b1\"].Type.Is(`[]byte`)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  342,
+										Line:  350,
 										Op:    ir.FilterVarTextMatchesOp,
-										Src:   "m[\"f\"].Text.Matches(`Contains|HasPrefix|HasSuffix|EqualFold`)",
+										Src:   "m[\"f\"].Text.Matches(`Compare|Contains|HasPrefix|HasSuffix|EqualFold`)",
 										Value: "f",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 342, Op: ir.FilterStringOp, Src: "`Contains|HasPrefix|HasSuffix|EqualFold`", Value: "Contains|HasPrefix|HasSuffix|EqualFold"},
+											ir.FilterExpr{Line: 350, Op: ir.FilterStringOp, Src: "`Compare|Contains|HasPrefix|HasSuffix|EqualFold`", Value: "Compare|Contains|HasPrefix|HasSuffix|EqualFold"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  343,
+										Line:  351,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"b1\"].Type.Is(`[]byte`)",
 										Value: "b1",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 343, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+											ir.FilterExpr{Line: 351, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  343,
+								Line:  351,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"b2\"].Type.Is(`[]byte`)",
 								Value: "b2",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 343, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 351, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 346,
+					Line: 354,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 346, Value: "bytes.$f([]byte($s1), []byte($s2))"},
+						ir.PatternString{Line: 354, Value: "bytes.$f([]byte($s1), []byte($s2))"},
 					},
 					ReportTemplate:  "$$ => strings.$f($s1, $s2)",
 					SuggestTemplate: "strings.$f($s1, $s2)",
 					WhereExpr: ir.FilterExpr{
-						Line: 347,
+						Line: 355,
 						Op:   ir.FilterAndOp,
-						Src:  "m[\"f\"].Text.Matches(`Contains|HasPrefix|HasSuffix|EqualFold`) &&\n\tm[\"s1\"].Type.Is(`string`) && m[\"s2\"].Type.Is(`string`)",
+						Src:  "m[\"f\"].Text.Matches(`Compare|Contains|HasPrefix|HasSuffix|EqualFold`) &&\n\tm[\"s1\"].Type.Is(`string`) && m[\"s2\"].Type.Is(`string`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 347,
+								Line: 355,
 								Op:   ir.FilterAndOp,
-								Src:  "m[\"f\"].Text.Matches(`Contains|HasPrefix|HasSuffix|EqualFold`) &&\n\tm[\"s1\"].Type.Is(`string`)",
+								Src:  "m[\"f\"].Text.Matches(`Compare|Contains|HasPrefix|HasSuffix|EqualFold`) &&\n\tm[\"s1\"].Type.Is(`string`)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  347,
+										Line:  355,
 										Op:    ir.FilterVarTextMatchesOp,
-										Src:   "m[\"f\"].Text.Matches(`Contains|HasPrefix|HasSuffix|EqualFold`)",
+										Src:   "m[\"f\"].Text.Matches(`Compare|Contains|HasPrefix|HasSuffix|EqualFold`)",
 										Value: "f",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 347, Op: ir.FilterStringOp, Src: "`Contains|HasPrefix|HasSuffix|EqualFold`", Value: "Contains|HasPrefix|HasSuffix|EqualFold"},
+											ir.FilterExpr{Line: 355, Op: ir.FilterStringOp, Src: "`Compare|Contains|HasPrefix|HasSuffix|EqualFold`", Value: "Compare|Contains|HasPrefix|HasSuffix|EqualFold"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  348,
+										Line:  356,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"s1\"].Type.Is(`string`)",
 										Value: "s1",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 348, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+											ir.FilterExpr{Line: 356, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  348,
+								Line:  356,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"s2\"].Type.Is(`string`)",
 								Value: "s2",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 348, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 356, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 357,
+					Line: 365,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 357, Value: "strings.Index(string($x), $y)"},
+						ir.PatternString{Line: 365, Value: "strings.Index(string($x), $y)"},
 					},
 					ReportTemplate:  "$$ => bytes.Index($x, []byte($y))",
 					SuggestTemplate: "bytes.Index($x, []byte($y))",
 					WhereExpr: ir.FilterExpr{
-						Line: 357,
+						Line: 365,
 						Op:   ir.FilterAndOp,
 						Src:  "canOptimizeStrings(m)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 357,
+								Line: 365,
 								Op:   ir.FilterAndOp,
 								Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure &&\n\t!m[\"y\"].Node.Is(`CallExpr`)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line: 357,
+										Line: 365,
 										Op:   ir.FilterAndOp,
 										Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 357, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
-											ir.FilterExpr{Line: 357, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
+											ir.FilterExpr{Line: 365, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
+											ir.FilterExpr{Line: 365, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
 										},
 									},
 									ir.FilterExpr{
-										Line: 353,
+										Line: 361,
 										Op:   ir.FilterNotOp,
 										Src:  "!m[\"y\"].Node.Is(`CallExpr`)",
 										Args: []ir.FilterExpr{
 											ir.FilterExpr{
-												Line:  357,
+												Line:  365,
 												Op:    ir.FilterVarNodeIsOp,
 												Src:   "m[\"y\"].Node.Is(`CallExpr`)",
 												Value: "y",
 												Args: []ir.FilterExpr{
-													ir.FilterExpr{Line: 353, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
+													ir.FilterExpr{Line: 361, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
 												},
 											},
 										},
@@ -1867,55 +1933,55 @@ var Universal = &ir.File{
 								},
 							},
 							ir.FilterExpr{
-								Line:  357,
+								Line:  365,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"x\"].Type.Is(`[]byte`)",
 								Value: "x",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 354, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 362, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 358,
+					Line: 366,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 358, Value: "strings.Contains(string($x), $y)"},
+						ir.PatternString{Line: 366, Value: "strings.Contains(string($x), $y)"},
 					},
 					ReportTemplate:  "$$ => bytes.Contains($x, []byte($y))",
 					SuggestTemplate: "bytes.Contains($x, []byte($y))",
 					WhereExpr: ir.FilterExpr{
-						Line: 358,
+						Line: 366,
 						Op:   ir.FilterAndOp,
 						Src:  "canOptimizeStrings(m)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 358,
+								Line: 366,
 								Op:   ir.FilterAndOp,
 								Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure &&\n\t!m[\"y\"].Node.Is(`CallExpr`)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line: 358,
+										Line: 366,
 										Op:   ir.FilterAndOp,
 										Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 358, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
-											ir.FilterExpr{Line: 358, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
+											ir.FilterExpr{Line: 366, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
+											ir.FilterExpr{Line: 366, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
 										},
 									},
 									ir.FilterExpr{
-										Line: 353,
+										Line: 361,
 										Op:   ir.FilterNotOp,
 										Src:  "!m[\"y\"].Node.Is(`CallExpr`)",
 										Args: []ir.FilterExpr{
 											ir.FilterExpr{
-												Line:  358,
+												Line:  366,
 												Op:    ir.FilterVarNodeIsOp,
 												Src:   "m[\"y\"].Node.Is(`CallExpr`)",
 												Value: "y",
 												Args: []ir.FilterExpr{
-													ir.FilterExpr{Line: 353, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
+													ir.FilterExpr{Line: 361, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
 												},
 											},
 										},
@@ -1923,55 +1989,55 @@ var Universal = &ir.File{
 								},
 							},
 							ir.FilterExpr{
-								Line:  358,
+								Line:  366,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"x\"].Type.Is(`[]byte`)",
 								Value: "x",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 354, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 362, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 359,
+					Line: 367,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 359, Value: "strings.HasPrefix(string($x), $y)"},
+						ir.PatternString{Line: 367, Value: "strings.HasPrefix(string($x), $y)"},
 					},
 					ReportTemplate:  "$$ => bytes.HasPrefix($x, []byte($y))",
 					SuggestTemplate: "bytes.HasPrefix($x, []byte($y))",
 					WhereExpr: ir.FilterExpr{
-						Line: 359,
+						Line: 367,
 						Op:   ir.FilterAndOp,
 						Src:  "canOptimizeStrings(m)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 359,
+								Line: 367,
 								Op:   ir.FilterAndOp,
 								Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure &&\n\t!m[\"y\"].Node.Is(`CallExpr`)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line: 359,
+										Line: 367,
 										Op:   ir.FilterAndOp,
 										Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 359, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
-											ir.FilterExpr{Line: 359, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
+											ir.FilterExpr{Line: 367, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
+											ir.FilterExpr{Line: 367, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
 										},
 									},
 									ir.FilterExpr{
-										Line: 353,
+										Line: 361,
 										Op:   ir.FilterNotOp,
 										Src:  "!m[\"y\"].Node.Is(`CallExpr`)",
 										Args: []ir.FilterExpr{
 											ir.FilterExpr{
-												Line:  359,
+												Line:  367,
 												Op:    ir.FilterVarNodeIsOp,
 												Src:   "m[\"y\"].Node.Is(`CallExpr`)",
 												Value: "y",
 												Args: []ir.FilterExpr{
-													ir.FilterExpr{Line: 353, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
+													ir.FilterExpr{Line: 361, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
 												},
 											},
 										},
@@ -1979,68 +2045,12 @@ var Universal = &ir.File{
 								},
 							},
 							ir.FilterExpr{
-								Line:  359,
+								Line:  367,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"x\"].Type.Is(`[]byte`)",
 								Value: "x",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 354, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
-								},
-							},
-						},
-					},
-				},
-				ir.Rule{
-					Line: 360,
-					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 360, Value: "strings.HasSuffix(string($x), $y)"},
-					},
-					ReportTemplate:  "$$ => bytes.HasSuffix($x, []byte($y))",
-					SuggestTemplate: "bytes.HasSuffix($x, []byte($y))",
-					WhereExpr: ir.FilterExpr{
-						Line: 360,
-						Op:   ir.FilterAndOp,
-						Src:  "canOptimizeStrings(m)",
-						Args: []ir.FilterExpr{
-							ir.FilterExpr{
-								Line: 360,
-								Op:   ir.FilterAndOp,
-								Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure &&\n\t!m[\"y\"].Node.Is(`CallExpr`)",
-								Args: []ir.FilterExpr{
-									ir.FilterExpr{
-										Line: 360,
-										Op:   ir.FilterAndOp,
-										Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure",
-										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 360, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
-											ir.FilterExpr{Line: 360, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
-										},
-									},
-									ir.FilterExpr{
-										Line: 353,
-										Op:   ir.FilterNotOp,
-										Src:  "!m[\"y\"].Node.Is(`CallExpr`)",
-										Args: []ir.FilterExpr{
-											ir.FilterExpr{
-												Line:  360,
-												Op:    ir.FilterVarNodeIsOp,
-												Src:   "m[\"y\"].Node.Is(`CallExpr`)",
-												Value: "y",
-												Args: []ir.FilterExpr{
-													ir.FilterExpr{Line: 353, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
-												},
-											},
-										},
-									},
-								},
-							},
-							ir.FilterExpr{
-								Line:  360,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"x\"].Type.Is(`[]byte`)",
-								Value: "x",
-								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 354, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 362, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 						},
@@ -2049,14 +2059,14 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 368,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 368, Value: "bytes.Index([]byte($x), $y)"},
+						ir.PatternString{Line: 368, Value: "strings.HasSuffix(string($x), $y)"},
 					},
-					ReportTemplate:  "$$ => strings.Index($x, string($y))",
-					SuggestTemplate: "strings.Index($x, string($y))",
+					ReportTemplate:  "$$ => bytes.HasSuffix($x, []byte($y))",
+					SuggestTemplate: "bytes.HasSuffix($x, []byte($y))",
 					WhereExpr: ir.FilterExpr{
 						Line: 368,
 						Op:   ir.FilterAndOp,
-						Src:  "canOptimizeBytes(m)",
+						Src:  "canOptimizeStrings(m)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
 								Line: 368,
@@ -2073,7 +2083,7 @@ var Universal = &ir.File{
 										},
 									},
 									ir.FilterExpr{
-										Line: 364,
+										Line: 361,
 										Op:   ir.FilterNotOp,
 										Src:  "!m[\"y\"].Node.Is(`CallExpr`)",
 										Args: []ir.FilterExpr{
@@ -2083,7 +2093,7 @@ var Universal = &ir.File{
 												Src:   "m[\"y\"].Node.Is(`CallExpr`)",
 												Value: "y",
 												Args: []ir.FilterExpr{
-													ir.FilterExpr{Line: 364, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
+													ir.FilterExpr{Line: 361, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
 												},
 											},
 										},
@@ -2093,53 +2103,109 @@ var Universal = &ir.File{
 							ir.FilterExpr{
 								Line:  368,
 								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"x\"].Type.Is(`string`)",
+								Src:   "m[\"x\"].Type.Is(`[]byte`)",
 								Value: "x",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 365, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 362, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 369,
+					Line: 376,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 369, Value: "bytes.Contains([]byte($x), $y)"},
+						ir.PatternString{Line: 376, Value: "bytes.Index([]byte($x), $y)"},
+					},
+					ReportTemplate:  "$$ => strings.Index($x, string($y))",
+					SuggestTemplate: "strings.Index($x, string($y))",
+					WhereExpr: ir.FilterExpr{
+						Line: 376,
+						Op:   ir.FilterAndOp,
+						Src:  "canOptimizeBytes(m)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line: 376,
+								Op:   ir.FilterAndOp,
+								Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure &&\n\t!m[\"y\"].Node.Is(`CallExpr`)",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{
+										Line: 376,
+										Op:   ir.FilterAndOp,
+										Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 376, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
+											ir.FilterExpr{Line: 376, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
+										},
+									},
+									ir.FilterExpr{
+										Line: 372,
+										Op:   ir.FilterNotOp,
+										Src:  "!m[\"y\"].Node.Is(`CallExpr`)",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{
+												Line:  376,
+												Op:    ir.FilterVarNodeIsOp,
+												Src:   "m[\"y\"].Node.Is(`CallExpr`)",
+												Value: "y",
+												Args: []ir.FilterExpr{
+													ir.FilterExpr{Line: 372, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
+												},
+											},
+										},
+									},
+								},
+							},
+							ir.FilterExpr{
+								Line:  376,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"x\"].Type.Is(`string`)",
+								Value: "x",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 373, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 377,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 377, Value: "bytes.Contains([]byte($x), $y)"},
 					},
 					ReportTemplate:  "$$ => strings.Contains($x, string($y))",
 					SuggestTemplate: "strings.Contains($x, string($y))",
 					WhereExpr: ir.FilterExpr{
-						Line: 369,
+						Line: 377,
 						Op:   ir.FilterAndOp,
 						Src:  "canOptimizeBytes(m)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 369,
+								Line: 377,
 								Op:   ir.FilterAndOp,
 								Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure &&\n\t!m[\"y\"].Node.Is(`CallExpr`)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line: 369,
+										Line: 377,
 										Op:   ir.FilterAndOp,
 										Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 369, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
-											ir.FilterExpr{Line: 369, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
+											ir.FilterExpr{Line: 377, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
+											ir.FilterExpr{Line: 377, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
 										},
 									},
 									ir.FilterExpr{
-										Line: 364,
+										Line: 372,
 										Op:   ir.FilterNotOp,
 										Src:  "!m[\"y\"].Node.Is(`CallExpr`)",
 										Args: []ir.FilterExpr{
 											ir.FilterExpr{
-												Line:  369,
+												Line:  377,
 												Op:    ir.FilterVarNodeIsOp,
 												Src:   "m[\"y\"].Node.Is(`CallExpr`)",
 												Value: "y",
 												Args: []ir.FilterExpr{
-													ir.FilterExpr{Line: 364, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
+													ir.FilterExpr{Line: 372, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
 												},
 											},
 										},
@@ -2147,55 +2213,55 @@ var Universal = &ir.File{
 								},
 							},
 							ir.FilterExpr{
-								Line:  369,
+								Line:  377,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"x\"].Type.Is(`string`)",
 								Value: "x",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 365, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 373, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 370,
+					Line: 378,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 370, Value: "bytes.HasPrefix([]byte($x), $y)"},
+						ir.PatternString{Line: 378, Value: "bytes.HasPrefix([]byte($x), $y)"},
 					},
 					ReportTemplate:  "$$ => strings.HasPrefix($x, string($y))",
 					SuggestTemplate: "strings.HasPrefix($x, string($y))",
 					WhereExpr: ir.FilterExpr{
-						Line: 370,
+						Line: 378,
 						Op:   ir.FilterAndOp,
 						Src:  "canOptimizeBytes(m)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 370,
+								Line: 378,
 								Op:   ir.FilterAndOp,
 								Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure &&\n\t!m[\"y\"].Node.Is(`CallExpr`)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line: 370,
+										Line: 378,
 										Op:   ir.FilterAndOp,
 										Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 370, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
-											ir.FilterExpr{Line: 370, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
+											ir.FilterExpr{Line: 378, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
+											ir.FilterExpr{Line: 378, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
 										},
 									},
 									ir.FilterExpr{
-										Line: 364,
+										Line: 372,
 										Op:   ir.FilterNotOp,
 										Src:  "!m[\"y\"].Node.Is(`CallExpr`)",
 										Args: []ir.FilterExpr{
 											ir.FilterExpr{
-												Line:  370,
+												Line:  378,
 												Op:    ir.FilterVarNodeIsOp,
 												Src:   "m[\"y\"].Node.Is(`CallExpr`)",
 												Value: "y",
 												Args: []ir.FilterExpr{
-													ir.FilterExpr{Line: 364, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
+													ir.FilterExpr{Line: 372, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
 												},
 											},
 										},
@@ -2203,55 +2269,55 @@ var Universal = &ir.File{
 								},
 							},
 							ir.FilterExpr{
-								Line:  370,
+								Line:  378,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"x\"].Type.Is(`string`)",
 								Value: "x",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 365, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 373, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 371,
+					Line: 379,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 371, Value: "bytes.HasSuffix([]byte($x), $y)"},
+						ir.PatternString{Line: 379, Value: "bytes.HasSuffix([]byte($x), $y)"},
 					},
 					ReportTemplate:  "$$ => strings.HasSuffix($x, string($y))",
 					SuggestTemplate: "strings.HasSuffix($x, string($y))",
 					WhereExpr: ir.FilterExpr{
-						Line: 371,
+						Line: 379,
 						Op:   ir.FilterAndOp,
 						Src:  "canOptimizeBytes(m)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 371,
+								Line: 379,
 								Op:   ir.FilterAndOp,
 								Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure &&\n\t!m[\"y\"].Node.Is(`CallExpr`)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line: 371,
+										Line: 379,
 										Op:   ir.FilterAndOp,
 										Src:  "m[\"x\"].Pure &&\n\n\tm[\"y\"].Pure",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 371, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
-											ir.FilterExpr{Line: 371, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
+											ir.FilterExpr{Line: 379, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
+											ir.FilterExpr{Line: 379, Op: ir.FilterVarPureOp, Src: "m[\"y\"].Pure", Value: "y"},
 										},
 									},
 									ir.FilterExpr{
-										Line: 364,
+										Line: 372,
 										Op:   ir.FilterNotOp,
 										Src:  "!m[\"y\"].Node.Is(`CallExpr`)",
 										Args: []ir.FilterExpr{
 											ir.FilterExpr{
-												Line:  371,
+												Line:  379,
 												Op:    ir.FilterVarNodeIsOp,
 												Src:   "m[\"y\"].Node.Is(`CallExpr`)",
 												Value: "y",
 												Args: []ir.FilterExpr{
-													ir.FilterExpr{Line: 364, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
+													ir.FilterExpr{Line: 372, Op: ir.FilterStringOp, Src: "`CallExpr`", Value: "CallExpr"},
 												},
 											},
 										},
@@ -2259,12 +2325,12 @@ var Universal = &ir.File{
 								},
 							},
 							ir.FilterExpr{
-								Line:  371,
+								Line:  379,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"x\"].Type.Is(`string`)",
 								Value: "x",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 365, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 373, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
@@ -2273,7 +2339,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        378,
+			Line:        386,
 			Name:        "writeByte",
 			MatcherName: "m",
 			DocTags: []string{
@@ -2284,50 +2350,50 @@ var Universal = &ir.File{
 			DocAfter:   "w.WriteByte('\\n')",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 382,
+					Line: 390,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 382, Value: "$w.WriteRune($c)"},
+						ir.PatternString{Line: 390, Value: "$w.WriteRune($c)"},
 					},
 					ReportTemplate:  "$$ => $w.WriteByte($c)",
 					SuggestTemplate: "$w.WriteByte($c)",
 					WhereExpr: ir.FilterExpr{
-						Line: 383,
+						Line: 391,
 						Op:   ir.FilterAndOp,
 						Src:  "m[\"w\"].Type.Implements(\"io.ByteWriter\") && (m[\"c\"].Const && m[\"c\"].Value.Int() < runeSelf)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  383,
+								Line:  391,
 								Op:    ir.FilterVarTypeImplementsOp,
 								Src:   "m[\"w\"].Type.Implements(\"io.ByteWriter\")",
 								Value: "w",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 383, Op: ir.FilterStringOp, Src: "\"io.ByteWriter\"", Value: "io.ByteWriter"},
+									ir.FilterExpr{Line: 391, Op: ir.FilterStringOp, Src: "\"io.ByteWriter\"", Value: "io.ByteWriter"},
 								},
 							},
 							ir.FilterExpr{
-								Line: 383,
+								Line: 391,
 								Op:   ir.FilterAndOp,
 								Src:  "(m[\"c\"].Const && m[\"c\"].Value.Int() < runeSelf)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  383,
+										Line:  391,
 										Op:    ir.FilterVarConstOp,
 										Src:   "m[\"c\"].Const",
 										Value: "c",
 									},
 									ir.FilterExpr{
-										Line: 383,
+										Line: 391,
 										Op:   ir.FilterLtOp,
 										Src:  "m[\"c\"].Value.Int() < runeSelf",
 										Args: []ir.FilterExpr{
 											ir.FilterExpr{
-												Line:  383,
+												Line:  391,
 												Op:    ir.FilterVarValueIntOp,
 												Src:   "m[\"c\"].Value.Int()",
 												Value: "c",
 											},
 											ir.FilterExpr{
-												Line:  383,
+												Line:  391,
 												Op:    ir.FilterIntOp,
 												Src:   "runeSelf",
 												Value: int64(128),
@@ -2342,7 +2408,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        391,
+			Line:        399,
 			Name:        "sliceClear",
 			MatcherName: "m",
 			DocTags: []string{
@@ -2353,25 +2419,25 @@ var Universal = &ir.File{
 			DocAfter:   "for i := range buf { buf[i] = 0 }",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 392,
+					Line: 400,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 392, Value: "for $i := 0; $i < len($xs); $i++ { $xs[$i] = $zero }"},
+						ir.PatternString{Line: 400, Value: "for $i := 0; $i < len($xs); $i++ { $xs[$i] = $zero }"},
 					},
 					ReportTemplate:  "for ... { ... } => for $i := range $xs { $xs[$i] = $zero }",
 					SuggestTemplate: "for $i := range $xs { $xs[$i] = $zero }",
 					WhereExpr: ir.FilterExpr{
-						Line: 393,
+						Line: 401,
 						Op:   ir.FilterEqOp,
 						Src:  "m[\"zero\"].Value.Int() == 0",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  393,
+								Line:  401,
 								Op:    ir.FilterVarValueIntOp,
 								Src:   "m[\"zero\"].Value.Int()",
 								Value: "zero",
 							},
 							ir.FilterExpr{
-								Line:  393,
+								Line:  401,
 								Op:    ir.FilterIntOp,
 								Src:   "0",
 								Value: int64(0),
@@ -2382,7 +2448,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        403,
+			Line:        411,
 			Name:        "utf8DecodeRune",
 			MatcherName: "m",
 			DocTags: []string{
@@ -2394,28 +2460,28 @@ var Universal = &ir.File{
 			DocNote:    "See Go issue for details: https://github.com/golang/go/issues/45260",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 410,
+					Line: 418,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 410, Value: "$ch := []rune($s)[0]"},
+						ir.PatternString{Line: 418, Value: "$ch := []rune($s)[0]"},
 					},
 					ReportTemplate:  "$$ => $ch, _ := utf8.DecodeRuneInString($ch)",
 					SuggestTemplate: "$ch, _ := utf8.DecodeRuneInString($ch)",
 					WhereExpr: ir.FilterExpr{
-						Line: 411,
+						Line: 419,
 						Op:   ir.FilterAndOp,
 						Src:  "m[\"s\"].Type.Is(`string`) && m.File().Imports(`unicode/utf8`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  411,
+								Line:  419,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"s\"].Type.Is(`string`)",
 								Value: "s",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 411, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 419, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 							ir.FilterExpr{
-								Line:  411,
+								Line:  419,
 								Op:    ir.FilterFileImportsOp,
 								Src:   "m.File().Imports(`unicode/utf8`)",
 								Value: "unicode/utf8",
@@ -2424,28 +2490,28 @@ var Universal = &ir.File{
 					},
 				},
 				ir.Rule{
-					Line: 414,
+					Line: 422,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 414, Value: "$ch = []rune($s)[0]"},
+						ir.PatternString{Line: 422, Value: "$ch = []rune($s)[0]"},
 					},
 					ReportTemplate:  "$$ => $ch, _ = utf8.DecodeRuneInString($ch)",
 					SuggestTemplate: "$ch, _ = utf8.DecodeRuneInString($ch)",
 					WhereExpr: ir.FilterExpr{
-						Line: 415,
+						Line: 423,
 						Op:   ir.FilterAndOp,
 						Src:  "m[\"s\"].Type.Is(`string`) && m.File().Imports(`unicode/utf8`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  415,
+								Line:  423,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"s\"].Type.Is(`string`)",
 								Value: "s",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 415, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 423, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 							ir.FilterExpr{
-								Line:  415,
+								Line:  423,
 								Op:    ir.FilterFileImportsOp,
 								Src:   "m.File().Imports(`unicode/utf8`)",
 								Value: "unicode/utf8",
@@ -2454,32 +2520,32 @@ var Universal = &ir.File{
 					},
 				},
 				ir.Rule{
-					Line: 420,
+					Line: 428,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 420, Value: "[]rune($s)[0]"},
+						ir.PatternString{Line: 428, Value: "[]rune($s)[0]"},
 					},
 					ReportTemplate: "use utf8.DecodeRuneInString($s) here",
 					WhereExpr: ir.FilterExpr{
-						Line: 421,
+						Line: 429,
 						Op:   ir.FilterAndOp,
 						Src:  "m[\"s\"].Type.Is(`string`) && !m.File().Imports(`unicode/utf8`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  421,
+								Line:  429,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"s\"].Type.Is(`string`)",
 								Value: "s",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 421, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 429, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 							ir.FilterExpr{
-								Line: 421,
+								Line: 429,
 								Op:   ir.FilterNotOp,
 								Src:  "!m.File().Imports(`unicode/utf8`)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  421,
+										Line:  429,
 										Op:    ir.FilterFileImportsOp,
 										Src:   "m.File().Imports(`unicode/utf8`)",
 										Value: "unicode/utf8",
@@ -2492,7 +2558,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        429,
+			Line:        437,
 			Name:        "fprint",
 			MatcherName: "m",
 			DocTags: []string{
@@ -2503,46 +2569,12 @@ var Universal = &ir.File{
 			DocAfter:   "fmt.Fprintf(w, \"%x\", 10)",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 430,
+					Line: 438,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 430, Value: "$w.Write([]byte(fmt.Sprint($*args)))"},
+						ir.PatternString{Line: 438, Value: "$w.Write([]byte(fmt.Sprint($*args)))"},
 					},
 					ReportTemplate:  "$$ => fmt.Fprint($w, $args)",
 					SuggestTemplate: "fmt.Fprint($w, $args)",
-					WhereExpr: ir.FilterExpr{
-						Line:  431,
-						Op:    ir.FilterVarTypeImplementsOp,
-						Src:   "m[\"w\"].Type.Implements(\"io.Writer\")",
-						Value: "w",
-						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 431, Op: ir.FilterStringOp, Src: "\"io.Writer\"", Value: "io.Writer"},
-						},
-					},
-				},
-				ir.Rule{
-					Line: 434,
-					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 434, Value: "$w.Write([]byte(fmt.Sprintf($*args)))"},
-					},
-					ReportTemplate:  "$$ => fmt.Fprintf($w, $args)",
-					SuggestTemplate: "fmt.Fprintf($w, $args)",
-					WhereExpr: ir.FilterExpr{
-						Line:  435,
-						Op:    ir.FilterVarTypeImplementsOp,
-						Src:   "m[\"w\"].Type.Implements(\"io.Writer\")",
-						Value: "w",
-						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 435, Op: ir.FilterStringOp, Src: "\"io.Writer\"", Value: "io.Writer"},
-						},
-					},
-				},
-				ir.Rule{
-					Line: 438,
-					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 438, Value: "$w.Write([]byte(fmt.Sprintln($*args)))"},
-					},
-					ReportTemplate:  "$$ => fmt.Fprintln($w, $args)",
-					SuggestTemplate: "fmt.Fprintln($w, $args)",
 					WhereExpr: ir.FilterExpr{
 						Line:  439,
 						Op:    ir.FilterVarTypeImplementsOp,
@@ -2556,23 +2588,57 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 442,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 442, Value: "io.WriteString($w, fmt.Sprint($*args))"},
+						ir.PatternString{Line: 442, Value: "$w.Write([]byte(fmt.Sprintf($*args)))"},
+					},
+					ReportTemplate:  "$$ => fmt.Fprintf($w, $args)",
+					SuggestTemplate: "fmt.Fprintf($w, $args)",
+					WhereExpr: ir.FilterExpr{
+						Line:  443,
+						Op:    ir.FilterVarTypeImplementsOp,
+						Src:   "m[\"w\"].Type.Implements(\"io.Writer\")",
+						Value: "w",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{Line: 443, Op: ir.FilterStringOp, Src: "\"io.Writer\"", Value: "io.Writer"},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 446,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 446, Value: "$w.Write([]byte(fmt.Sprintln($*args)))"},
+					},
+					ReportTemplate:  "$$ => fmt.Fprintln($w, $args)",
+					SuggestTemplate: "fmt.Fprintln($w, $args)",
+					WhereExpr: ir.FilterExpr{
+						Line:  447,
+						Op:    ir.FilterVarTypeImplementsOp,
+						Src:   "m[\"w\"].Type.Implements(\"io.Writer\")",
+						Value: "w",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{Line: 447, Op: ir.FilterStringOp, Src: "\"io.Writer\"", Value: "io.Writer"},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 450,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 450, Value: "io.WriteString($w, fmt.Sprint($*args))"},
 					},
 					ReportTemplate:  "$$ => fmt.Fprint($w, $args)",
 					SuggestTemplate: "fmt.Fprint($w, $args)",
 				},
 				ir.Rule{
-					Line: 445,
+					Line: 453,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 445, Value: "io.WriteString($w, fmt.Sprintf($*args))"},
+						ir.PatternString{Line: 453, Value: "io.WriteString($w, fmt.Sprintf($*args))"},
 					},
 					ReportTemplate:  "$$ => fmt.Fprintf($w, $args)",
 					SuggestTemplate: "fmt.Fprintf($w, $args)",
 				},
 				ir.Rule{
-					Line: 448,
+					Line: 456,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 448, Value: "io.WriteString($w, fmt.Sprintln($*args))"},
+						ir.PatternString{Line: 456, Value: "io.WriteString($w, fmt.Sprintln($*args))"},
 					},
 					ReportTemplate:  "$$ => fmt.Fprintln($w, $args)",
 					SuggestTemplate: "fmt.Fprintln($w, $args)",
@@ -2580,7 +2646,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        456,
+			Line:        464,
 			Name:        "writeString",
 			MatcherName: "m",
 			DocTags: []string{
@@ -2591,33 +2657,33 @@ var Universal = &ir.File{
 			DocAfter:   "w.WriteString(\"foo\")",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 457,
+					Line: 465,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 457, Value: "$w.Write([]byte($s))"},
+						ir.PatternString{Line: 465, Value: "$w.Write([]byte($s))"},
 					},
 					ReportTemplate:  "$$ => $w.WriteString($s)",
 					SuggestTemplate: "$w.WriteString($s)",
 					WhereExpr: ir.FilterExpr{
-						Line: 458,
+						Line: 466,
 						Op:   ir.FilterAndOp,
 						Src:  "m[\"w\"].Type.Implements(\"io.StringWriter\") && m[\"s\"].Type.Is(`string`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  458,
+								Line:  466,
 								Op:    ir.FilterVarTypeImplementsOp,
 								Src:   "m[\"w\"].Type.Implements(\"io.StringWriter\")",
 								Value: "w",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 458, Op: ir.FilterStringOp, Src: "\"io.StringWriter\"", Value: "io.StringWriter"},
+									ir.FilterExpr{Line: 466, Op: ir.FilterStringOp, Src: "\"io.StringWriter\"", Value: "io.StringWriter"},
 								},
 							},
 							ir.FilterExpr{
-								Line:  458,
+								Line:  466,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"s\"].Type.Is(`string`)",
 								Value: "s",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 458, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 466, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
@@ -2626,7 +2692,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        466,
+			Line:        474,
 			Name:        "writeBytes",
 			MatcherName: "m",
 			DocTags: []string{
@@ -2637,113 +2703,113 @@ var Universal = &ir.File{
 			DocAfter:   "w.Write(buf.Bytes())",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 471,
-					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 471, Value: "io.WriteString($w, $buf.String())"},
-					},
-					ReportTemplate:  "$$ => $w.Write($buf.Bytes())",
-					SuggestTemplate: "$w.Write($buf.Bytes())",
-					WhereExpr: ir.FilterExpr{
-						Line: 472,
-						Op:   ir.FilterOrOp,
-						Src:  "isBuffer(m[\"buf\"])",
-						Args: []ir.FilterExpr{
-							ir.FilterExpr{
-								Line:  472,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
-								Value: "buf",
-								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 468, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
-								},
-							},
-							ir.FilterExpr{
-								Line:  472,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
-								Value: "buf",
-								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 468, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
-								},
-							},
-						},
-					},
-				},
-				ir.Rule{
-					Line: 475,
-					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 475, Value: "io.WriteString($w, string($buf.Bytes()))"},
-					},
-					ReportTemplate:  "$$ => $w.Write($buf.Bytes())",
-					SuggestTemplate: "$w.Write($buf.Bytes())",
-					WhereExpr: ir.FilterExpr{
-						Line: 476,
-						Op:   ir.FilterOrOp,
-						Src:  "isBuffer(m[\"buf\"])",
-						Args: []ir.FilterExpr{
-							ir.FilterExpr{
-								Line:  476,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
-								Value: "buf",
-								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 468, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
-								},
-							},
-							ir.FilterExpr{
-								Line:  476,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
-								Value: "buf",
-								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 468, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
-								},
-							},
-						},
-					},
-				},
-				ir.Rule{
 					Line: 479,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 479, Value: "$w.WriteString($buf.String())"},
+						ir.PatternString{Line: 479, Value: "io.WriteString($w, $buf.String())"},
 					},
 					ReportTemplate:  "$$ => $w.Write($buf.Bytes())",
 					SuggestTemplate: "$w.Write($buf.Bytes())",
 					WhereExpr: ir.FilterExpr{
 						Line: 480,
+						Op:   ir.FilterOrOp,
+						Src:  "isBuffer(m[\"buf\"])",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  480,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
+								Value: "buf",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 476, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  480,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
+								Value: "buf",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 476, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 483,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 483, Value: "io.WriteString($w, string($buf.Bytes()))"},
+					},
+					ReportTemplate:  "$$ => $w.Write($buf.Bytes())",
+					SuggestTemplate: "$w.Write($buf.Bytes())",
+					WhereExpr: ir.FilterExpr{
+						Line: 484,
+						Op:   ir.FilterOrOp,
+						Src:  "isBuffer(m[\"buf\"])",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  484,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
+								Value: "buf",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 476, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  484,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
+								Value: "buf",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 476, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 487,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 487, Value: "$w.WriteString($buf.String())"},
+					},
+					ReportTemplate:  "$$ => $w.Write($buf.Bytes())",
+					SuggestTemplate: "$w.Write($buf.Bytes())",
+					WhereExpr: ir.FilterExpr{
+						Line: 488,
 						Op:   ir.FilterAndOp,
 						Src:  "m[\"w\"].Type.Implements(\"io.Writer\") && isBuffer(m[\"buf\"])",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  480,
+								Line:  488,
 								Op:    ir.FilterVarTypeImplementsOp,
 								Src:   "m[\"w\"].Type.Implements(\"io.Writer\")",
 								Value: "w",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 480, Op: ir.FilterStringOp, Src: "\"io.Writer\"", Value: "io.Writer"},
+									ir.FilterExpr{Line: 488, Op: ir.FilterStringOp, Src: "\"io.Writer\"", Value: "io.Writer"},
 								},
 							},
 							ir.FilterExpr{
-								Line: 480,
+								Line: 488,
 								Op:   ir.FilterOrOp,
 								Src:  "isBuffer(m[\"buf\"])",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  480,
+										Line:  488,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 468, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+											ir.FilterExpr{Line: 476, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  480,
+										Line:  488,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 468, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+											ir.FilterExpr{Line: 476, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
 										},
 									},
 								},
@@ -2754,7 +2820,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        488,
+			Line:        496,
 			Name:        "bufferString",
 			MatcherName: "m",
 			DocTags: []string{
@@ -2765,392 +2831,392 @@ var Universal = &ir.File{
 			DocAfter:   "bytes.Contains(buf.Bytes(), b)",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 493,
+					Line: 501,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 493, Value: "strings.Contains($buf.String(), string($b))"},
+						ir.PatternString{Line: 501, Value: "strings.Contains($buf.String(), string($b))"},
 					},
 					ReportTemplate:  "$$ => bytes.Contains($buf.Bytes(), $b)",
 					SuggestTemplate: "bytes.Contains($buf.Bytes(), $b)",
 					WhereExpr: ir.FilterExpr{
-						Line: 494,
+						Line: 502,
 						Op:   ir.FilterAndOp,
 						Src:  "isBuffer(m[\"buf\"]) && m[\"b\"].Type.Is(`[]byte`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 494,
+								Line: 502,
 								Op:   ir.FilterOrOp,
 								Src:  "isBuffer(m[\"buf\"])",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  494,
+										Line:  502,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  494,
+										Line:  502,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  494,
+								Line:  502,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"b\"].Type.Is(`[]byte`)",
 								Value: "b",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 494, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 502, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 496,
+					Line: 504,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 496, Value: "strings.HasPrefix($buf.String(), string($b))"},
+						ir.PatternString{Line: 504, Value: "strings.HasPrefix($buf.String(), string($b))"},
 					},
 					ReportTemplate:  "$$ => bytes.HasPrefix($buf.Bytes(), $b)",
 					SuggestTemplate: "bytes.HasPrefix($buf.Bytes(), $b)",
 					WhereExpr: ir.FilterExpr{
-						Line: 497,
+						Line: 505,
 						Op:   ir.FilterAndOp,
 						Src:  "isBuffer(m[\"buf\"]) && m[\"b\"].Type.Is(`[]byte`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 497,
+								Line: 505,
 								Op:   ir.FilterOrOp,
 								Src:  "isBuffer(m[\"buf\"])",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  497,
+										Line:  505,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  497,
+										Line:  505,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  497,
+								Line:  505,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"b\"].Type.Is(`[]byte`)",
 								Value: "b",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 497, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 505, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 499,
+					Line: 507,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 499, Value: "strings.HasSuffix($buf.String(), string($b))"},
+						ir.PatternString{Line: 507, Value: "strings.HasSuffix($buf.String(), string($b))"},
 					},
 					ReportTemplate:  "$$ => bytes.HasSuffix($buf.Bytes(), $b)",
 					SuggestTemplate: "bytes.HasSuffix($buf.Bytes(), $b)",
 					WhereExpr: ir.FilterExpr{
-						Line: 500,
+						Line: 508,
 						Op:   ir.FilterAndOp,
 						Src:  "isBuffer(m[\"buf\"]) && m[\"b\"].Type.Is(`[]byte`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 500,
+								Line: 508,
 								Op:   ir.FilterOrOp,
 								Src:  "isBuffer(m[\"buf\"])",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  500,
+										Line:  508,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  500,
+										Line:  508,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  500,
+								Line:  508,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"b\"].Type.Is(`[]byte`)",
 								Value: "b",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 500, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 508, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 502,
+					Line: 510,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 502, Value: "strings.Count($buf.String(), string($b))"},
+						ir.PatternString{Line: 510, Value: "strings.Count($buf.String(), string($b))"},
 					},
 					ReportTemplate:  "$$ => bytes.Count($buf.Bytes(), $b)",
 					SuggestTemplate: "bytes.Count($buf.Bytes(), $b)",
 					WhereExpr: ir.FilterExpr{
-						Line: 503,
+						Line: 511,
 						Op:   ir.FilterAndOp,
 						Src:  "isBuffer(m[\"buf\"]) && m[\"b\"].Type.Is(`[]byte`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 503,
+								Line: 511,
 								Op:   ir.FilterOrOp,
 								Src:  "isBuffer(m[\"buf\"])",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  503,
+										Line:  511,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  503,
+										Line:  511,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  503,
+								Line:  511,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"b\"].Type.Is(`[]byte`)",
 								Value: "b",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 503, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+									ir.FilterExpr{Line: 511, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 506,
+					Line: 514,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 506, Value: "strings.Contains($buf.String(), $s)"},
+						ir.PatternString{Line: 514, Value: "strings.Contains($buf.String(), $s)"},
 					},
 					ReportTemplate:  "$$ => bytes.Contains($buf.Bytes(), []byte($s))",
 					SuggestTemplate: "bytes.Contains($buf.Bytes(), []byte($s))",
 					WhereExpr: ir.FilterExpr{
-						Line: 507,
+						Line: 515,
 						Op:   ir.FilterAndOp,
 						Src:  "isBuffer(m[\"buf\"]) && m[\"s\"].Type.Is(`string`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 507,
+								Line: 515,
 								Op:   ir.FilterOrOp,
 								Src:  "isBuffer(m[\"buf\"])",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  507,
+										Line:  515,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  507,
+										Line:  515,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  507,
+								Line:  515,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"s\"].Type.Is(`string`)",
 								Value: "s",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 507, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 515, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 509,
+					Line: 517,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 509, Value: "strings.HasPrefix($buf.String(), $s)"},
+						ir.PatternString{Line: 517, Value: "strings.HasPrefix($buf.String(), $s)"},
 					},
 					ReportTemplate:  "$$ => bytes.HasPrefix($buf.Bytes(), []byte($s))",
 					SuggestTemplate: "bytes.HasPrefix($buf.Bytes(), []byte($s))",
 					WhereExpr: ir.FilterExpr{
-						Line: 510,
+						Line: 518,
 						Op:   ir.FilterAndOp,
 						Src:  "isBuffer(m[\"buf\"]) && m[\"s\"].Type.Is(`string`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 510,
+								Line: 518,
 								Op:   ir.FilterOrOp,
 								Src:  "isBuffer(m[\"buf\"])",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  510,
+										Line:  518,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  510,
+										Line:  518,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  510,
+								Line:  518,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"s\"].Type.Is(`string`)",
 								Value: "s",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 510, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 518, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 512,
+					Line: 520,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 512, Value: "strings.HasSuffix($buf.String(), $s)"},
+						ir.PatternString{Line: 520, Value: "strings.HasSuffix($buf.String(), $s)"},
 					},
 					ReportTemplate:  "$$ => bytes.HasSuffix($buf.Bytes(), []byte($s))",
 					SuggestTemplate: "bytes.HasSuffix($buf.Bytes(), []byte($s))",
 					WhereExpr: ir.FilterExpr{
-						Line: 513,
+						Line: 521,
 						Op:   ir.FilterAndOp,
 						Src:  "isBuffer(m[\"buf\"]) && m[\"s\"].Type.Is(`string`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 513,
+								Line: 521,
 								Op:   ir.FilterOrOp,
 								Src:  "isBuffer(m[\"buf\"])",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  513,
+										Line:  521,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  513,
+										Line:  521,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  513,
+								Line:  521,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"s\"].Type.Is(`string`)",
 								Value: "s",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 513, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 521, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
 					},
 				},
 				ir.Rule{
-					Line: 515,
+					Line: 523,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 515, Value: "strings.Count($buf.String(), $s)"},
+						ir.PatternString{Line: 523, Value: "strings.Count($buf.String(), $s)"},
 					},
 					ReportTemplate:  "$$ => bytes.Count($buf.Bytes(), []byte($s))",
 					SuggestTemplate: "bytes.Count($buf.Bytes(), []byte($s))",
 					WhereExpr: ir.FilterExpr{
-						Line: 516,
+						Line: 524,
 						Op:   ir.FilterAndOp,
 						Src:  "isBuffer(m[\"buf\"]) && m[\"s\"].Type.Is(`string`)",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 516,
+								Line: 524,
 								Op:   ir.FilterOrOp,
 								Src:  "isBuffer(m[\"buf\"])",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  516,
+										Line:  524,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`bytes.Buffer`", Value: "bytes.Buffer"},
 										},
 									},
 									ir.FilterExpr{
-										Line:  516,
+										Line:  524,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"buf\"].Type.Is(`*bytes.Buffer`)",
 										Value: "buf",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 490, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
+											ir.FilterExpr{Line: 498, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line:  516,
+								Line:  524,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"s\"].Type.Is(`string`)",
 								Value: "s",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 516, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+									ir.FilterExpr{Line: 524, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 								},
 							},
 						},
@@ -3159,7 +3225,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        522,
+			Line:        530,
 			Name:        "rangeExprCopy",
 			MatcherName: "m",
 			DocTags: []string{
@@ -3168,53 +3234,53 @@ var Universal = &ir.File{
 			DocSummary: "Detects array range loops that result in an excessive full data copy",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 523,
+					Line: 531,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 523, Value: "for $_, $_ := range $e"},
-						ir.PatternString{Line: 523, Value: "for $_, $_ = range $e"},
+						ir.PatternString{Line: 531, Value: "for $_, $_ := range $e"},
+						ir.PatternString{Line: 531, Value: "for $_, $_ = range $e"},
 					},
 					ReportTemplate:  "$e => &$e",
 					SuggestTemplate: "&$e",
 					WhereExpr: ir.FilterExpr{
-						Line: 524,
+						Line: 532,
 						Op:   ir.FilterAndOp,
 						Src:  "m[\"e\"].Addressable && m[\"e\"].Type.Is(`[$_]$_`) && m[\"e\"].Type.Size > 2048",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line: 524,
+								Line: 532,
 								Op:   ir.FilterAndOp,
 								Src:  "m[\"e\"].Addressable && m[\"e\"].Type.Is(`[$_]$_`)",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  524,
+										Line:  532,
 										Op:    ir.FilterVarAddressableOp,
 										Src:   "m[\"e\"].Addressable",
 										Value: "e",
 									},
 									ir.FilterExpr{
-										Line:  524,
+										Line:  532,
 										Op:    ir.FilterVarTypeIsOp,
 										Src:   "m[\"e\"].Type.Is(`[$_]$_`)",
 										Value: "e",
 										Args: []ir.FilterExpr{
-											ir.FilterExpr{Line: 524, Op: ir.FilterStringOp, Src: "`[$_]$_`", Value: "[$_]$_"},
+											ir.FilterExpr{Line: 532, Op: ir.FilterStringOp, Src: "`[$_]$_`", Value: "[$_]$_"},
 										},
 									},
 								},
 							},
 							ir.FilterExpr{
-								Line: 524,
+								Line: 532,
 								Op:   ir.FilterGtOp,
 								Src:  "m[\"e\"].Type.Size > 2048",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  524,
+										Line:  532,
 										Op:    ir.FilterVarTypeSizeOp,
 										Src:   "m[\"e\"].Type.Size",
 										Value: "e",
 									},
 									ir.FilterExpr{
-										Line:  524,
+										Line:  532,
 										Op:    ir.FilterIntOp,
 										Src:   "2048",
 										Value: int64(2048),
@@ -3226,39 +3292,39 @@ var Universal = &ir.File{
 					LocationVar: "e",
 				},
 				ir.Rule{
-					Line: 530,
+					Line: 538,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 530, Value: "for $_, $_ := range $e"},
-						ir.PatternString{Line: 530, Value: "for $_, $_ = range $e"},
+						ir.PatternString{Line: 538, Value: "for $_, $_ := range $e"},
+						ir.PatternString{Line: 538, Value: "for $_, $_ = range $e"},
 					},
 					ReportTemplate: "range over big array value expression is ineffective",
 					WhereExpr: ir.FilterExpr{
-						Line: 531,
+						Line: 539,
 						Op:   ir.FilterAndOp,
 						Src:  "m[\"e\"].Type.Is(`[$_]$_`) && m[\"e\"].Type.Size > 2048",
 						Args: []ir.FilterExpr{
 							ir.FilterExpr{
-								Line:  531,
+								Line:  539,
 								Op:    ir.FilterVarTypeIsOp,
 								Src:   "m[\"e\"].Type.Is(`[$_]$_`)",
 								Value: "e",
 								Args: []ir.FilterExpr{
-									ir.FilterExpr{Line: 531, Op: ir.FilterStringOp, Src: "`[$_]$_`", Value: "[$_]$_"},
+									ir.FilterExpr{Line: 539, Op: ir.FilterStringOp, Src: "`[$_]$_`", Value: "[$_]$_"},
 								},
 							},
 							ir.FilterExpr{
-								Line: 531,
+								Line: 539,
 								Op:   ir.FilterGtOp,
 								Src:  "m[\"e\"].Type.Size > 2048",
 								Args: []ir.FilterExpr{
 									ir.FilterExpr{
-										Line:  531,
+										Line:  539,
 										Op:    ir.FilterVarTypeSizeOp,
 										Src:   "m[\"e\"].Type.Size",
 										Value: "e",
 									},
 									ir.FilterExpr{
-										Line:  531,
+										Line:  539,
 										Op:    ir.FilterIntOp,
 										Src:   "2048",
 										Value: int64(2048),
@@ -3272,7 +3338,7 @@ var Universal = &ir.File{
 			},
 		},
 		ir.RuleGroup{
-			Line:        538,
+			Line:        546,
 			Name:        "rangeToAppend",
 			MatcherName: "m",
 			DocTags: []string{
@@ -3281,26 +3347,26 @@ var Universal = &ir.File{
 			DocSummary: "Detects range loops that can be turned into a single append call",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 539,
+					Line: 547,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 539, Value: "for $_, $x := range $src { $dst = append($dst, $x) }"},
+						ir.PatternString{Line: 547, Value: "for $_, $x := range $src { $dst = append($dst, $x) }"},
 					},
 					ReportTemplate:  "for ... { ... } => $dst = append($dst, $src...)",
 					SuggestTemplate: "$dst = append($dst, $src...)",
 					WhereExpr: ir.FilterExpr{
-						Line:  540,
+						Line:  548,
 						Op:    ir.FilterVarTypeIsOp,
 						Src:   "m[\"src\"].Type.Is(`[]$_`)",
 						Value: "src",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 540, Op: ir.FilterStringOp, Src: "`[]$_`", Value: "[]$_"},
+							ir.FilterExpr{Line: 548, Op: ir.FilterStringOp, Src: "`[]$_`", Value: "[]$_"},
 						},
 					},
 				},
 			},
 		},
 		ir.RuleGroup{
-			Line:        547,
+			Line:        555,
 			Name:        "rangeRuneSlice",
 			MatcherName: "m",
 			DocTags: []string{
@@ -3309,46 +3375,12 @@ var Universal = &ir.File{
 			DocSummary: "Detects a range over []rune(string) where copying to a new slice is redundant",
 			Rules: []ir.Rule{
 				ir.Rule{
-					Line: 548,
+					Line: 556,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 548, Value: "for _, $r := range []rune($s)"},
+						ir.PatternString{Line: 556, Value: "for _, $r := range []rune($s)"},
 					},
 					ReportTemplate:  "$$ => for _, $r := range $s",
 					SuggestTemplate: "for _, $r := range $s",
-					WhereExpr: ir.FilterExpr{
-						Line:  549,
-						Op:    ir.FilterVarTypeUnderlyingIsOp,
-						Src:   "m[\"s\"].Type.Underlying().Is(`string`)",
-						Value: "s",
-						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 549, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
-						},
-					},
-				},
-				ir.Rule{
-					Line: 552,
-					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 552, Value: "for _, $r = range []rune($s)"},
-					},
-					ReportTemplate:  "$$ => for _, $r = range $s",
-					SuggestTemplate: "for _, $r = range $s",
-					WhereExpr: ir.FilterExpr{
-						Line:  553,
-						Op:    ir.FilterVarTypeUnderlyingIsOp,
-						Src:   "m[\"s\"].Type.Underlying().Is(`string`)",
-						Value: "s",
-						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 553, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
-						},
-					},
-				},
-				ir.Rule{
-					Line: 556,
-					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 556, Value: "for range []rune($s)"},
-					},
-					ReportTemplate:  "$$ => for range $s",
-					SuggestTemplate: "for range $s",
 					WhereExpr: ir.FilterExpr{
 						Line:  557,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
@@ -3362,34 +3394,68 @@ var Universal = &ir.File{
 				ir.Rule{
 					Line: 560,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 560, Value: "for _, $r := range string($runes)"},
+						ir.PatternString{Line: 560, Value: "for _, $r = range []rune($s)"},
 					},
-					ReportTemplate:  "$$ => for _, $r := range $runes",
-					SuggestTemplate: "for _, $r := range $runes",
+					ReportTemplate:  "$$ => for _, $r = range $s",
+					SuggestTemplate: "for _, $r = range $s",
 					WhereExpr: ir.FilterExpr{
 						Line:  561,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
-						Src:   "m[\"runes\"].Type.Underlying().Is(`[]rune`)",
-						Value: "runes",
+						Src:   "m[\"s\"].Type.Underlying().Is(`string`)",
+						Value: "s",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 561, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
+							ir.FilterExpr{Line: 561, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
 						},
 					},
 				},
 				ir.Rule{
 					Line: 564,
 					SyntaxPatterns: []ir.PatternString{
-						ir.PatternString{Line: 564, Value: "for _, $r = range string($runes)"},
+						ir.PatternString{Line: 564, Value: "for range []rune($s)"},
 					},
-					ReportTemplate:  "$$ => for _, $r = range $runes",
-					SuggestTemplate: "for _, $r = range $runes",
+					ReportTemplate:  "$$ => for range $s",
+					SuggestTemplate: "for range $s",
 					WhereExpr: ir.FilterExpr{
 						Line:  565,
+						Op:    ir.FilterVarTypeUnderlyingIsOp,
+						Src:   "m[\"s\"].Type.Underlying().Is(`string`)",
+						Value: "s",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{Line: 565, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 568,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 568, Value: "for _, $r := range string($runes)"},
+					},
+					ReportTemplate:  "$$ => for _, $r := range $runes",
+					SuggestTemplate: "for _, $r := range $runes",
+					WhereExpr: ir.FilterExpr{
+						Line:  569,
 						Op:    ir.FilterVarTypeUnderlyingIsOp,
 						Src:   "m[\"runes\"].Type.Underlying().Is(`[]rune`)",
 						Value: "runes",
 						Args: []ir.FilterExpr{
-							ir.FilterExpr{Line: 565, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
+							ir.FilterExpr{Line: 569, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 572,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 572, Value: "for _, $r = range string($runes)"},
+					},
+					ReportTemplate:  "$$ => for _, $r = range $runes",
+					SuggestTemplate: "for _, $r = range $runes",
+					WhereExpr: ir.FilterExpr{
+						Line:  573,
+						Op:    ir.FilterVarTypeUnderlyingIsOp,
+						Src:   "m[\"runes\"].Type.Underlying().Is(`[]rune`)",
+						Value: "runes",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{Line: 573, Op: ir.FilterStringOp, Src: "`[]rune`", Value: "[]rune"},
 						},
 					},
 				},

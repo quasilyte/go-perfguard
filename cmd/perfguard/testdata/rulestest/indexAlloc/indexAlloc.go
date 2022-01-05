@@ -42,11 +42,13 @@ func Warn() {
 		_ = strings.HasPrefix(string(b), string(b2)) // want `strings.HasPrefix(string(b), string(b2)) => bytes.HasPrefix(b, b2)`
 		_ = strings.HasSuffix(string(b), string(b2)) // want `strings.HasSuffix(string(b), string(b2)) => bytes.HasSuffix(b, b2)`
 		_ = strings.EqualFold(string(b), string(b2)) // want `strings.EqualFold(string(b), string(b2)) => bytes.EqualFold(b, b2)`
+		_ = strings.Compare(string(b), string(b2))   // want `strings.Compare(string(b), string(b2)) => bytes.Compare(b, b2)`
 
 		_ = bytes.Contains([]byte(s), []byte(s2))  // want `bytes.Contains([]byte(s), []byte(s2)) => strings.Contains(s, s2)`
 		_ = bytes.HasPrefix([]byte(s), []byte(s2)) // want `bytes.HasPrefix([]byte(s), []byte(s2)) => strings.HasPrefix(s, s2)`
 		_ = bytes.HasSuffix([]byte(s), []byte(s2)) // want `bytes.HasSuffix([]byte(s), []byte(s2)) => strings.HasSuffix(s, s2)`
 		_ = bytes.EqualFold([]byte(s), []byte(s2)) // want `bytes.EqualFold([]byte(s), []byte(s2)) => strings.EqualFold(s, s2)`
+		_ = bytes.Compare([]byte(s), []byte(s2))   // want `bytes.Compare([]byte(s), []byte(s2)) => strings.Compare(s, s2)`
 	}
 }
 
@@ -108,11 +110,13 @@ func Ignore() {
 		_ = bytes.HasPrefix(b, b2)
 		_ = bytes.HasSuffix(b, b2)
 		_ = bytes.EqualFold(b, b2)
+		_ = bytes.Compare(b, b2)
 
 		_ = strings.Contains(s, s2)
 		_ = strings.HasPrefix(s, s2)
 		_ = strings.HasSuffix(s, s2)
 		_ = strings.EqualFold(s, s2)
+		_ = strings.Compare(s, s2)
 	}
 }
 

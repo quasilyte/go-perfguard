@@ -251,6 +251,14 @@ func convReorder(m dsl.Matcher) {
 	m.Match(`bytes.TrimSpace([]byte($s))`).
 		Where(m["s"].Type.Is(`string`)).
 		Suggest(`[]byte(strings.TrimSpace($s))`)
+
+	m.Match(`strings.TrimPrefix(string($b1), string($b2))`).
+		Where(m["b1"].Type.Is(`[]byte`) && m["b2"].Type.Is(`[]byte`)).
+		Suggest(`string(bytes.TrimPrefix($b1, $b2))`)
+
+	m.Match(`bytes.TrimPrefix([]byte($s1), []byte($s2))`).
+		Where(m["s1"].Type.Is(`string`) && m["s2"].Type.Is(`string`)).
+		Suggest(`[]byte(strings.TrimPrefix($s1, $s2))`)
 }
 
 //doc:summary Detects redundant conversions between string and []byte
@@ -339,12 +347,12 @@ func indexAlloc(m dsl.Matcher) {
 	// is usually smaller than the containing string.
 
 	m.Match(`strings.$f(string($b1), string($b2))`).
-		Where(m["f"].Text.Matches(`Contains|HasPrefix|HasSuffix|EqualFold`) &&
+		Where(m["f"].Text.Matches(`Compare|Contains|HasPrefix|HasSuffix|EqualFold`) &&
 			m["b1"].Type.Is(`[]byte`) && m["b2"].Type.Is(`[]byte`)).
 		Suggest(`bytes.$f($b1, $b2)`)
 
 	m.Match(`bytes.$f([]byte($s1), []byte($s2))`).
-		Where(m["f"].Text.Matches(`Contains|HasPrefix|HasSuffix|EqualFold`) &&
+		Where(m["f"].Text.Matches(`Compare|Contains|HasPrefix|HasSuffix|EqualFold`) &&
 			m["s1"].Type.Is(`string`) && m["s2"].Type.Is(`string`)).
 		Suggest(`strings.$f($s1, $s2)`)
 
