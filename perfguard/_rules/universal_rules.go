@@ -117,6 +117,28 @@ func redundantSprint(m dsl.Matcher) {
 		Suggest(`string($x)`)
 }
 
+//doc:summary Detects redundant fmt.Fprint calls
+//doc:tags    o1
+//doc:before  fmt.Fprintf(w, "%s", data)
+//doc:after   w.WriteString(data.String())
+func redundantFprint(m dsl.Matcher) {
+	m.Match(`fmt.Fprint($w, $x)`, `fmt.Fprintf($w, "%s", $x)`, `fmt.Fprintf($w, "%v", $x)`).
+		Where(m["x"].Type.Implements(`fmt.Stringer`) && m["w"].Type.Implements(`io.StringWriter`)).
+		Suggest(`$w.WriteString($x.String())`)
+
+	m.Match(`fmt.Fprint($w, $x)`, `fmt.Fprintf($w, "%s", $x)`, `fmt.Fprintf($w, "%v", $x)`).
+		Where(m["x"].Type.Implements(`error`) && m["w"].Type.Implements(`io.StringWriter`)).
+		Suggest(`$w.WriteString($x.Error())`)
+
+	m.Match(`fmt.Fprint($w, $x)`, `fmt.Fprintf($w, "%s", $x)`, `fmt.Fprintf($w, "%v", $x)`).
+		Where(m["x"].Type.Is(`string`) && m["w"].Type.Implements(`io.StringWriter`)).
+		Suggest(`$w.WriteString($x)`)
+
+	m.Match(`fmt.Fprint($w, $x)`, `fmt.Fprintf($w, "%s", $x)`, `fmt.Fprintf($w, "%v", $x)`).
+		Where(m["x"].Type.Is(`[]byte`)).
+		Suggest(`$w.Write($x)`)
+}
+
 //doc:summary Detects slice copying patterns that can be optimized
 //doc:tags    o2
 //doc:before  dst := append([]int(nil), src...)
