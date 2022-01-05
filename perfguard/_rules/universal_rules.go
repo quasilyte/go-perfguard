@@ -545,6 +545,12 @@ func bufferString(m dsl.Matcher) {
 	m.Match(`strings.Count($buf.String(), $s)`).
 		Where(isBuffer(m["buf"]) && m["s"].Type.Is(`string`)).
 		Suggest(`bytes.Count($buf.Bytes(), []byte($s))`)
+
+	m.Match(`[]byte($buf.String())`).Where(isBuffer(m["buf"])).Suggest(`$buf.Bytes()`)
+
+	m.Match(`fmt.Fprint($w, $buf.String())`, `fmt.Fprintf($w, "%s", $buf.String())`, `fmt.Fprintf($w, "%v", $buf.String())`).
+		Where(isBuffer(m["buf"])).
+		Suggest(`$w.Write($buf.Bytes())`)
 }
 
 //doc:summary Detects array range loops that result in an excessive full data copy
