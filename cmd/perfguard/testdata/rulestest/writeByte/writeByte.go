@@ -5,13 +5,10 @@ import (
 	"strings"
 )
 
-func TODO() {
-	// See https://github.com/quasilyte/go-ruleguard/issues/331
-	var buf bytes.Buffer
-	buf.WriteRune('\n')
-}
-
 func Warn(builder *strings.Builder) {
+	var buf bytes.Buffer
+	buf.WriteRune('\n') // want `buf.WriteRune('\n') => buf.WriteByte('\n')`
+
 	builder.WriteRune('\n') // want `builder.WriteRune('\n') => builder.WriteByte('\n')`
 }
 
