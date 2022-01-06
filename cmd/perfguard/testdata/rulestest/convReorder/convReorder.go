@@ -11,6 +11,9 @@ func Warn(s, s2 string, b, b2 []byte) {
 
 	_ = strings.TrimPrefix(string(b), string(b2)) // want `strings.TrimPrefix(string(b), string(b2)) => string(bytes.TrimPrefix(b, b2))`
 	_ = bytes.TrimPrefix([]byte(s), []byte(s2))   // want `bytes.TrimPrefix([]byte(s), []byte(s2)) => []byte(strings.TrimPrefix(s, s2))`
+
+	_ = string(b)[:5] // want `string(b)[:5] => string(b[:5])`
+	_ = []byte(s)[:5] // want `[]byte(s)[:5] => []byte(s[:5])`
 }
 
 func Ignore(s, s2 string, b, b2 []byte) {
@@ -19,4 +22,7 @@ func Ignore(s, s2 string, b, b2 []byte) {
 
 	_ = string(bytes.TrimPrefix(b, b2))
 	_ = []byte(strings.TrimPrefix(s, s2))
+
+	_ = string(b[:5])
+	_ = []byte(s[:5])
 }
