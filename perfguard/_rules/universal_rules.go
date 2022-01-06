@@ -281,6 +281,13 @@ func convReorder(m dsl.Matcher) {
 	m.Match(`bytes.TrimPrefix([]byte($s1), []byte($s2))`).
 		Where(m["s1"].Type.Is(`string`) && m["s2"].Type.Is(`string`)).
 		Suggest(`[]byte(strings.TrimPrefix($s1, $s2))`)
+
+	m.Match(`string($b)[:$n]`).
+		Where(m["b"].Type.Is(`[]byte`)).
+		Suggest(`string($b[:$n])`)
+	m.Match(`[]byte($s)[:$n]`).
+		Where(m["s"].Type.Is(`string`)).
+		Suggest(`[]byte($s[:$n])`)
 }
 
 //doc:summary Detects redundant conversions between string and []byte
