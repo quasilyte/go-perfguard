@@ -578,6 +578,13 @@ func bufferString(m dsl.Matcher) {
 		return v.Type.Is(`bytes.Buffer`) || v.Type.Is(`*bytes.Buffer`)
 	}
 
+	m.Match(`strings.$f($buf1.String(), $buf2.String())`).
+		Where(
+			isBuffer(m["buf1"]) && isBuffer(m["buf2"]) &&
+				m["f"].Text.Matches(`Compare|Contains|HasPrefix|HasSuffix|EqualFold`),
+		).
+		Suggest(`bytes.$f($buf1.Bytes(), $buf2.Bytes())`)
+
 	m.Match(`strings.Contains($buf.String(), string($b))`).
 		Where(isBuffer(m["buf"]) && m["b"].Type.Is(`[]byte`)).
 		Suggest(`bytes.Contains($buf.Bytes(), $b)`)
@@ -590,6 +597,12 @@ func bufferString(m dsl.Matcher) {
 	m.Match(`strings.Count($buf.String(), string($b))`).
 		Where(isBuffer(m["buf"]) && m["b"].Type.Is(`[]byte`)).
 		Suggest(`bytes.Count($buf.Bytes(), $b)`)
+	m.Match(`strings.Index($buf.String(), string($b))`).
+		Where(isBuffer(m["buf"]) && m["b"].Type.Is(`[]byte`)).
+		Suggest(`bytes.Index($buf.Bytes(), $b)`)
+	m.Match(`strings.EqualFold($buf.String(), string($b))`).
+		Where(isBuffer(m["buf"]) && m["b"].Type.Is(`[]byte`)).
+		Suggest(`bytes.EqualFold($buf.Bytes(), $b)`)
 
 	m.Match(`strings.Contains($buf.String(), $s)`).
 		Where(isBuffer(m["buf"]) && m["s"].Type.Is(`string`)).
@@ -603,6 +616,12 @@ func bufferString(m dsl.Matcher) {
 	m.Match(`strings.Count($buf.String(), $s)`).
 		Where(isBuffer(m["buf"]) && m["s"].Type.Is(`string`)).
 		Suggest(`bytes.Count($buf.Bytes(), []byte($s))`)
+	m.Match(`strings.Index($buf.String(), $s)`).
+		Where(isBuffer(m["buf"]) && m["s"].Type.Is(`string`)).
+		Suggest(`bytes.Index($buf.Bytes(), []byte($s))`)
+	m.Match(`strings.EqualFold($buf.String(), $s)`).
+		Where(isBuffer(m["buf"]) && m["s"].Type.Is(`string`)).
+		Suggest(`bytes.EqualFold($buf.Bytes(), []byte($s))`)
 
 	m.Match(`[]byte($buf.String())`).Where(isBuffer(m["buf"])).Suggest(`$buf.Bytes()`)
 
