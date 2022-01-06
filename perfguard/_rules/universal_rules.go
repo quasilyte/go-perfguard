@@ -417,7 +417,7 @@ func writeByte(m dsl.Matcher) {
 	// characters below RuneSelf are represented as themselves in a single byte.
 	const runeSelf = 0x80
 	m.Match(`$w.WriteRune($c)`).
-		Where(m["w"].Type.Implements("io.ByteWriter") && (m["c"].Const && m["c"].Value.Int() < runeSelf)).
+		Where(m["w"].Type.HasMethod(`io.ByteWriter.WriteByte`) && (m["c"].Const && m["c"].Value.Int() < runeSelf)).
 		Suggest(`$w.WriteByte($c)`)
 }
 
@@ -492,7 +492,7 @@ func fprint(m dsl.Matcher) {
 //doc:after   w.WriteString("foo")
 func writeString(m dsl.Matcher) {
 	m.Match(`$w.Write([]byte($s))`).
-		Where(m["w"].Type.Implements("io.StringWriter") && m["s"].Type.Is(`string`)).
+		Where(m["w"].Type.HasMethod("io.StringWriter.WriteString") && m["s"].Type.Is(`string`)).
 		Suggest("$w.WriteString($s)")
 }
 
@@ -514,8 +514,12 @@ func writeBytes(m dsl.Matcher) {
 		Suggest(`$w.Write($buf.Bytes())`)
 
 	m.Match(`$w.WriteString($buf.String())`).
-		Where(m["w"].Type.Implements("io.Writer") && isBuffer(m["buf"])).
+		Where(m["w"].Type.HasMethod("io.Writer.Write") && isBuffer(m["buf"])).
 		Suggest(`$w.Write($buf.Bytes())`)
+
+	m.Match(`$w.WriteString(string($b))`).
+		Where(m["w"].Type.HasMethod("io.Writer.Write") && m["b"].Type.Is(`[]byte`)).
+		Suggest("$w.Write($b)")
 }
 
 //doc:summary Detects bytes.Buffer String() calls where Bytes() could be used instead
