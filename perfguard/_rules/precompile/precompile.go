@@ -71,6 +71,25 @@ func precompile() error {
 
 	for i := range irfile.RuleGroups {
 		g := &irfile.RuleGroups[i]
+		tagO := false
+		tagScore := false
+		for _, tag := range g.DocTags {
+			switch tag {
+			case "o1", "o2":
+				tagO = true
+			case "score1", "score2", "score3", "score4", "score5":
+				tagScore = true
+			default:
+				return fmt.Errorf("%s: unknown tag: %s", g.Name, tag)
+			}
+		}
+		if !tagO {
+			return fmt.Errorf("%s: add o1 or o2 tag")
+		}
+		if !tagScore {
+			return fmt.Errorf("%s: add score[1-5] tag", g.Name)
+		}
+
 		for j := range g.Rules {
 			rule := &g.Rules[j]
 			if strings.HasPrefix(rule.ReportTemplate, "suggestion: ") {

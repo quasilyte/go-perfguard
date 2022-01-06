@@ -5,7 +5,7 @@ import (
 )
 
 //doc:summary Detects regexp compilation on hot execution paths
-//doc:tags    o1
+//doc:tags    o1 score4
 func regexpCompile(m dsl.Matcher) {
 	// TODO: for constant string patterns we can move the regexp compilation
 	// to a global scope and use compiled var on the original call site.
@@ -25,7 +25,7 @@ func regexpCompile(m dsl.Matcher) {
 }
 
 //doc:summary Detects sprint calls that can be rewritten as a string concat
-//doc:tags    o2
+//doc:tags    o2 score2
 func sprintConcat2(m dsl.Matcher) {
 	// It's impractical to implement this kind of analysis via the rules.
 	// I've added a few most common patterns here just in case, but
@@ -53,7 +53,7 @@ func sprintConcat2(m dsl.Matcher) {
 }
 
 //doc:summary Detects range loops that copy large value on every iteration
-//doc:tags    o1
+//doc:tags    o1 score2
 func rangeValueCopy(m dsl.Matcher) {
 	m.Match(`for $_, $v := range $_ { $*_ }`, `for $_, $v = range $_ { $*_ }`).
 		Where(m["v"].Type.Size > 128).

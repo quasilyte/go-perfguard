@@ -19,9 +19,25 @@ import (
 // or generally less pretty.
 //
 // Lint mode ignores o1 and o2 tags completely.
+//
+// When several changes can be applied to the same code spot,
+// we need to choose how to rewrite the source code, which replacement wins.
+// To achieve that, we use the scoring system.
+// There are 5 score classes: from 1 to 5 inclusively.
+// We use [score1, score2, score3, score4, score5] tags for this.
+// If several rewrites have the same score, we pick the first one
+// by using some sorting algorithm to make the decision stable.
+//
+// Usually, cutting extra allocations is really good, so it
+// deserves to be a score3 or above (depending on how much it saves).
+//
+// Simple CPU optimizations that save a few nanoseconds are score1.
+//
+// score5 is something that can make the code several times faster
+// or make it zero allocations (as opposed to the replaced form).
 
 //doc:summary Detects use cases for strings.Cut
-//doc:tags    o1
+//doc:tags    o1 score3
 //doc:before  email := strings.Split(s, "@")[0]
 //doc:after   email, _, _ := strings.Cut(s, "@")
 func stringsCut(m dsl.Matcher) {
@@ -34,7 +50,7 @@ func stringsCut(m dsl.Matcher) {
 }
 
 //doc:summary Detects use cases for bytes.Cut
-//doc:tags    o1
+//doc:tags    o1 score3
 //doc:before  email := bytes.Split(b, "@")[0]
 //doc:after   email, _, _ := bytes.Cut(b, []byte("@"))
 func bytesCut(m dsl.Matcher) {
@@ -47,7 +63,7 @@ func bytesCut(m dsl.Matcher) {
 }
 
 //doc:summary Detects use cases for strings.Clone
-//doc:tags    o1
+//doc:tags    o1 score3
 //doc:before  s2 := string([]byte(s1))
 //doc:after   s2 := strings.Clone(s1)
 func stringsClone(m dsl.Matcher) {
@@ -59,7 +75,7 @@ func stringsClone(m dsl.Matcher) {
 }
 
 //doc:summary Detects unoptimal strings/bytes case-insensitive comparison
-//doc:tags    o1
+//doc:tags    o1 score2
 //doc:before  strings.ToLower(x) == strings.ToLower(y)
 //doc:after   strings.EqualFold(x, y)
 func equalFold(m dsl.Matcher) {
@@ -122,7 +138,7 @@ func equalFold(m dsl.Matcher) {
 }
 
 //doc:summary Detects redundant fmt.Sprint calls
-//doc:tags    o1
+//doc:tags    o1 score3
 func redundantSprint(m dsl.Matcher) {
 	m.Match(`fmt.Sprint($x)`, `fmt.Sprintf("%s", $x)`, `fmt.Sprintf("%v", $x)`).
 		Where(m["x"].Type.Implements(`fmt.Stringer`)).
@@ -142,7 +158,7 @@ func redundantSprint(m dsl.Matcher) {
 }
 
 //doc:summary Detects redundant fmt.Fprint calls
-//doc:tags    o1
+//doc:tags    o1 score3
 //doc:before  fmt.Fprintf(w, "%s", data)
 //doc:after   w.WriteString(data.String())
 func redundantFprint(m dsl.Matcher) {
@@ -164,7 +180,7 @@ func redundantFprint(m dsl.Matcher) {
 }
 
 //doc:summary Detects slice copying patterns that can be optimized
-//doc:tags    o2
+//doc:tags    o2 score2
 //doc:before  dst := append([]int(nil), src...)
 //doc:after   dst := make([]int, len(src)); copy(dst, src)
 func sliceClone(m dsl.Matcher) {
@@ -177,7 +193,7 @@ func sliceClone(m dsl.Matcher) {
 }
 
 //doc:summary Detect strings.Join usages that can be rewritten as a string concat
-//doc:tags    o1
+//doc:tags    o1 score3
 func stringsJoinConcat(m dsl.Matcher) {
 	m.Match(`strings.Join([]string{$x, $y}, "")`).
 		Where(!m["x"].Const && !m["y"].Const).
@@ -196,7 +212,7 @@ func stringsJoinConcat(m dsl.Matcher) {
 }
 
 //doc:summary Detects sprint calls that can be rewritten as a string concat
-//doc:tags    o1
+//doc:tags    o1 score3
 //doc:before  fmt.Sprintf("%s%s", x, y)
 //doc:after   x + y
 func sprintConcat(m dsl.Matcher) {
@@ -210,7 +226,7 @@ func sprintConcat(m dsl.Matcher) {
 }
 
 //doc:summary Detects fmt uses that can be replaced with strconv
-//doc:tags    o1
+//doc:tags    o1 score3
 //doc:before  fmt.Sprintf("%d", i)
 //doc:after   strconv.Itoa(i)
 func strconv(m dsl.Matcher) {
@@ -243,7 +259,7 @@ func strconv(m dsl.Matcher) {
 }
 
 //doc:summary Detects cases that can benefit from append-friendly APIs
-//doc:tags    o1
+//doc:tags    o1 score4
 //doc:before  b = append(b, strconv.Itoa(v)...)
 //doc:after   b = strconv.AppendInt(b, v, 10)
 func appendAPI(m dsl.Matcher) {
@@ -281,7 +297,7 @@ func appendAPI(m dsl.Matcher) {
 }
 
 //doc:summary Detects patterns that can be reordered to make the code faster
-//doc:tags    o1
+//doc:tags    o1 score2
 //doc:before  strings.TrimSpace(string(b))
 //doc:after   string(bytes.TrimSpace(b))
 func convReorder(m dsl.Matcher) {
@@ -305,17 +321,24 @@ func convReorder(m dsl.Matcher) {
 	m.Match(`bytes.TrimPrefix([]byte($s1), []byte($s2))`).
 		Where(m["s1"].Type.Is(`string`) && m["s2"].Type.Is(`string`)).
 		Suggest(`[]byte(strings.TrimPrefix($s1, $s2))`)
+}
 
+//doc:summary Detects sliced slice copying that can be optimized
+//doc:tags    o1 score3
+//doc:before  string(b)[:n]
+//doc:after   string(b[:n])
+func slicedConv(m dsl.Matcher) {
 	m.Match(`string($b)[:$n]`).
 		Where(m["b"].Type.Is(`[]byte`)).
 		Suggest(`string($b[:$n])`)
+
 	m.Match(`[]byte($s)[:$n]`).
 		Where(m["s"].Type.Is(`string`)).
 		Suggest(`[]byte($s[:$n])`)
 }
 
 //doc:summary Detects redundant conversions between string and []byte
-//doc:tags    o1
+//doc:tags    o1 score4
 //doc:before  copy(b, []byte(s))
 //doc:after   copy(b, s)
 func stringCopyElim(m dsl.Matcher) {
@@ -341,7 +364,7 @@ func stringCopyElim(m dsl.Matcher) {
 }
 
 //doc:summary Detects inefficient regexp usage in regard to string/[]byte conversions
-//doc:tags    o1
+//doc:tags    o1 score3
 //doc:before  regexp.ReplaceAll([]byte(s), []byte("foo"))
 //doc:after   regexp.ReplaceAllString(s, "foo")
 func regexpStringCopyElim(m dsl.Matcher) {
@@ -391,7 +414,7 @@ func regexpStringCopyElim(m dsl.Matcher) {
 }
 
 //doc:summary Detects strings.Index()-like calls that may allocate more than they should
-//doc:tags    o1
+//doc:tags    o1 score3
 //doc:before  strings.Index(string(x), y)
 //doc:after   bytes.Index(x, []byte(y))
 //doc:note    See Go issue for details: https://github.com/golang/go/issues/25864
@@ -433,7 +456,7 @@ func indexAlloc(m dsl.Matcher) {
 }
 
 //doc:summary Detects WriteRune calls with rune literal argument that is single byte and reports to use WriteByte instead
-//doc:tags    o1
+//doc:tags    o1 score1
 //doc:before  w.WriteRune('\n')
 //doc:after   w.WriteByte('\n')
 func writeByte(m dsl.Matcher) {
@@ -446,7 +469,7 @@ func writeByte(m dsl.Matcher) {
 }
 
 //doc:summary Detects slice clear loops, suggests an idiom that is recognized by the Go compiler
-//doc:tags    o1
+//doc:tags    o1 score2
 //doc:before  for i := 0; i < len(buf); i++ { buf[i] = 0 }
 //doc:after   for i := range buf { buf[i] = 0 }
 func sliceClear(m dsl.Matcher) {
@@ -457,7 +480,7 @@ func sliceClear(m dsl.Matcher) {
 }
 
 //doc:summary Detects expressions like []rune(s)[0] that may cause unwanted rune slice allocation
-//doc:tags    o1
+//doc:tags    o1 score4
 //doc:before  r := []rune(s)[0]
 //doc:after   r, _ := utf8.DecodeRuneInString(s)
 //doc:note    See Go issue for details: https://github.com/golang/go/issues/45260
@@ -484,7 +507,7 @@ func utf8DecodeRune(m dsl.Matcher) {
 }
 
 //doc:summary Detects fmt.Sprint(f/ln) calls which can be replaced with fmt.Fprint(f/ln)
-//doc:tags    o1
+//doc:tags    o1 score2
 //doc:before  w.Write([]byte(fmt.Sprintf("%x", 10)))
 //doc:after   fmt.Fprintf(w, "%x", 10)
 func fprint(m dsl.Matcher) {
@@ -511,7 +534,7 @@ func fprint(m dsl.Matcher) {
 }
 
 //doc:summary Detects w.Write calls which can be replaced with w.WriteString
-//doc:tags    o1
+//doc:tags    o1 score4
 //doc:before  w.Write([]byte("foo"))
 //doc:after   w.WriteString("foo")
 func writeString(m dsl.Matcher) {
@@ -521,7 +544,7 @@ func writeString(m dsl.Matcher) {
 }
 
 //doc:summary Detects w.WriteString calls which can be replaced with w.Write
-//doc:tags    o1
+//doc:tags    o1 score4
 //doc:before  w.WriteString(buf.String())
 //doc:after   w.Write(buf.Bytes())
 func writeBytes(m dsl.Matcher) {
@@ -547,7 +570,7 @@ func writeBytes(m dsl.Matcher) {
 }
 
 //doc:summary Detects bytes.Buffer String() calls where Bytes() could be used instead
-//doc:tags    o1
+//doc:tags    o1 score4
 //doc:before  strings.Contains(buf.String(), string(b))
 //doc:after   bytes.Contains(buf.Bytes(), b)
 func bufferString(m dsl.Matcher) {
@@ -589,7 +612,7 @@ func bufferString(m dsl.Matcher) {
 }
 
 //doc:summary Detects array range loops that result in an excessive full data copy
-//doc:tags    o1
+//doc:tags    o1 score2
 func rangeExprCopy(m dsl.Matcher) {
 	m.Match(`for $_, $_ := range $e`, `for $_, $_ = range $e`).
 		Where(m["e"].Addressable && m["e"].Type.Is(`[$_]$_`) && m["e"].Type.Size > 2048).
@@ -605,7 +628,7 @@ func rangeExprCopy(m dsl.Matcher) {
 }
 
 //doc:summary Detects range loops that can be turned into a single append call
-//doc:tags    o1
+//doc:tags    o1 score3
 func rangeToAppend(m dsl.Matcher) {
 	m.Match(`for $_, $x := range $src { $dst = append($dst, $x) }`).
 		Where(m["src"].Type.Is(`[]$_`)).
@@ -614,7 +637,7 @@ func rangeToAppend(m dsl.Matcher) {
 }
 
 //doc:summary Detects a range over []rune(string) where copying to a new slice is redundant
-//doc:tags    o1
+//doc:tags    o1 score3
 func rangeRuneSlice(m dsl.Matcher) {
 	m.Match(`for _, $r := range []rune($s)`).
 		Where(m["s"].Type.Underlying().Is(`string`)).
@@ -638,7 +661,7 @@ func rangeRuneSlice(m dsl.Matcher) {
 }
 
 //doc:summary Detects usages of reflect.DeepEqual that can be rewritten
-//doc:tags    o1
+//doc:tags    o1 score2
 func reflectDeepEqual(m dsl.Matcher) {
 	m.Match(`reflect.DeepEqual($x, $y)`).
 		Where(m["x"].Type.Is(`[]byte`) && m["y"].Type.Is(`[]byte`)).
@@ -655,7 +678,7 @@ func reflectDeepEqual(m dsl.Matcher) {
 }
 
 //doc:summary Detects reflect Type() related patterns that can be optimized
-//doc:tags    o1
+//doc:tags    o1 score1
 func reflectType(m dsl.Matcher) {
 	m.Match(`reflect.ValueOf($x).Type()`).Suggest(`reflect.TypeOf($x)`)
 
