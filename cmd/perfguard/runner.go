@@ -7,6 +7,8 @@ import (
 	"go/token"
 	"io"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/quasilyte/go-perfguard/internal/imports"
@@ -21,6 +23,11 @@ type runner struct {
 	heatmapThreshold float64
 	targets          []string
 	autofix          bool
+
+	wd string
+
+	coloredOutput bool
+	absFilenames  bool
 
 	loadLintRules bool
 	loadOptRules  bool
@@ -43,6 +50,12 @@ func (r *runner) Run() error {
 	}
 
 	ctx := context.Background()
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	r.wd = wd
 
 	fileSet := token.NewFileSet()
 	loadedPackages, err := r.loadPackages(ctx, fileSet, r.targets)
@@ -106,7 +119,24 @@ func (r *runner) handleWarning(w perfguard.Warning) {
 	if r.autofix && w.Fix != nil {
 		r.pkgFixes = append(r.pkgFixes, w.Fix)
 	} else {
-		fmt.Fprintf(r.stdout, "%s:%d: %s: %s\n", w.Filename, w.Line, w.Tag, w.Text)
+		filename := w.Filename
+		line := strconv.Itoa(w.Line)
+		ruleName := w.Tag
+		message := w.Text
+		if !r.absFilenames {
+			rel, err := filepath.Rel(r.wd, filename)
+			if err != nil {
+				panic(err)
+			}
+			filename = rel
+		}
+		if r.coloredOutput {
+			filename = "\033[35m" + filename + "\033[0m"
+			line = "\033[32m" + line + "\033[0m"
+			ruleName = "\033[31m" + ruleName + "\033[0m"
+			message = strings.Replace(message, " => ", " \033[35;1m=>\033[0m ", 1)
+		}
+		fmt.Fprintf(r.stdout, "%s:%s: %s: %s\n", filename, line, ruleName, message)
 	}
 }
 
@@ -204,8 +234,13 @@ func (r *runner) loadPackages(ctx context.Context, fset *token.FileSet, targets 
 			continue
 		}
 
-		for _, err := range pkg.Errors {
-			fmt.Fprintf(r.stderr, "load %s package: %v\n", pkg.Name, err)
+		if len(pkg.Errors) != 0 {
+			extra := ""
+			err := pkg.Errors[0]
+			if len(pkg.Errors) > 1 {
+				extra = fmt.Sprintf(" (and %d more errors)", len(pkg.Errors)-1)
+			}
+			fmt.Fprintf(r.stderr, "load %s package: %v%s\n", pkg.Name, err, extra)
 		}
 
 		if _, ok := packageSet[pkg.PkgPath]; ok {

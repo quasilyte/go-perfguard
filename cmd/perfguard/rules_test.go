@@ -34,6 +34,8 @@ func runRulesTest(t *testing.T, name string) {
 	t.Run(name, func(t *testing.T) {
 		dir := filepath.Join("testdata", "rulestest", name)
 		args := []string{
+			"--abs",
+			"--no-color",
 			"./testdata/rulestest/" + name + "/...",
 		}
 
