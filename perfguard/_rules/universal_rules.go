@@ -95,6 +95,30 @@ func equalFold(m dsl.Matcher) {
 		`bytes.Equal($x, bytes.ToUpper($y))`).
 		Where(m["x"].Pure && m["y"].Pure && m["x"].Text != m["y"].Text).
 		Suggest(`bytes.EqualFold($x, $y)`)
+
+	// Strings prefix/suffix patterns.
+	m.Match(
+		`strings.HasPrefix(strings.ToLower($x), $y)`,
+		`strings.HasPrefix(strings.ToUpper($x), $y)`).
+		Where(m["x"].Pure && m["y"].Pure && m["x"].Text != m["y"].Text).
+		Suggest(`(len($x) >= len($y) && strings.EqualFold($x[:len($y)], $y))`)
+	m.Match(
+		`strings.HasSuffix(strings.ToLower($x), $y)`,
+		`strings.HasSuffix(strings.ToUpper($x), $y)`).
+		Where(m["x"].Pure && m["y"].Pure && m["x"].Text != m["y"].Text).
+		Suggest(`(len($x) >= len($y) && strings.EqualFold($x[len($x)-len($y):], $y))`)
+
+	// Bytes prefix/suffix patterns.
+	m.Match(
+		`bytes.HasPrefix(bytes.ToLower($x), $y)`,
+		`bytes.HasPrefix(bytes.ToUpper($x), $y)`).
+		Where(m["x"].Pure && m["y"].Pure && m["x"].Text != m["y"].Text).
+		Suggest(`(len($x) >= len($y) && bytes.EqualFold($x[:len($y)], $y))`)
+	m.Match(
+		`bytes.HasSuffix(bytes.ToLower($x), $y)`,
+		`bytes.HasSuffix(bytes.ToUpper($x), $y)`).
+		Where(m["x"].Pure && m["y"].Pure && m["x"].Text != m["y"].Text).
+		Suggest(`(len($x) >= len($y) && bytes.EqualFold($x[len($x)-len($y):], $y))`)
 }
 
 //doc:summary Detects redundant fmt.Sprint calls

@@ -37,6 +37,21 @@ func Warn() {
 		_ = bytes.Equal(bytes.ToUpper(x), bytes.ToUpper([]byte("y"))) // want `bytes.Equal(bytes.ToUpper(x), bytes.ToUpper([]byte("y"))) => bytes.EqualFold(x, []byte("y"))`
 		_ = bytes.Equal(x, bytes.ToUpper([]byte("y")))                // want `bytes.Equal(x, bytes.ToUpper([]byte("y"))) => bytes.EqualFold(x, []byte("y"))`
 	}
+
+	{
+		var s1, s2 string
+		_ = strings.HasPrefix(strings.ToLower(s1), s2) // want `strings.HasPrefix(strings.ToLower(s1), s2) => (len(s1) >= len(s2) && strings.EqualFold(s1[:len(s2)], s2))`
+		_ = strings.HasSuffix(strings.ToLower(s1), s2) // want `strings.HasSuffix(strings.ToLower(s1), s2) => (len(s1) >= len(s2) && strings.EqualFold(s1[len(s1)-len(s2):], s2))`
+		_ = strings.HasPrefix(strings.ToUpper(s1), s2) // want `strings.HasPrefix(strings.ToUpper(s1), s2) => (len(s1) >= len(s2) && strings.EqualFold(s1[:len(s2)], s2))`
+		_ = strings.HasSuffix(strings.ToUpper(s1), s2) // want `strings.HasSuffix(strings.ToUpper(s1), s2) => (len(s1) >= len(s2) && strings.EqualFold(s1[len(s1)-len(s2):], s2))`
+	}
+	{
+		var b1, b2 []byte
+		_ = bytes.HasPrefix(bytes.ToLower(b1), b2) // want `bytes.HasPrefix(bytes.ToLower(b1), b2) => (len(b1) >= len(b2) && bytes.EqualFold(b1[:len(b2)], b2))`
+		_ = bytes.HasSuffix(bytes.ToLower(b1), b2) // want `bytes.HasSuffix(bytes.ToLower(b1), b2) => (len(b1) >= len(b2) && bytes.EqualFold(b1[len(b1)-len(b2):], b2))`
+		_ = bytes.HasPrefix(bytes.ToUpper(b1), b2) // want `bytes.HasPrefix(bytes.ToUpper(b1), b2) => (len(b1) >= len(b2) && bytes.EqualFold(b1[:len(b2)], b2))`
+		_ = bytes.HasSuffix(bytes.ToUpper(b1), b2) // want `bytes.HasSuffix(bytes.ToUpper(b1), b2) => (len(b1) >= len(b2) && bytes.EqualFold(b1[len(b1)-len(b2):], b2))`
+	}
 }
 
 func Ignore() {
@@ -84,5 +99,20 @@ func Ignore() {
 		// Side effects.
 		_ = strings.ToLower(s1) == concat(s2, "123")
 		_ = bytes.Equal(bytes.ToLower(b1), append(b2, 'a'))
+	}
+
+	{
+		var s1, s2 string
+		_ = (len(s1) >= len(s2) && strings.EqualFold(s1[:len(s2)], s2))
+		_ = (len(s1) >= len(s2) && strings.EqualFold(s1[len(s1)-len(s2):], s2))
+		_ = (len(s1) >= len(s2) && strings.EqualFold(s1[:len(s2)], s2))
+		_ = (len(s1) >= len(s2) && strings.EqualFold(s1[len(s1)-len(s2):], s2))
+	}
+	{
+		var b1, b2 []byte
+		_ = (len(b1) >= len(b2) && bytes.EqualFold(b1[:len(b2)], b2))
+		_ = (len(b1) >= len(b2) && bytes.EqualFold(b1[len(b1)-len(b2):], b2))
+		_ = (len(b1) >= len(b2) && bytes.EqualFold(b1[:len(b2)], b2))
+		_ = (len(b1) >= len(b2) && bytes.EqualFold(b1[len(b1)-len(b2):], b2))
 	}
 }
