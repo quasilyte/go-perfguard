@@ -601,3 +601,36 @@ func rangeRuneSlice(m dsl.Matcher) {
 		Where(m["runes"].Type.Underlying().Is(`[]rune`)).
 		Suggest(`for _, $r = range $runes`)
 }
+
+//doc:summary Detects usages of reflect.DeepEqual that can be rewritten
+//doc:tags    o1
+func reflectDeepEqual(m dsl.Matcher) {
+	m.Match(`reflect.DeepEqual($x, $y)`).
+		Where(m["x"].Type.Is(`[]byte`) && m["y"].Type.Is(`[]byte`)).
+		Suggest(`bytes.Equal($x, $y)`)
+
+	// We insert extra () around $x == $y to ensure that we don't break
+	// the code in case it was actually `!reflect.DeepEqual(...)`.
+	// Without parens we would end up in `!$x == $y`, which makes no sense.
+	// TODO: figure out to do it better?
+	m.Match(`reflect.DeepEqual($x, $y)`).
+		Where((m["x"].Type.Is(`string`) && m["y"].Type.Is(`string`)) ||
+			(m["x"].Type.OfKind(`numeric`) && m["y"].Type.OfKind(`numeric`))).
+		Suggest(`($x == $y)`)
+}
+
+//doc:summary Detects reflect Type() related patterns that can be optimized
+//doc:tags    o1
+func reflectType(m dsl.Matcher) {
+	m.Match(`reflect.ValueOf($x).Type()`).Suggest(`reflect.TypeOf($x)`)
+
+	m.Match(`reflect.TypeOf($x.Interface())`).
+		Where(m["x"].Type.Is(`reflect.Value`)).
+		Suggest(`$x.Type()`)
+
+	m.Match(`fmt.Sprintf("%T", $x.Interface())`).
+		Where(m["x"].Type.Is(`reflect.Value`)).
+		Suggest(`$x.Type().String()`)
+	m.Match(`fmt.Sprintf("%T", $x)`).
+		Suggest(`reflect.TypeOf($x).String()`)
+}

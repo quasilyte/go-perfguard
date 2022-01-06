@@ -3671,6 +3671,176 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		ir.RuleGroup{
+			Line:        607,
+			Name:        "reflectDeepEqual",
+			MatcherName: "m",
+			DocTags: []string{
+				"o1",
+			},
+			DocSummary: "Detects usages of reflect.DeepEqual that can be rewritten",
+			Rules: []ir.Rule{
+				ir.Rule{
+					Line: 608,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 608, Value: "reflect.DeepEqual($x, $y)"},
+					},
+					ReportTemplate:  "$$ => bytes.Equal($x, $y)",
+					SuggestTemplate: "bytes.Equal($x, $y)",
+					WhereExpr: ir.FilterExpr{
+						Line: 609,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"x\"].Type.Is(`[]byte`) && m[\"y\"].Type.Is(`[]byte`)",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line:  609,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"x\"].Type.Is(`[]byte`)",
+								Value: "x",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 609, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+								},
+							},
+							ir.FilterExpr{
+								Line:  609,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"y\"].Type.Is(`[]byte`)",
+								Value: "y",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{Line: 609, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"},
+								},
+							},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 616,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 616, Value: "reflect.DeepEqual($x, $y)"},
+					},
+					ReportTemplate:  "$$ => ($x == $y)",
+					SuggestTemplate: "($x == $y)",
+					WhereExpr: ir.FilterExpr{
+						Line: 617,
+						Op:   ir.FilterOrOp,
+						Src:  "(m[\"x\"].Type.Is(`string`) && m[\"y\"].Type.Is(`string`)) ||\n\t(m[\"x\"].Type.OfKind(`numeric`) && m[\"y\"].Type.OfKind(`numeric`))",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{
+								Line: 617,
+								Op:   ir.FilterAndOp,
+								Src:  "(m[\"x\"].Type.Is(`string`) && m[\"y\"].Type.Is(`string`))",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{
+										Line:  617,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"x\"].Type.Is(`string`)",
+										Value: "x",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 617, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+										},
+									},
+									ir.FilterExpr{
+										Line:  617,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"y\"].Type.Is(`string`)",
+										Value: "y",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 617, Op: ir.FilterStringOp, Src: "`string`", Value: "string"},
+										},
+									},
+								},
+							},
+							ir.FilterExpr{
+								Line: 618,
+								Op:   ir.FilterAndOp,
+								Src:  "(m[\"x\"].Type.OfKind(`numeric`) && m[\"y\"].Type.OfKind(`numeric`))",
+								Args: []ir.FilterExpr{
+									ir.FilterExpr{
+										Line:  618,
+										Op:    ir.FilterVarTypeOfKindOp,
+										Src:   "m[\"x\"].Type.OfKind(`numeric`)",
+										Value: "x",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 618, Op: ir.FilterStringOp, Src: "`numeric`", Value: "numeric"},
+										},
+									},
+									ir.FilterExpr{
+										Line:  618,
+										Op:    ir.FilterVarTypeOfKindOp,
+										Src:   "m[\"y\"].Type.OfKind(`numeric`)",
+										Value: "y",
+										Args: []ir.FilterExpr{
+											ir.FilterExpr{Line: 618, Op: ir.FilterStringOp, Src: "`numeric`", Value: "numeric"},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		ir.RuleGroup{
+			Line:        624,
+			Name:        "reflectType",
+			MatcherName: "m",
+			DocTags: []string{
+				"o1",
+			},
+			DocSummary: "Detects reflect Type() related patterns that can be optimized",
+			Rules: []ir.Rule{
+				ir.Rule{
+					Line: 625,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 625, Value: "reflect.ValueOf($x).Type()"},
+					},
+					ReportTemplate:  "$$ => reflect.TypeOf($x)",
+					SuggestTemplate: "reflect.TypeOf($x)",
+				},
+				ir.Rule{
+					Line: 627,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 627, Value: "reflect.TypeOf($x.Interface())"},
+					},
+					ReportTemplate:  "$$ => $x.Type()",
+					SuggestTemplate: "$x.Type()",
+					WhereExpr: ir.FilterExpr{
+						Line:  628,
+						Op:    ir.FilterVarTypeIsOp,
+						Src:   "m[\"x\"].Type.Is(`reflect.Value`)",
+						Value: "x",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{Line: 628, Op: ir.FilterStringOp, Src: "`reflect.Value`", Value: "reflect.Value"},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 631,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 631, Value: "fmt.Sprintf(\"%T\", $x.Interface())"},
+					},
+					ReportTemplate:  "$$ => $x.Type().String()",
+					SuggestTemplate: "$x.Type().String()",
+					WhereExpr: ir.FilterExpr{
+						Line:  632,
+						Op:    ir.FilterVarTypeIsOp,
+						Src:   "m[\"x\"].Type.Is(`reflect.Value`)",
+						Value: "x",
+						Args: []ir.FilterExpr{
+							ir.FilterExpr{Line: 632, Op: ir.FilterStringOp, Src: "`reflect.Value`", Value: "reflect.Value"},
+						},
+					},
+				},
+				ir.Rule{
+					Line: 634,
+					SyntaxPatterns: []ir.PatternString{
+						ir.PatternString{Line: 634, Value: "fmt.Sprintf(\"%T\", $x)"},
+					},
+					ReportTemplate:  "$$ => reflect.TypeOf($x).String()",
+					SuggestTemplate: "reflect.TypeOf($x).String()",
+				},
+			},
+		},
 	},
 }
 
