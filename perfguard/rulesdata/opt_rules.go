@@ -15,6 +15,7 @@ var Opt = &ir.File{
 			MatcherName: "m",
 			DocTags: []string{
 				"o1",
+				"score4",
 			},
 			DocSummary: "Detects regexp compilation on hot execution paths",
 			Rules: []ir.Rule{
@@ -39,6 +40,7 @@ var Opt = &ir.File{
 			MatcherName: "m",
 			DocTags: []string{
 				"o2",
+				"score2",
 			},
 			DocSummary: "Detects sprint calls that can be rewritten as a string concat",
 			Rules: []ir.Rule{
@@ -215,6 +217,7 @@ var Opt = &ir.File{
 			MatcherName: "m",
 			DocTags: []string{
 				"o1",
+				"score2",
 			},
 			DocSummary: "Detects range loops that copy large value on every iteration",
 			Rules: []ir.Rule{
