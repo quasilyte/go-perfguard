@@ -37,7 +37,7 @@ type runner struct {
 	stdout io.Writer
 	stderr io.Writer
 
-	pkgFixes []*perfguard.QuickFix
+	pkgWarnings []perfguard.Warning
 }
 
 func newRunner(stdout, stderr io.Writer) *runner {
@@ -70,7 +70,7 @@ func (r *runner) Run() error {
 
 	target := &perfguard.Target{}
 	for _, pkg := range loadedPackages {
-		r.pkgFixes = r.pkgFixes[:0]
+		r.pkgWarnings = r.pkgWarnings[:0]
 		target.Files = target.Files[:0]
 		for _, f := range pkg.Syntax {
 			target.Files = append(target.Files, perfguard.SourceFile{
@@ -84,8 +84,8 @@ func (r *runner) Run() error {
 		if err := analyzer.CheckPackage(target); err != nil {
 			return fmt.Errorf("checking %s: %w", pkg.PkgPath, err)
 		}
-		if len(r.pkgFixes) != 0 {
-			if err := r.applyFixes(target); err != nil {
+		if len(r.pkgWarnings) != 0 {
+			if err := r.handleWarnings(target); err != nil {
 				return fmt.Errorf("apply fixes: %w", err)
 			}
 		}
@@ -102,7 +102,7 @@ func (r *runner) createAnalyzer() (*perfguard.Analyzer, error) {
 
 		GoVersion: r.goVersion,
 
-		Warn: r.handleWarning,
+		Warn: r.appendWarning,
 
 		LoadUniversalRules: true,
 		LoadOptRules:       r.loadOptRules,
@@ -115,10 +115,35 @@ func (r *runner) createAnalyzer() (*perfguard.Analyzer, error) {
 	return a, nil
 }
 
-func (r *runner) handleWarning(w perfguard.Warning) {
-	if r.autofix && w.Fix != nil {
-		r.pkgFixes = append(r.pkgFixes, w.Fix)
-	} else {
+func (r *runner) appendWarning(w perfguard.Warning) {
+	r.pkgWarnings = append(r.pkgWarnings, w)
+}
+
+func (r *runner) handleWarnings(target *perfguard.Target) error {
+	// TODO: don't run imports fixing for every modified file?
+	// We can infer which rules may affect the imports set.
+
+	needFmt := make(map[string]struct{})
+	editsPerFile := make(map[string][]quickfix.TextEdit)
+	for _, w := range r.pkgWarnings {
+		if r.autofix && w.Fix != nil {
+			fix := w.Fix
+			pos := target.Fset.Position(fix.From)
+			from := pos.Offset
+			filename := pos.Filename
+			endPos := target.Fset.Position(fix.To)
+			to := endPos.Offset
+			if pos.Line != endPos.Line {
+				needFmt[filename] = struct{}{}
+			}
+			editsPerFile[filename] = append(editsPerFile[filename], quickfix.TextEdit{
+				StartOffset: from,
+				EndOffset:   to,
+				Replacement: fix.Replacement,
+			})
+			continue
+		}
+
 		filename := w.Filename
 		line := strconv.Itoa(w.Line)
 		ruleName := w.Tag
@@ -137,29 +162,6 @@ func (r *runner) handleWarning(w perfguard.Warning) {
 			message = strings.Replace(message, " => ", " \033[35;1m=>\033[0m ", 1)
 		}
 		fmt.Fprintf(r.stdout, "%s:%s: %s: %s\n", filename, line, ruleName, message)
-	}
-}
-
-func (r *runner) applyFixes(target *perfguard.Target) error {
-	// TODO: don't run imports fixing for every modified file?
-	// We can infer which rules may affect the imports set.
-
-	needFmt := make(map[string]struct{})
-	editsPerFile := make(map[string][]quickfix.TextEdit)
-	for _, fix := range r.pkgFixes {
-		pos := target.Fset.Position(fix.From)
-		from := pos.Offset
-		filename := pos.Filename
-		endPos := target.Fset.Position(fix.To)
-		to := endPos.Offset
-		if pos.Line != endPos.Line {
-			needFmt[filename] = struct{}{}
-		}
-		editsPerFile[filename] = append(editsPerFile[filename], quickfix.TextEdit{
-			StartOffset: from,
-			EndOffset:   to,
-			Replacement: fix.Replacement,
-		})
 	}
 
 	// TODO.
@@ -185,6 +187,7 @@ func (r *runner) applyFixes(target *perfguard.Target) error {
 			return err
 		}
 	}
+
 	return nil
 }
 

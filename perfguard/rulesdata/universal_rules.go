@@ -928,7 +928,7 @@ var Universal = &ir.File{
 			Line:        232,
 			Name:        "strconv",
 			MatcherName: "m",
-			DocTags:     []string{"o1", "score3"},
+			DocTags:     []string{"o1", "score2"},
 			DocSummary:  "Detects fmt uses that can be replaced with strconv",
 			DocBefore:   "fmt.Sprintf(\"%d\", i)",
 			DocAfter:    "strconv.Itoa(i)",

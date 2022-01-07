@@ -226,7 +226,7 @@ func sprintConcat(m dsl.Matcher) {
 }
 
 //doc:summary Detects fmt uses that can be replaced with strconv
-//doc:tags    o1 score3
+//doc:tags    o1 score2
 //doc:before  fmt.Sprintf("%d", i)
 //doc:after   strconv.Itoa(i)
 func strconv(m dsl.Matcher) {
