@@ -86,7 +86,7 @@ func (r *runner) Run() error {
 		}
 		if len(r.pkgWarnings) != 0 {
 			if err := r.handleWarnings(target); err != nil {
-				return fmt.Errorf("apply fixes: %w", err)
+				return err
 			}
 		}
 	}
@@ -175,7 +175,7 @@ func (r *runner) handleWarnings(target *perfguard.Target) error {
 		afterQuickFixes := quickfix.Apply(fileText, edits)
 		newText, err := imports.Fix(importsConfig, afterQuickFixes)
 		if err != nil {
-			return err
+			return fmt.Errorf("fix imports: %w", err)
 		}
 		if _, ok := needFmt[filename]; ok {
 			newText, err = format.Source(newText)
