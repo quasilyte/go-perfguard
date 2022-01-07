@@ -17,24 +17,38 @@ type TextEdit struct {
 	Replacement []byte
 }
 
-func Apply(src []byte, edits []TextEdit) []byte {
+func Sort(slice interface{}, get func(i int) TextEdit) {
+	sort.SliceStable(slice, func(i, j int) bool {
+		x := get(i)
+		y := get(j)
+		if x.StartOffset != y.StartOffset {
+			return x.StartOffset < y.StartOffset
+		}
+		return x.EndOffset < y.EndOffset
+	})
+}
+
+// Apply returns updated src with edits applied to it.
+//
+// Second return value contains indexes from edits slice
+// that were not applied due to overlapping.
+func Apply(src []byte, edits []TextEdit) (out []byte, indexes []int) {
 	if len(edits) == 0 {
-		return src
+		return src, nil
 	}
 
-	sort.SliceStable(edits, func(i, j int) bool {
-		if edits[i].StartOffset != edits[j].StartOffset {
-			return edits[i].StartOffset < edits[j].StartOffset
-		}
-		return edits[i].EndOffset < edits[j].EndOffset
+	Sort(edits, func(i int) TextEdit {
+		return edits[i]
 	})
 
+	var overlapping []int
 	var buf bytes.Buffer
 	buf.Grow(len(src))
 	offset := 0
-	for _, fix := range edits {
+	for i, fix := range edits {
 		// If we have a nested replacement, apply only outer replacement.
 		if offset > fix.StartOffset {
+			overlapping = append(overlapping, i)
 			continue
 		}
 
@@ -45,5 +59,5 @@ func Apply(src []byte, edits []TextEdit) []byte {
 	}
 	buf.Write(src[offset:])
 
-	return buf.Bytes()
+	return buf.Bytes(), overlapping
 }

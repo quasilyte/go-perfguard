@@ -31,7 +31,8 @@ func TestQuickFixNested(t *testing.T) {
 	}
 
 	runTest := func(want string, fixes []TextEdit) {
-		have := string(Apply([]byte(input), fixes))
+		out, _ := Apply([]byte(input), fixes)
+		have := string(out)
 		if have != want {
 			t.Errorf("%q %v:\nhave: `%s`\nwant: `%s`", input, fixes, have, want)
 		}
@@ -122,7 +123,8 @@ foo = $x ?
 
 	for s, replacements := range tests {
 		test := createTestCase(s, replacements)
-		have := string(Apply([]byte(test.input), test.fixes))
+		out, _ := Apply([]byte(test.input), test.fixes)
+		have := string(out)
 		if have != test.want {
 			t.Errorf("%q %q:\nhave: `%s`\nwant: `%s`", test.input, replacements, have, test.want)
 		}
