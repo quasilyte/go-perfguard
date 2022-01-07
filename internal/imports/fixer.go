@@ -28,9 +28,29 @@ func (f *fixer) Fix(src []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	getLine := func(pos token.Pos) int {
+		return fset.Position(pos).Line
+	}
+	hasImportC := func(decl *ast.GenDecl) bool {
+		for _, spec := range decl.Specs {
+			spec := spec.(*ast.ImportSpec)
+			importedPath, _ := strconv.Unquote(spec.Path.Value)
+			if importedPath == "C" {
+				return true
+			}
+		}
+		return false
+	}
+
+	commentByLine := make(map[int]*ast.CommentGroup)
+	for _, c := range file.Comments {
+		commentByLine[getLine(c.Pos())] = c
+	}
+
 	var importDecls []*ast.GenDecl
 	imports := make(map[string]string, 8)
 	usages := make(map[string]struct{}, 8)
+	inlineComments := make(map[*ast.ImportSpec]*ast.CommentGroup)
 	var walkError error
 	ast.Inspect(file, func(n ast.Node) bool {
 		if n == nil {
@@ -55,6 +75,10 @@ func (f *fixer) Fix(src []byte) ([]byte, error) {
 				localName = path.Base(importedPath)
 			}
 			imports[localName] = importedPath
+			comment := commentByLine[getLine(n.Pos())]
+			if comment != nil {
+				inlineComments[n] = comment
+			}
 
 		case *ast.SelectorExpr:
 			xident, ok := n.X.(*ast.Ident)
@@ -112,6 +136,7 @@ func (f *fixer) Fix(src []byte) ([]byte, error) {
 	continueFrom := 0
 	if len(imports) != 0 {
 		startFrom := 0
+		addedImports := false
 		for i, decl := range importDecls {
 			numUsedImports := 0
 			for _, spec := range decl.Specs {
@@ -136,26 +161,72 @@ func (f *fixer) Fix(src []byte) ([]byte, error) {
 			}
 
 			buf.Write(src[startFrom : fset.Position(decl.Pos()).Offset+len("import")])
-			buf.WriteString(" (\n")
+			importedC := hasImportC(decl)
+			addParens := (!addedImports && !importedC) || decl.Lparen.IsValid()
+			if addParens {
+				buf.WriteString(" (\n")
+			} else {
+				buf.WriteByte(' ')
+			}
+			prevLine := 0
+			if len(decl.Specs) != 0 {
+				prevLine = getLine(decl.Specs[0].Pos()) - 1
+			}
 			for _, spec := range decl.Specs {
 				spec := spec.(*ast.ImportSpec)
+				if spec.Doc != nil {
+					commentFrom := fset.Position(spec.Doc.Pos()).Offset
+					commentTo := fset.Position(spec.Doc.End()).Offset
+					buf.WriteByte('\t')
+					buf.Write(src[commentFrom:commentTo])
+					buf.WriteByte('\n')
+				}
+				line := getLine(spec.Pos())
+				if line-prevLine != 1 {
+					// Grouping line break. Write extra imports here.
+					if !addedImports && !importedC {
+						addedImports = true
+						for _, pkgPath := range missingImports {
+							fmt.Fprintf(&buf, "\t%q\n", pkgPath)
+						}
+					}
+					buf.WriteByte('\n')
+				}
+				prevLine = line
 				importedPath, _ := strconv.Unquote(spec.Path.Value)
 				if _, ok := unusedImports[importedPath]; ok {
 					continue
 				}
+				if addParens {
+					buf.WriteByte('\t')
+				}
 				if spec.Name != nil {
-					fmt.Fprintf(&buf, "\t%s %s\n", spec.Name.Name, spec.Path.Value)
+					fmt.Fprintf(&buf, "%s %s", spec.Name.Name, spec.Path.Value)
 				} else {
-					fmt.Fprintf(&buf, "\t%s\n", spec.Path.Value)
+					buf.WriteString(spec.Path.Value)
+				}
+				comment := inlineComments[spec]
+				if comment != nil {
+					commentFrom := fset.Position(comment.Pos()).Offset
+					commentTo := fset.Position(comment.End()).Offset
+					buf.WriteByte(' ')
+					buf.Write(src[commentFrom:commentTo])
+				}
+				if addParens {
+					buf.WriteByte('\n')
 				}
 			}
-			// Put extra imports into the first import decl.
-			if i == 0 {
+			// Put extra imports into the first import decl,
+			// if not done so yet.
+			if !addedImports && !importedC {
+				addedImports = true
 				for _, pkgPath := range missingImports {
 					fmt.Fprintf(&buf, "\t%q\n", pkgPath)
 				}
 			}
-			buf.WriteByte(')')
+			if addParens {
+				buf.WriteByte(')')
+			}
 			startFrom = continueFrom
 		}
 	} else {

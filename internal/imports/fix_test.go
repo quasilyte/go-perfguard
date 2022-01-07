@@ -434,6 +434,178 @@ import (
 func f(r io.Reader) string { return str.Repeat("x", 10) }
 func f2(r io.Reader) string { return strings.Repeat("x", 10) }`,
 		},
+
+		// Try not to discard the imports grouping.
+		{`
+package example
+
+import (
+	"io"
+
+	"github.com/quasilyte/go-perfguard/otherlib"
+
+	"github.com/quasilyte/lib"
+)
+
+func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`, `
+package example
+
+import (
+	"io"
+	"strings"
+
+	"github.com/quasilyte/go-perfguard/otherlib"
+
+	"github.com/quasilyte/lib"
+)
+
+func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`,
+		},
+
+		// Try not to discard the imports grouping.
+		{`
+package example
+
+import (
+	"io"
+)
+
+import (
+	"github.com/quasilyte/go-perfguard/otherlib"
+
+	"github.com/quasilyte/lib"
+)
+
+func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`, `
+package example
+
+import (
+	"io"
+	"strings"
+)
+
+import (
+	"github.com/quasilyte/go-perfguard/otherlib"
+
+	"github.com/quasilyte/lib"
+)
+
+func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`,
+		},
+
+		// Try not to add extra () for unchanged import decls.
+		{`
+package example
+
+import (
+	"io"
+)
+
+import "github.com/quasilyte/go-perfguard/otherlib"
+
+func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`, `
+package example
+
+import (
+	"io"
+	"strings"
+)
+
+import "github.com/quasilyte/go-perfguard/otherlib"
+
+func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`,
+		},
+
+		// Do not inject anything to standalone import C decls.
+		{`
+package example
+
+// Some C-related comment.
+// Should not be removed.
+import "C"
+
+import (
+	"io"
+)
+
+func f(r io.Reader, b *strings.Builder) {}`, `
+package example
+
+// Some C-related comment.
+// Should not be removed.
+import "C"
+
+import (
+	"io"
+	"strings"
+)
+
+func f(r io.Reader, b *strings.Builder) {}`,
+		},
+
+		// Try not to lose associated comments.
+		{`
+package example
+
+// Comment 1.
+import "github.com/quasilyte/go-perfguard/otherlib"
+
+// Comment 2.
+import (
+	// Comment 3.
+	"io" // Comment 4.
+)
+
+func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`, `
+package example
+
+// Comment 1.
+import (
+	"github.com/quasilyte/go-perfguard/otherlib"
+	"strings"
+)
+
+// Comment 2.
+import (
+	// Comment 3.
+	"io" // Comment 4.
+)
+
+func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`,
+		},
+
+		// Try not to lose associated comments.
+		{`
+package example
+
+// Comment 1.
+import "github.com/quasilyte/go-perfguard/otherlib"
+
+// Comment 2.
+// Comment 3.
+import (
+	/* Comment 4. */
+	"io" /* Comment 5. */
+)
+
+func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`, `
+package example
+
+// Comment 1.
+import (
+	"github.com/quasilyte/go-perfguard/otherlib"
+	"strings"
+)
+
+// Comment 2.
+// Comment 3.
+import (
+	/* Comment 4. */
+	"io" /* Comment 5. */
+)
+
+func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`,
+		},
 	}
 
 	for i := range tests {
