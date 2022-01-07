@@ -4,6 +4,14 @@ import (
 	"github.com/quasilyte/go-ruleguard/dsl"
 )
 
+//doc:summary Detects string concat in hot paths
+//doc:tags    o2 score5
+func stringConcatAssign(m dsl.Matcher) {
+	m.Match(`$s += $_`).
+		Where(m["s"].Type.Is(`string`)).
+		Report(`string concat on the hot path`)
+}
+
 //doc:summary Detects regexp compilation on hot execution paths
 //doc:tags    o1 score4
 func regexpCompile(m dsl.Matcher) {
