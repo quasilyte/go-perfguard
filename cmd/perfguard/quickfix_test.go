@@ -44,6 +44,7 @@ func TestQuickFix(t *testing.T) {
 
 			args := []string{
 				"--fix",
+				"--no-color",
 				fmt.Sprintf("./testdata/quickfix/%s/target.go", key),
 			}
 			var stdout bytes.Buffer

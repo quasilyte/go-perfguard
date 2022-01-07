@@ -18,10 +18,14 @@ func cmdOptimize(stdout, stderr io.Writer, args []string) error {
 		`apply the suggested fixes automatically, where possible`)
 	fs.StringVar(&r.goVersion, "go", "",
 		`select the Go version to target; leave as string for the latest`)
+	fs.BoolVar(&r.absFilenames, "abs", false,
+		`print absolute filenames in the output`)
+	noColor := fs.Bool("no-color", false, `disable colored output`)
 	_ = fs.Parse(args)
 
 	r.targets = fs.Args()
 	r.loadOptRules = true
+	r.coloredOutput = !*noColor
 
 	if r.heatmapFile == "" {
 		return errors.New("CPU profile is required, see --heatmap argument")
