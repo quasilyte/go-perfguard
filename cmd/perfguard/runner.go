@@ -119,60 +119,79 @@ func (r *runner) appendWarning(w perfguard.Warning) {
 	r.pkgWarnings = append(r.pkgWarnings, w)
 }
 
+func (r *runner) reportWarning(w *perfguard.Warning) {
+	filename := w.Filename
+	line := strconv.Itoa(w.Line)
+	ruleName := w.Tag
+	message := w.Text
+	if !r.absFilenames {
+		rel, err := filepath.Rel(r.wd, filename)
+		if err != nil {
+			panic(err)
+		}
+		filename = rel
+	}
+	if r.coloredOutput {
+		filename = "\033[35m" + filename + "\033[0m"
+		line = "\033[32m" + line + "\033[0m"
+		ruleName = "\033[31m" + ruleName + "\033[0m"
+		message = strings.Replace(message, " => ", " \033[35;1m=>\033[0m ", 1)
+	}
+	fmt.Fprintf(r.stdout, "%s:%s: %s: %s\n", filename, line, ruleName, message)
+}
+
 func (r *runner) handleWarnings(target *perfguard.Target) error {
 	// TODO: don't run imports fixing for every modified file?
 	// We can infer which rules may affect the imports set.
 
+	type warningWithFix struct {
+		w   *perfguard.Warning
+		fix quickfix.TextEdit
+	}
+
 	needFmt := make(map[string]struct{})
-	editsPerFile := make(map[string][]quickfix.TextEdit)
-	for _, w := range r.pkgWarnings {
-		if r.autofix && w.Fix != nil {
-			fix := w.Fix
-			pos := target.Fset.Position(fix.From)
-			from := pos.Offset
-			filename := pos.Filename
-			endPos := target.Fset.Position(fix.To)
-			to := endPos.Offset
-			if pos.Line != endPos.Line {
-				needFmt[filename] = struct{}{}
-			}
-			editsPerFile[filename] = append(editsPerFile[filename], quickfix.TextEdit{
-				StartOffset: from,
-				EndOffset:   to,
-				Replacement: fix.Replacement,
-			})
+	fixablePerFile := make(map[string][]warningWithFix)
+	for i := range r.pkgWarnings {
+		w := &r.pkgWarnings[i]
+		if !r.autofix || w.Fix == nil {
+			r.reportWarning(w)
 			continue
 		}
-
-		filename := w.Filename
-		line := strconv.Itoa(w.Line)
-		ruleName := w.Tag
-		message := w.Text
-		if !r.absFilenames {
-			rel, err := filepath.Rel(r.wd, filename)
-			if err != nil {
-				panic(err)
-			}
-			filename = rel
+		pos := target.Fset.Position(w.Fix.From)
+		from := pos.Offset
+		filename := pos.Filename
+		endPos := target.Fset.Position(w.Fix.To)
+		to := endPos.Offset
+		if pos.Line != endPos.Line {
+			needFmt[filename] = struct{}{}
 		}
-		if r.coloredOutput {
-			filename = "\033[35m" + filename + "\033[0m"
-			line = "\033[32m" + line + "\033[0m"
-			ruleName = "\033[31m" + ruleName + "\033[0m"
-			message = strings.Replace(message, " => ", " \033[35;1m=>\033[0m ", 1)
+		fix := quickfix.TextEdit{
+			StartOffset: from,
+			EndOffset:   to,
+			Replacement: w.Fix.Replacement,
 		}
-		fmt.Fprintf(r.stdout, "%s:%s: %s: %s\n", filename, line, ruleName, message)
+		fixablePerFile[filename] = append(fixablePerFile[filename], warningWithFix{w: w, fix: fix})
 	}
 
 	// TODO.
 	importsConfig := imports.FixConfig{}
 
-	for filename, edits := range editsPerFile {
+	for filename, pairs := range fixablePerFile {
+		quickfix.Sort(pairs, func(i int) quickfix.TextEdit {
+			return pairs[i].fix
+		})
+		edits := make([]quickfix.TextEdit, len(pairs))
+		for i, p := range pairs {
+			edits[i] = p.fix
+		}
 		fileText, err := os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
-		afterQuickFixes := quickfix.Apply(fileText, edits)
+		afterQuickFixes, overlapping := quickfix.Apply(fileText, edits)
+		for _, pairIndex := range overlapping {
+			r.reportWarning(pairs[pairIndex].w)
+		}
 		newText, err := imports.Fix(importsConfig, afterQuickFixes)
 		if err != nil {
 			return fmt.Errorf("fix imports: %w", err)
