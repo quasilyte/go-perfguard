@@ -29,7 +29,10 @@ func TestQuickFix(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer os.Remove(f.Name())
+			defer func() {
+				f.Close()
+				os.Remove(f.Name())
+			}()
 
 			data, err := os.ReadFile(filepath.Join(testDir, "before.go"))
 			if err != nil {
