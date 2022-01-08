@@ -38,9 +38,9 @@ Profiles that are obtained from benchmarks are not representative and may lead t
 
 Hot spots in the profile may appear in three main places:
 
-1. Standard Go library and the runtime. We can't apply fixes to that.
-2. Your app (or library) own code.
-3. Your code dependencies (direct or indirect).
+1. Standard Go library and the runtime. We can't apply fixes to that
+2. Your app (or library) own code
+3. Your code dependencies (direct or indirect)
 
 Optimizing your own code is straightforward. Run perfguard on the root of your project:
 
