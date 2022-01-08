@@ -42,7 +42,7 @@ func (f *fixer) Fix(src []byte) ([]byte, error) {
 		return false
 	}
 
-	commentByLine := make(map[int]*ast.CommentGroup)
+	commentByLine := make(map[int]*ast.CommentGroup, len(file.Comments))
 	for _, c := range file.Comments {
 		commentByLine[getLine(c.Pos())] = c
 	}
