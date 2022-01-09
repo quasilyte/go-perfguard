@@ -4,6 +4,8 @@ import (
 	"github.com/quasilyte/go-ruleguard/dsl"
 )
 
+var Bundle = dsl.Bundle{}
+
 // Universal rules are shared in both `lint` and `optimize` modes.
 //
 // By default, all rules trigger on every successful match.
