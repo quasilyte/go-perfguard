@@ -28,6 +28,8 @@ github.com/quasilyte/go-ruleguard v0.3.16-0.20220106133352-5d3336732609 h1:8zwop
 github.com/quasilyte/go-ruleguard v0.3.16-0.20220106133352-5d3336732609/go.mod h1:6x/2nbH9FYIU2BTuRrcJo6w/gH6r5vq2YH4/PMgRqYI=
 github.com/quasilyte/go-ruleguard v0.3.16-0.20220106220733-cc33ba403156 h1:NTq0bt8jgpUr4pn+zu0TQy3aDVumilGQzRVHQpZo+BA=
 github.com/quasilyte/go-ruleguard v0.3.16-0.20220106220733-cc33ba403156/go.mod h1:6x/2nbH9FYIU2BTuRrcJo6w/gH6r5vq2YH4/PMgRqYI=
+github.com/quasilyte/go-ruleguard v0.3.16-0.20220109130640-53066ba2be23 h1:Z+gJL79NlCFy8OIfChP42UWcr7O9POU+9a/j9W69q54=
+github.com/quasilyte/go-ruleguard v0.3.16-0.20220109130640-53066ba2be23/go.mod h1:6x/2nbH9FYIU2BTuRrcJo6w/gH6r5vq2YH4/PMgRqYI=
 github.com/quasilyte/go-ruleguard/dsl v0.3.0/go.mod h1:KeCP03KrjuSO0H1kTuZQCWlQPulDV6YMIXmpQss17rU=
 github.com/quasilyte/go-ruleguard/dsl v0.3.10/go.mod h1:KeCP03KrjuSO0H1kTuZQCWlQPulDV6YMIXmpQss17rU=
 github.com/quasilyte/go-ruleguard/dsl v0.3.12-0.20220101150716-969a394a9451/go.mod h1:KeCP03KrjuSO0H1kTuZQCWlQPulDV6YMIXmpQss17rU=
@@ -93,6 +95,8 @@ golang.org/x/tools v0.1.9-0.20211228192929-ee1ca4ffc4da h1:Tno72dYE94v/7SyyIj9iB
 golang.org/x/tools v0.1.9-0.20211228192929-ee1ca4ffc4da/go.mod h1:nABZi5QlRsZVlzPpHl034qft6wpY4eDcsTt5AaioBiU=
 golang.org/x/tools v0.1.9-0.20220105192631-04daf8875660 h1:xfd0zCatRUbOdcrlvyTjlbbaPuZA+SzRf5fXIgr22EE=
 golang.org/x/tools v0.1.9-0.20220105192631-04daf8875660/go.mod h1:nABZi5QlRsZVlzPpHl034qft6wpY4eDcsTt5AaioBiU=
+golang.org/x/tools v0.1.9-0.20220107172756-94bfe6897a14 h1:WxwVr1Fw/NpyrGeva3uYJQgZU1bwoJQr530K3MbK9UE=
+golang.org/x/tools v0.1.9-0.20220107172756-94bfe6897a14/go.mod h1:nABZi5QlRsZVlzPpHl034qft6wpY4eDcsTt5AaioBiU=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
