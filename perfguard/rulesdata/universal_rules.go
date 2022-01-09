@@ -3678,6 +3678,40 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		{
+			Line:        717,
+			Name:        "binaryWrite",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score3"},
+			DocSummary:  "Detects binary.Write uses that can be optimized",
+			Rules: []ir.Rule{
+				{
+					Line:            718,
+					SyntaxPatterns:  []ir.PatternString{{Line: 718, Value: "$err := binary.Write($w, $_, $b)"}},
+					ReportTemplate:  "$$ => _, $err := $w.Write($b)",
+					SuggestTemplate: "_, $err := $w.Write($b)",
+					WhereExpr: ir.FilterExpr{
+						Line:  719,
+						Op:    ir.FilterVarTypeIsOp,
+						Src:   "m[\"b\"].Type.Is(`[]byte`)",
+						Value: "b",
+						Args:  []ir.FilterExpr{{Line: 719, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"}},
+					},
+				},
+				{
+					Line:            722,
+					SyntaxPatterns:  []ir.PatternString{{Line: 722, Value: "binary.Write($w, $_, $b)"}},
+					ReportTemplate:  "$$ => $w.Write($b)",
+					SuggestTemplate: "$w.Write($b)",
+					WhereExpr: ir.FilterExpr{
+						Line: 723,
+						Op:   ir.FilterRootNodeParentIsOp,
+						Src:  "m[\"$$\"].Node.Parent().Is(`ExprStmt`)",
+						Args: []ir.FilterExpr{{Line: 723, Op: ir.FilterStringOp, Src: "`ExprStmt`", Value: "ExprStmt"}},
+					},
+				},
+			},
+		},
 	},
 }
 

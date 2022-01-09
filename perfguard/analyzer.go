@@ -141,11 +141,12 @@ func (a *analyzer) minHeatLevel(info *ruleguard.GoRuleInfo) int {
 
 func (a *analyzer) runRules(target *Target) error {
 	runContext := ruleguard.RunContext{
-		Pkg:       target.Pkg,
-		Types:     target.Types,
-		Sizes:     target.Sizes,
-		Fset:      target.Fset,
-		GoVersion: a.goVersion,
+		Pkg:         target.Pkg,
+		Types:       target.Types,
+		Sizes:       target.Sizes,
+		Fset:        target.Fset,
+		GoVersion:   a.goVersion,
+		TruncateLen: 100,
 	}
 
 	var currentFile *SourceFile

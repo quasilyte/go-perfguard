@@ -711,3 +711,15 @@ func reflectType(m dsl.Matcher) {
 	m.Match(`fmt.Sprintf("%T", $x)`).
 		Suggest(`reflect.TypeOf($x).String()`)
 }
+
+//doc:summary Detects binary.Write uses that can be optimized
+//doc:tags    o1 score3
+func binaryWrite(m dsl.Matcher) {
+	m.Match(`$err := binary.Write($w, $_, $b)`).
+		Where(m["b"].Type.Is(`[]byte`)).
+		Suggest(`_, $err := $w.Write($b)`)
+
+	m.Match(`binary.Write($w, $_, $b)`).
+		Where(m["$$"].Node.Parent().Is(`ExprStmt`)).
+		Suggest(`$w.Write($b)`)
+}
