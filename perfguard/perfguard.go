@@ -49,10 +49,7 @@ type Config struct {
 }
 
 func (a *Analyzer) Init(config *Config) error {
-	if err := a.impl.Init(config); err != nil {
-		return err
-	}
-	return nil
+	return a.impl.Init(config)
 }
 
 type SourceFile struct {

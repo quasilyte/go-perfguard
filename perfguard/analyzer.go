@@ -10,10 +10,11 @@ import (
 	"strings"
 
 	"github.com/google/pprof/profile"
-	"github.com/quasilyte/go-perfguard/perfguard/rulesdata"
 	"github.com/quasilyte/go-ruleguard/ruleguard"
 	"github.com/quasilyte/go-ruleguard/ruleguard/ir"
 	"github.com/quasilyte/perf-heatmap/heatmap"
+
+	"github.com/quasilyte/go-perfguard/perfguard/rulesdata"
 )
 
 //go:generate go run ./_rules/precompile/precompile.go -varname Universal -rules ./_rules/universal_rules.go -o ./rulesdata/universal_rules.go
@@ -35,10 +36,8 @@ func (a *analyzer) Init(config *Config) error {
 	if err := a.initRulesEngine(); err != nil {
 		return err
 	}
-	if err := a.initHeatmap(config); err != nil {
-		return err
-	}
-	return nil
+
+	return a.initHeatmap(config)
 }
 
 func (a *analyzer) initHeatmap(config *Config) error {
@@ -100,10 +99,7 @@ func (a *analyzer) initRulesEngine() error {
 }
 
 func (a *analyzer) CheckPackage(target *Target) error {
-	if err := a.runRules(target); err != nil {
-		return err
-	}
-	return nil
+	return a.runRules(target)
 }
 
 func (a *analyzer) getTypeName(typeExpr ast.Expr) string {
