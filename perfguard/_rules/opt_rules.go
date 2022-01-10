@@ -67,3 +67,11 @@ func rangeValueCopy(m dsl.Matcher) {
 		Where(m["v"].Type.Size > 128).
 		Report(`every iteration copies a large object into $v`)
 }
+
+//doc:summary Detects errors.New that can be allocated exactly once
+//doc:tags    o1 score3
+func constErrorNew(m dsl.Matcher) {
+	m.Match(`errors.New($x)`).
+		Where(m["x"].Const).
+		Report(`errors with const message can be a global var, allocated only once`)
+}
