@@ -1,15 +1,12 @@
 package perfguard
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 	"go/token"
-	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/google/pprof/profile"
 	"github.com/quasilyte/go-ruleguard/ruleguard"
 	"github.com/quasilyte/go-ruleguard/ruleguard/ir"
 	"github.com/quasilyte/perf-heatmap/heatmap"
@@ -23,7 +20,6 @@ import (
 type analyzer struct {
 	rulesEngine *ruleguard.Engine
 	goVersion   ruleguard.GoVersion
-	heatmap     *heatmap.Index
 	config      *Config
 }
 
@@ -33,33 +29,7 @@ func newAnalyzer() *analyzer {
 
 func (a *analyzer) Init(config *Config) error {
 	a.config = config
-	if err := a.initRulesEngine(); err != nil {
-		return err
-	}
-
-	return a.initHeatmap(config)
-}
-
-func (a *analyzer) initHeatmap(config *Config) error {
-	if config.HeatmapFile == "" {
-		return nil
-	}
-	data, err := os.ReadFile(config.HeatmapFile)
-	if err != nil {
-		return err
-	}
-	pprofProfile, err := profile.Parse(bytes.NewReader(data))
-	if err != nil {
-		return err
-	}
-	index := heatmap.NewIndex(heatmap.IndexConfig{
-		Threshold: config.HeatmapThreshold,
-	})
-	if err := index.AddProfile(pprofProfile); err != nil {
-		return err
-	}
-	a.heatmap = index
-	return nil
+	return a.initRulesEngine()
 }
 
 func (a *analyzer) initRulesEngine() error {
@@ -154,7 +124,7 @@ func (a *analyzer) runRules(target *Target) error {
 	runContext.Report = func(data *ruleguard.ReportData) {
 		startPos := target.Fset.Position(data.Node.Pos())
 
-		if a.heatmap != nil {
+		if a.config.Heatmap != nil {
 			minLevel := a.minHeatLevel(&data.RuleInfo)
 			if minLevel != 0 {
 				endPos := target.Fset.Position(data.Node.End())
@@ -168,7 +138,7 @@ func (a *analyzer) runRules(target *Target) error {
 					Filename: filepath.Base(startPos.Filename),
 					PkgName:  target.Pkg.Name(),
 				}
-				a.heatmap.QueryLineRange(key, lineFrom, lineTo, func(line int, level heatmap.HeatLevel) bool {
+				a.config.Heatmap.QueryLineRange(key, lineFrom, lineTo, func(line int, level heatmap.HeatLevel) bool {
 					if level.Global >= minLevel {
 						isHot = true
 						return false

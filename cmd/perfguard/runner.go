@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"go/format"
@@ -11,20 +12,25 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/pprof/profile"
 	"github.com/quasilyte/go-perfguard/internal/imports"
 	"github.com/quasilyte/go-perfguard/internal/quickfix"
 	"github.com/quasilyte/go-perfguard/perfguard"
+	"github.com/quasilyte/perf-heatmap/heatmap"
 	"golang.org/x/tools/go/packages"
 )
 
 // runner unifies both `lint` and `optimize` modes.
 type runner struct {
-	heatmapFile      string
-	heatmapThreshold float64
-	targets          []string
-	autofix          bool
+	targets []string
+	autofix bool
 
 	debugEnabled bool
+
+	heatmapFile      string
+	heatmapThreshold float64
+	heatmap          *heatmap.Index
+	heatmapPackages  map[string]struct{}
 
 	wd string
 
@@ -118,6 +124,15 @@ func (r *runner) Run() error {
 	}
 	r.wd = wd
 
+	if r.heatmapFile != "" {
+		heatmapIndex, err := r.createHeatmap()
+		if err != nil {
+			return err
+		}
+		r.heatmap = heatmapIndex
+		r.inspectHeatmap()
+	}
+
 	fileSet := token.NewFileSet()
 	targetPackages, err := r.findPackages(ctx, fileSet, r.targets)
 	if err != nil {
@@ -127,6 +142,22 @@ func (r *runner) Run() error {
 	analyzer, err := r.createAnalyzer()
 	if err != nil {
 		return fmt.Errorf("create analyzer: %w", err)
+	}
+
+	if r.heatmap != nil {
+		filtered := targetPackages[:0]
+		numSkipped := 0
+		for _, ref := range targetPackages {
+			if _, ok := r.heatmapPackages[ref.name]; ok {
+				filtered = append(filtered, ref)
+			} else {
+				r.printDebugf("skip %s package", ref.path)
+				numSkipped++
+			}
+		}
+		if numSkipped != 0 {
+			r.printDebugf("skipped %d packages", numSkipped)
+		}
 	}
 
 	if r.debugEnabled {
@@ -178,8 +209,7 @@ func (r *runner) Run() error {
 func (r *runner) createAnalyzer() (*perfguard.Analyzer, error) {
 	a := perfguard.NewAnalyzer()
 	initConfig := &perfguard.Config{
-		HeatmapFile:      r.heatmapFile,
-		HeatmapThreshold: r.heatmapThreshold,
+		Heatmap: r.heatmap,
 
 		GoVersion: r.goVersion,
 
@@ -326,6 +356,7 @@ func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, ref packa
 
 type packageRef struct {
 	id   string
+	name string
 	path string
 }
 
@@ -386,6 +417,7 @@ func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets 
 
 		ref := packageRef{
 			id:   pkg.ID,
+			name: pkg.Name,
 			path: pkg.PkgPath,
 		}
 
@@ -407,4 +439,32 @@ func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets 
 	}
 
 	return result, nil
+}
+
+func (r *runner) inspectHeatmap() {
+	r.heatmapPackages = make(map[string]struct{})
+	r.heatmap.Inspect(func(l heatmap.LineStats) {
+		if l.GlobalHeatLevel == 0 {
+			return
+		}
+		r.heatmapPackages[l.Func.PkgName] = struct{}{}
+	})
+}
+
+func (r *runner) createHeatmap() (*heatmap.Index, error) {
+	data, err := os.ReadFile(r.heatmapFile)
+	if err != nil {
+		return nil, err
+	}
+	pprofProfile, err := profile.Parse(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	index := heatmap.NewIndex(heatmap.IndexConfig{
+		Threshold: r.heatmapThreshold,
+	})
+	if err := index.AddProfile(pprofProfile); err != nil {
+		return nil, err
+	}
+	return index, nil
 }
