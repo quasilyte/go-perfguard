@@ -20,6 +20,11 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+type arguments struct {
+	heatmapFile      string
+	heatmapThreshold float64
+}
+
 // runner unifies both `lint` and `optimize` modes.
 type runner struct {
 	targets []string
@@ -27,10 +32,12 @@ type runner struct {
 
 	debugEnabled bool
 
-	heatmapFile      string
-	heatmapThreshold float64
-	heatmap          *heatmap.Index
-	heatmapPackages  map[string]struct{}
+	args arguments
+
+	heatmap         *heatmap.Index
+	heatmapPackages map[string]struct{}
+	heatmapFiles    map[string]struct{}
+	numFilesSkipped int
 
 	wd string
 
@@ -124,7 +131,7 @@ func (r *runner) Run() error {
 	}
 	r.wd = wd
 
-	if r.heatmapFile != "" {
+	if r.args.heatmapFile != "" {
 		heatmapIndex, err := r.createHeatmap()
 		if err != nil {
 			return err
@@ -179,6 +186,13 @@ func (r *runner) Run() error {
 		r.pkgWarnings = r.pkgWarnings[:0]
 		target.Files = target.Files[:0]
 		for _, f := range pkg.Syntax {
+			if r.heatmapFiles != nil {
+				filename := fileSet.Position(f.Pos()).Filename
+				if _, ok := r.heatmapFiles[filepath.Base(filename)]; !ok {
+					r.numFilesSkipped++
+					continue
+				}
+			}
 			target.Files = append(target.Files, perfguard.SourceFile{
 				Syntax: f,
 			})
@@ -195,6 +209,10 @@ func (r *runner) Run() error {
 				return err
 			}
 		}
+	}
+
+	if r.numFilesSkipped != 0 {
+		r.printDebugf("skipped %d files", r.numFilesSkipped)
 	}
 
 	if len(r.errorsList) != 0 {
@@ -444,16 +462,18 @@ func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets 
 
 func (r *runner) inspectHeatmap() {
 	r.heatmapPackages = make(map[string]struct{})
+	r.heatmapFiles = make(map[string]struct{})
 	r.heatmap.Inspect(func(l heatmap.LineStats) {
 		if l.GlobalHeatLevel == 0 {
 			return
 		}
 		r.heatmapPackages[l.Func.PkgName] = struct{}{}
+		r.heatmapFiles[l.Func.Filename] = struct{}{}
 	})
 }
 
 func (r *runner) createHeatmap() (*heatmap.Index, error) {
-	data, err := os.ReadFile(r.heatmapFile)
+	data, err := os.ReadFile(r.args.heatmapFile)
 	if err != nil {
 		return nil, err
 	}
@@ -462,7 +482,7 @@ func (r *runner) createHeatmap() (*heatmap.Index, error) {
 		return nil, err
 	}
 	index := heatmap.NewIndex(heatmap.IndexConfig{
-		Threshold: r.heatmapThreshold,
+		Threshold: r.args.heatmapThreshold,
 	})
 	if err := index.AddProfile(pprofProfile); err != nil {
 		return nil, err
