@@ -63,6 +63,7 @@ func sprintConcat2(m dsl.Matcher) {
 //doc:summary Detects range loops that copy large value on every iteration
 //doc:tags    o1 score2
 func rangeValueCopy(m dsl.Matcher) {
+	// TODO: move to a hand-written checker so we can provide a quickfix for this.
 	m.Match(`for $_, $v := range $_ { $*_ }`, `for $_, $v = range $_ { $*_ }`).
 		Where(m["v"].Type.Size > 128).
 		Report(`every iteration copies a large object into $v`)
