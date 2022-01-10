@@ -24,6 +24,8 @@ type runner struct {
 	targets          []string
 	autofix          bool
 
+	debugEnabled bool
+
 	wd string
 
 	coloredOutput bool
@@ -41,7 +43,24 @@ type runner struct {
 }
 
 func newRunner(stdout, stderr io.Writer) *runner {
-	return &runner{stdout: stdout, stderr: stderr}
+	debugEnabled := os.Getenv("PERFGUARD_DEBUG") == "1"
+	return &runner{
+		stdout:       stdout,
+		stderr:       stderr,
+		debugEnabled: debugEnabled,
+	}
+}
+
+func (r *runner) debugf(format string, args ...interface{}) {
+	if !r.debugEnabled {
+		return
+	}
+	tag := ">> debug"
+	if r.coloredOutput {
+		tag = "\033[34;1m" + tag + "\033[0m"
+	}
+	msg := tag + ": " + fmt.Sprintf(format, args...) + "\n"
+	io.WriteString(r.stderr, msg)
 }
 
 func (r *runner) Run() error {
@@ -66,6 +85,16 @@ func (r *runner) Run() error {
 	analyzer, err := r.createAnalyzer()
 	if err != nil {
 		return fmt.Errorf("create analyzer: %w", err)
+	}
+
+	if r.debugEnabled {
+		for _, pkg := range loadedPackages {
+			errorsString := ""
+			if len(pkg.Errors) != 0 {
+				errorsString = fmt.Sprintf(" (%d errors)", len(pkg.Errors))
+			}
+			r.debugf("loaded %s package%s", pkg.PkgPath, errorsString)
+		}
 	}
 
 	target := &perfguard.Target{}
