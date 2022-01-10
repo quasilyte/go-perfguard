@@ -217,7 +217,7 @@ func (r *runner) Run() error {
 		start := time.Now()
 		err = analyzer.CheckPackage(target)
 		elapsed := time.Since(start)
-		atomic.AddInt64(&r.stats.pkgloadTime, int64(elapsed))
+		atomic.AddInt64(&r.stats.analysisTime, int64(elapsed))
 		if err != nil {
 			return fmt.Errorf("checking %s: %w", pkg.PkgPath, err)
 		}
