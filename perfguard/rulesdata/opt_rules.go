@@ -199,25 +199,25 @@ var Opt = &ir.File{
 			DocTags:     []string{"o1", "score2"},
 			DocSummary:  "Detects range loops that copy large value on every iteration",
 			Rules: []ir.Rule{{
-				Line: 66,
+				Line: 67,
 				SyntaxPatterns: []ir.PatternString{
-					{Line: 66, Value: "for $_, $v := range $_ { $*_ }"},
-					{Line: 66, Value: "for $_, $v = range $_ { $*_ }"},
+					{Line: 67, Value: "for $_, $v := range $_ { $*_ }"},
+					{Line: 67, Value: "for $_, $v = range $_ { $*_ }"},
 				},
 				ReportTemplate: "every iteration copies a large object into $v",
 				WhereExpr: ir.FilterExpr{
-					Line: 67,
+					Line: 68,
 					Op:   ir.FilterGtOp,
 					Src:  "m[\"v\"].Type.Size > 128",
 					Args: []ir.FilterExpr{
 						{
-							Line:  67,
+							Line:  68,
 							Op:    ir.FilterVarTypeSizeOp,
 							Src:   "m[\"v\"].Type.Size",
 							Value: "v",
 						},
 						{
-							Line:  67,
+							Line:  68,
 							Op:    ir.FilterIntOp,
 							Src:   "128",
 							Value: int64(128),
@@ -227,17 +227,17 @@ var Opt = &ir.File{
 			}},
 		},
 		{
-			Line:        73,
+			Line:        74,
 			Name:        "constErrorNew",
 			MatcherName: "m",
 			DocTags:     []string{"o1", "score3"},
 			DocSummary:  "Detects errors.New that can be allocated exactly once",
 			Rules: []ir.Rule{{
-				Line:           74,
-				SyntaxPatterns: []ir.PatternString{{Line: 74, Value: "errors.New($x)"}},
+				Line:           75,
+				SyntaxPatterns: []ir.PatternString{{Line: 75, Value: "errors.New($x)"}},
 				ReportTemplate: "errors with const message can be a global var, allocated only once",
 				WhereExpr: ir.FilterExpr{
-					Line:  75,
+					Line:  76,
 					Op:    ir.FilterVarConstOp,
 					Src:   "m[\"x\"].Const",
 					Value: "x",
