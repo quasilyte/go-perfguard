@@ -226,6 +226,24 @@ var Opt = &ir.File{
 				},
 			}},
 		},
+		{
+			Line:        73,
+			Name:        "constErrorNew",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score3"},
+			DocSummary:  "Detects errors.New that can be allocated exactly once",
+			Rules: []ir.Rule{{
+				Line:           74,
+				SyntaxPatterns: []ir.PatternString{{Line: 74, Value: "errors.New($x)"}},
+				ReportTemplate: "errors with const message can be a global var, allocated only once",
+				WhereExpr: ir.FilterExpr{
+					Line:  75,
+					Op:    ir.FilterVarConstOp,
+					Src:   "m[\"x\"].Const",
+					Value: "x",
+				},
+			}},
+		},
 	},
 }
 
