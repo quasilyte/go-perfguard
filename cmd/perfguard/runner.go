@@ -80,7 +80,7 @@ func (r *runner) Run() error {
 	r.wd = wd
 
 	fileSet := token.NewFileSet()
-	loadedPackages, err := r.loadPackages(ctx, fileSet, r.targets)
+	targetPackages, err := r.findPackages(ctx, fileSet, r.targets)
 	if err != nil {
 		return fmt.Errorf("load packages: %w", err)
 	}
@@ -91,17 +91,24 @@ func (r *runner) Run() error {
 	}
 
 	if r.debugEnabled {
-		for _, pkg := range loadedPackages {
+		for _, pkg := range targetPackages {
 			errorsString := ""
 			if len(pkg.Errors) != 0 {
 				errorsString = fmt.Sprintf(" (%d errors)", len(pkg.Errors))
 			}
-			r.debugf("loaded %s package%s", pkg.PkgPath, errorsString)
+			r.debugf("found %s package%s", pkg.PkgPath, errorsString)
 		}
 	}
 
 	target := &perfguard.Target{}
-	for _, pkg := range loadedPackages {
+	for i, partialPackage := range targetPackages {
+		r.debugf("loading %s package (%d/%d)", partialPackage.PkgPath, i+1, len(targetPackages))
+		pkg, err := r.loadPackage(ctx, fileSet, partialPackage)
+		if err != nil {
+			return err
+		}
+		r.debugf("analyzing %s package (%d/%d)", partialPackage.PkgPath, i+1, len(targetPackages))
+
 		r.pkgWarnings = r.pkgWarnings[:0]
 		target.Files = target.Files[:0]
 		for _, f := range pkg.Syntax {
@@ -242,15 +249,49 @@ func (r *runner) handleWarnings(target *perfguard.Target) error {
 	return nil
 }
 
-func (r *runner) loadPackages(ctx context.Context, fset *token.FileSet, targets []string) ([]*packages.Package, error) {
+func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, partial *packages.Package) (*packages.Package, error) {
 	loadMode := packages.NeedName |
 		packages.NeedFiles |
-		packages.NeedCompiledGoFiles |
-		packages.NeedImports |
-		packages.NeedTypes |
 		packages.NeedSyntax |
+		packages.NeedTypes |
 		packages.NeedTypesInfo |
 		packages.NeedTypesSizes
+	config := &packages.Config{
+		Mode:    loadMode,
+		Tests:   false,
+		Fset:    fset,
+		Context: ctx,
+	}
+	loaded, err := packages.Load(config, partial.PkgPath)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, fmt.Errorf("context error: %w", err)
+	}
+	if len(loaded) != 1 {
+		return nil, fmt.Errorf("expected 1 package for %s, got %d", partial.PkgPath, len(loaded))
+	}
+	pkg := loaded[0]
+
+	if len(pkg.Errors) != 0 {
+		extra := ""
+		err := pkg.Errors[0]
+		if len(pkg.Errors) > 1 {
+			extra = fmt.Sprintf(" (and %d more errors)", len(pkg.Errors)-1)
+		}
+		fmt.Fprintf(r.stderr, "load %s package: %v%s\n", pkg.Name, err, extra)
+	}
+
+	return pkg, nil
+}
+
+// findPackages returns a list of matched packages for given target patterns.
+//
+// Note that these packages do not include AST files (syntax) or types info.
+// We don't load them right away to avoid OOM situations for big projects.
+func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets []string) ([]*packages.Package, error) {
+	loadMode := packages.NeedName
 	config := &packages.Config{
 		Mode:    loadMode,
 		Tests:   false,
@@ -263,6 +304,14 @@ func (r *runner) loadPackages(ctx context.Context, fset *token.FileSet, targets 
 	}
 	if err := ctx.Err(); err != nil {
 		return nil, fmt.Errorf("context error: %w", err)
+	}
+
+	if len(pkgs) == 1 {
+		pkg := pkgs[0]
+		if pkg.PkgPath == "command-line-arguments" && len(targets) == 1 {
+			pkg.PkgPath = targets[0]
+			return pkgs, nil
+		}
 	}
 
 	// We specify tests=false, but just in case we're still going
@@ -286,15 +335,6 @@ func (r *runner) loadPackages(ctx context.Context, fset *token.FileSet, targets 
 		if strings.Contains(pkg.ID, ".test]") {
 			// Test version of the package.
 			continue
-		}
-
-		if len(pkg.Errors) != 0 {
-			extra := ""
-			err := pkg.Errors[0]
-			if len(pkg.Errors) > 1 {
-				extra = fmt.Sprintf(" (and %d more errors)", len(pkg.Errors)-1)
-			}
-			fmt.Fprintf(r.stderr, "load %s package: %v%s\n", pkg.Name, err, extra)
 		}
 
 		if _, ok := packageSet[pkg.PkgPath]; ok {
