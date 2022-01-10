@@ -51,7 +51,7 @@ func newRunner(stdout, stderr io.Writer) *runner {
 	}
 }
 
-func (r *runner) debugf(format string, args ...interface{}) {
+func (r *runner) debugf(formatString string, args ...interface{}) {
 	if !r.debugEnabled {
 		return
 	}
@@ -59,8 +59,11 @@ func (r *runner) debugf(format string, args ...interface{}) {
 	if r.coloredOutput {
 		tag = "\033[34;1m" + tag + "\033[0m"
 	}
-	msg := tag + ": " + fmt.Sprintf(format, args...) + "\n"
-	io.WriteString(r.stderr, msg)
+	msg := tag + ": " + fmt.Sprintf(formatString, args...) + "\n"
+	_, err := io.WriteString(r.stderr, msg)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (r *runner) Run() error {
