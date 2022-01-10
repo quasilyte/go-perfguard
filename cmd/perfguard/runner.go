@@ -25,7 +25,6 @@ type runner struct {
 	autofix          bool
 
 	debugEnabled bool
-	quietMode    bool
 
 	wd string
 
@@ -42,7 +41,13 @@ type runner struct {
 
 	pkgWarnings []perfguard.Warning
 
-	errorsReported map[string]struct{}
+	// We try to avoid reporting more errors than necessary.
+	// There is a hard limit on how many errors we'll print.
+	// There is also a filter that will exclude any repeated
+	// errors from the output (errorSet).
+	errorSet    map[string]struct{}
+	errorsList  []string
+	extraErrors int
 }
 
 func newRunner(stdout, stderr io.Writer) *runner {
@@ -52,28 +57,36 @@ func newRunner(stdout, stderr io.Writer) *runner {
 		stderr:       stderr,
 		debugEnabled: debugEnabled,
 
-		errorsReported: make(map[string]struct{}),
+		errorSet: make(map[string]struct{}),
 	}
 }
 
-func (r *runner) printErrorf(key, formatString string, args ...interface{}) {
-	if r.quietMode {
+func (r *runner) pushErrorf(key, formatString string, args ...interface{}) {
+	if _, ok := r.errorSet[key]; ok {
 		return
 	}
-
-	if _, ok := r.errorsReported[key]; ok {
+	const maxErrorsNum = 10
+	if len(r.errorSet) > maxErrorsNum {
+		r.extraErrors++
 		return
 	}
-	r.errorsReported[key] = struct{}{}
+	r.errorSet[key] = struct{}{}
 
-	tag := ">> error"
-	if r.coloredOutput {
-		tag = "\033[31;1m" + tag + "\033[0m"
-	}
-	msg := tag + ": " + fmt.Sprintf(formatString, args...) + "\n"
-	_, err := io.WriteString(r.stderr, msg)
-	if err != nil {
-		panic(err)
+	msg := fmt.Sprintf(formatString, args...)
+	r.errorsList = append(r.errorsList, msg)
+}
+
+func (r *runner) printAllErrors() {
+	for _, msg := range r.errorsList {
+		tag := ">> error"
+		if r.coloredOutput {
+			tag = "\033[31;1m" + tag + "\033[0m"
+		}
+		msg := tag + ": " + msg + "\n"
+		_, err := io.WriteString(r.stderr, msg)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -149,6 +162,13 @@ func (r *runner) Run() error {
 			if err := r.handleWarnings(target); err != nil {
 				return err
 			}
+		}
+	}
+
+	if len(r.errorsList) != 0 {
+		r.printAllErrors()
+		if r.extraErrors != 0 {
+			fmt.Fprintf(r.stderr, "+ %d more errors\n", r.extraErrors)
 		}
 	}
 
@@ -298,7 +318,7 @@ func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, ref packa
 
 	if len(pkg.Errors) != 0 {
 		err := pkg.Errors[0]
-		r.printErrorf(err.Msg, "load %s package: %v", pkg.Name, err)
+		r.pushErrorf(err.Msg, "load %s package: %v", pkg.Name, err)
 	}
 
 	return pkg, nil
