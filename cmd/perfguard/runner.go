@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync/atomic"
+	"time"
 
 	"github.com/google/pprof/profile"
 	"github.com/quasilyte/go-perfguard/internal/imports"
@@ -25,6 +27,11 @@ type arguments struct {
 	heatmapThreshold float64
 }
 
+type statistics struct {
+	pkgloadTime  int64
+	analysisTime int64
+}
+
 // runner unifies both `lint` and `optimize` modes.
 type runner struct {
 	targets []string
@@ -32,7 +39,8 @@ type runner struct {
 
 	debugEnabled bool
 
-	args arguments
+	args  arguments
+	stats statistics
 
 	heatmap         *heatmap.Index
 	heatmapPackages map[string]struct{}
@@ -61,6 +69,8 @@ type runner struct {
 	errorSet    map[string]struct{}
 	errorsList  []string
 	extraErrors int
+
+	numLoadCalls int
 }
 
 func newRunner(stdout, stderr io.Writer) *runner {
@@ -124,6 +134,7 @@ func (r *runner) Run() error {
 	}
 
 	ctx := context.Background()
+	startTime := time.Now()
 
 	wd, err := os.Getwd()
 	if err != nil {
@@ -201,7 +212,11 @@ func (r *runner) Run() error {
 		target.Sizes = pkg.TypesSizes
 		target.Types = pkg.TypesInfo
 		target.Pkg = pkg.Types
-		if err := analyzer.CheckPackage(target); err != nil {
+		start := time.Now()
+		err = analyzer.CheckPackage(target)
+		elapsed := time.Since(start)
+		atomic.AddInt64(&r.stats.pkgloadTime, int64(elapsed))
+		if err != nil {
 			return fmt.Errorf("checking %s: %w", pkg.PkgPath, err)
 		}
 		if len(r.pkgWarnings) != 0 {
@@ -211,9 +226,15 @@ func (r *runner) Run() error {
 		}
 	}
 
+	timeElapsed := time.Since(startTime)
+
 	if r.numFilesSkipped != 0 {
 		r.printDebugf("skipped %d files", r.numFilesSkipped)
 	}
+	r.printDebugf("packages.Load calls: %d", r.numLoadCalls)
+	r.printDebugf("packages.Load time: %.2fs", time.Duration(r.stats.pkgloadTime).Seconds())
+	r.printDebugf("analysis time: %.2fs", time.Duration(r.stats.analysisTime).Seconds())
+	r.printDebugf("total time: %.2fs", timeElapsed.Seconds())
 
 	if len(r.errorsList) != 0 {
 		r.printAllErrors()
@@ -341,6 +362,8 @@ func (r *runner) handleWarnings(target *perfguard.Target) error {
 }
 
 func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, ref packageRef) (*packages.Package, error) {
+	r.numLoadCalls++
+
 	loadMode := packages.NeedName |
 		packages.NeedFiles |
 		packages.NeedSyntax |
@@ -353,7 +376,10 @@ func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, ref packa
 		Fset:    fset,
 		Context: ctx,
 	}
+	start := time.Now()
 	loaded, err := packages.Load(config, ref.path)
+	elapsed := time.Since(start)
+	atomic.AddInt64(&r.stats.pkgloadTime, int64(elapsed))
 	if err != nil {
 		return nil, err
 	}
