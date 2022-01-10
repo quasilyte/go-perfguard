@@ -25,6 +25,7 @@ type runner struct {
 	autofix          bool
 
 	debugEnabled bool
+	quietMode    bool
 
 	wd string
 
@@ -40,6 +41,8 @@ type runner struct {
 	stderr io.Writer
 
 	pkgWarnings []perfguard.Warning
+
+	errorsReported map[string]struct{}
 }
 
 func newRunner(stdout, stderr io.Writer) *runner {
@@ -48,10 +51,33 @@ func newRunner(stdout, stderr io.Writer) *runner {
 		stdout:       stdout,
 		stderr:       stderr,
 		debugEnabled: debugEnabled,
+
+		errorsReported: make(map[string]struct{}),
 	}
 }
 
-func (r *runner) debugf(formatString string, args ...interface{}) {
+func (r *runner) printErrorf(key, formatString string, args ...interface{}) {
+	if r.quietMode {
+		return
+	}
+
+	if _, ok := r.errorsReported[key]; ok {
+		return
+	}
+	r.errorsReported[key] = struct{}{}
+
+	tag := ">> error"
+	if r.coloredOutput {
+		tag = "\033[31;1m" + tag + "\033[0m"
+	}
+	msg := tag + ": " + fmt.Sprintf(formatString, args...) + "\n"
+	_, err := io.WriteString(r.stderr, msg)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (r *runner) printDebugf(formatString string, args ...interface{}) {
 	if !r.debugEnabled {
 		return
 	}
@@ -91,23 +117,19 @@ func (r *runner) Run() error {
 	}
 
 	if r.debugEnabled {
-		for _, pkg := range targetPackages {
-			errorsString := ""
-			if len(pkg.Errors) != 0 {
-				errorsString = fmt.Sprintf(" (%d errors)", len(pkg.Errors))
-			}
-			r.debugf("found %s package%s", pkg.PkgPath, errorsString)
+		for _, ref := range targetPackages {
+			r.printDebugf("found %s package", ref.path)
 		}
 	}
 
 	target := &perfguard.Target{}
-	for i, partialPackage := range targetPackages {
-		r.debugf("loading %s package (%d/%d)", partialPackage.PkgPath, i+1, len(targetPackages))
-		pkg, err := r.loadPackage(ctx, fileSet, partialPackage)
+	for i, ref := range targetPackages {
+		r.printDebugf("loading %s package (%d/%d)", ref.path, i+1, len(targetPackages))
+		pkg, err := r.loadPackage(ctx, fileSet, ref)
 		if err != nil {
 			return err
 		}
-		r.debugf("analyzing %s package (%d/%d)", partialPackage.PkgPath, i+1, len(targetPackages))
+		r.printDebugf("analyzing %s package (%d/%d)", ref.path, i+1, len(targetPackages))
 
 		r.pkgWarnings = r.pkgWarnings[:0]
 		target.Files = target.Files[:0]
@@ -173,7 +195,7 @@ func (r *runner) reportWarning(w *perfguard.Warning) {
 	if r.coloredOutput {
 		filename = "\033[35m" + filename + "\033[0m"
 		line = "\033[32m" + line + "\033[0m"
-		ruleName = "\033[31m" + ruleName + "\033[0m"
+		ruleName = "\033[93m" + ruleName + "\033[0m"
 		message = strings.Replace(message, " => ", " \033[35;1m=>\033[0m ", 1)
 	}
 	fmt.Fprintf(r.stdout, "%s:%s: %s: %s\n", filename, line, ruleName, message)
@@ -249,7 +271,7 @@ func (r *runner) handleWarnings(target *perfguard.Target) error {
 	return nil
 }
 
-func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, partial *packages.Package) (*packages.Package, error) {
+func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, ref packageRef) (*packages.Package, error) {
 	loadMode := packages.NeedName |
 		packages.NeedFiles |
 		packages.NeedSyntax |
@@ -262,7 +284,7 @@ func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, partial *
 		Fset:    fset,
 		Context: ctx,
 	}
-	loaded, err := packages.Load(config, partial.PkgPath)
+	loaded, err := packages.Load(config, ref.path)
 	if err != nil {
 		return nil, err
 	}
@@ -270,28 +292,29 @@ func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, partial *
 		return nil, fmt.Errorf("context error: %w", err)
 	}
 	if len(loaded) != 1 {
-		return nil, fmt.Errorf("expected 1 package for %s, got %d", partial.PkgPath, len(loaded))
+		return nil, fmt.Errorf("expected 1 package for %s, got %d", ref.path, len(loaded))
 	}
 	pkg := loaded[0]
 
 	if len(pkg.Errors) != 0 {
-		extra := ""
 		err := pkg.Errors[0]
-		if len(pkg.Errors) > 1 {
-			extra = fmt.Sprintf(" (and %d more errors)", len(pkg.Errors)-1)
-		}
-		fmt.Fprintf(r.stderr, "load %s package: %v%s\n", pkg.Name, err, extra)
+		r.printErrorf(err.Msg, "load %s package: %v", pkg.Name, err)
 	}
 
 	return pkg, nil
+}
+
+type packageRef struct {
+	id   string
+	path string
 }
 
 // findPackages returns a list of matched packages for given target patterns.
 //
 // Note that these packages do not include AST files (syntax) or types info.
 // We don't load them right away to avoid OOM situations for big projects.
-func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets []string) ([]*packages.Package, error) {
-	loadMode := packages.NeedName
+func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets []string) ([]packageRef, error) {
+	loadMode := packages.NeedName | packages.NeedFiles
 	config := &packages.Config{
 		Mode:    loadMode,
 		Tests:   false,
@@ -309,15 +332,15 @@ func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets 
 	if len(pkgs) == 1 {
 		pkg := pkgs[0]
 		if pkg.PkgPath == "command-line-arguments" && len(targets) == 1 {
-			pkg.PkgPath = targets[0]
-			return pkgs, nil
+			ref := packageRef{id: pkg.ID, path: targets[0]}
+			return []packageRef{ref}, nil
 		}
 	}
 
 	// We specify tests=false, but just in case we're still going
 	// to filter the packages here.
 	packageSet := make(map[string]struct{})
-	var result []*packages.Package
+	var result []packageRef
 	for _, pkg := range pkgs {
 		if pkg.Name == "" {
 			// Empty or invalid package: not interesting.
@@ -337,12 +360,30 @@ func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets 
 			continue
 		}
 
+		if len(pkg.GoFiles) == 0 {
+			continue
+		}
+
+		ref := packageRef{
+			id:   pkg.ID,
+			path: pkg.PkgPath,
+		}
+
+		if strings.HasPrefix(pkg.PkgPath, "_/") {
+			absFilename := pkg.GoFiles[0]
+			relFilename, err := filepath.Rel(r.wd, absFilename)
+			if err != nil {
+				return nil, err
+			}
+			ref.path = "./" + filepath.Dir(relFilename)
+		}
+
 		if _, ok := packageSet[pkg.PkgPath]; ok {
 			continue
 		}
 		packageSet[pkg.PkgPath] = struct{}{}
 
-		result = append(result, pkg)
+		result = append(result, ref)
 	}
 
 	return result, nil
