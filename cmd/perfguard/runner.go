@@ -30,6 +30,9 @@ type arguments struct {
 type statistics struct {
 	pkgloadTime  int64
 	analysisTime int64
+
+	maxPkgloadTime int64
+	maxPkgloadPath string
 }
 
 // runner unifies both `lint` and `optimize` modes.
@@ -235,10 +238,12 @@ func (r *runner) Run() error {
 	} else {
 		r.printDebugf("analyzed %d files (%d skipped)", r.numFilesAnalyzed, r.numFilesSkipped)
 	}
+	r.printDebugf("packages.Load slowest time: %s", time.Duration(r.stats.maxPkgloadTime))
+	r.printDebugf("packages.Load slowest path: %s", r.stats.maxPkgloadPath)
 	r.printDebugf("packages.Load calls: %d", r.numLoadCalls)
-	r.printDebugf("packages.Load time: %.2fs", time.Duration(r.stats.pkgloadTime).Seconds())
-	r.printDebugf("analysis time: %.2fs", time.Duration(r.stats.analysisTime).Seconds())
-	r.printDebugf("total time: %.2fs", timeElapsed.Seconds())
+	r.printDebugf("packages.Load time: %s", time.Duration(r.stats.pkgloadTime))
+	r.printDebugf("analysis time: %s", time.Duration(r.stats.analysisTime))
+	r.printDebugf("total time: %s", timeElapsed)
 
 	if len(r.errorsList) != 0 {
 		r.printAllErrors()
@@ -382,8 +387,8 @@ func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, ref packa
 	}
 	start := time.Now()
 	loaded, err := packages.Load(config, ref.path)
-	elapsed := time.Since(start)
-	atomic.AddInt64(&r.stats.pkgloadTime, int64(elapsed))
+	elapsed := int64(time.Since(start))
+	atomic.AddInt64(&r.stats.pkgloadTime, elapsed)
 	if err != nil {
 		return nil, err
 	}
@@ -394,6 +399,10 @@ func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, ref packa
 		return nil, fmt.Errorf("expected 1 package for %s, got %d", ref.path, len(loaded))
 	}
 	pkg := loaded[0]
+	if r.stats.maxPkgloadTime < elapsed {
+		r.stats.maxPkgloadTime = elapsed
+		r.stats.maxPkgloadPath = ref.path
+	}
 
 	if len(pkg.Errors) != 0 {
 		err := pkg.Errors[0]
