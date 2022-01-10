@@ -42,10 +42,11 @@ type runner struct {
 	args  arguments
 	stats statistics
 
-	heatmap         *heatmap.Index
-	heatmapPackages map[string]struct{}
-	heatmapFiles    map[string]struct{}
-	numFilesSkipped int
+	heatmap          *heatmap.Index
+	heatmapPackages  map[string]struct{}
+	heatmapFiles     map[string]struct{}
+	numFilesSkipped  int
+	numFilesAnalyzed int
 
 	wd string
 
@@ -204,6 +205,7 @@ func (r *runner) Run() error {
 					continue
 				}
 			}
+			r.numFilesAnalyzed++
 			target.Files = append(target.Files, perfguard.SourceFile{
 				Syntax: f,
 			})
@@ -228,8 +230,10 @@ func (r *runner) Run() error {
 
 	timeElapsed := time.Since(startTime)
 
-	if r.numFilesSkipped != 0 {
-		r.printDebugf("skipped %d files", r.numFilesSkipped)
+	if r.numFilesSkipped == 0 {
+		r.printDebugf("analyzed %d files", r.numFilesAnalyzed)
+	} else {
+		r.printDebugf("analyzed %d files (%d skipped)", r.numFilesAnalyzed, r.numFilesSkipped)
 	}
 	r.printDebugf("packages.Load calls: %d", r.numLoadCalls)
 	r.printDebugf("packages.Load time: %.2fs", time.Duration(r.stats.pkgloadTime).Seconds())
@@ -494,7 +498,7 @@ func (r *runner) inspectHeatmap() {
 			return
 		}
 		r.heatmapPackages[l.Func.PkgName] = struct{}{}
-		r.heatmapFiles[l.Func.Filename] = struct{}{}
+		r.heatmapFiles[filepath.Base(l.Func.Filename)] = struct{}{}
 	})
 }
 
