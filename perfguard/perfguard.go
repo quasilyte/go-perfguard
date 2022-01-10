@@ -6,6 +6,7 @@ import (
 	"go/types"
 
 	"github.com/quasilyte/go-ruleguard/dsl"
+	"github.com/quasilyte/perf-heatmap/heatmap"
 )
 
 // This is a temporary kludge to make DSL a direct dependency.
@@ -36,8 +37,7 @@ type QuickFix struct {
 }
 
 type Config struct {
-	HeatmapFile      string
-	HeatmapThreshold float64
+	Heatmap *heatmap.Index
 
 	GoVersion string
 
