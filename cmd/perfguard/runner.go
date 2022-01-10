@@ -158,6 +158,7 @@ func (r *runner) Run() error {
 		if numSkipped != 0 {
 			r.printDebugf("skipped %d packages", numSkipped)
 		}
+		targetPackages = filtered
 	}
 
 	if r.debugEnabled {
