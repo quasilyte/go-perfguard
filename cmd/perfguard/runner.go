@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -31,15 +32,14 @@ type statistics struct {
 	pkgfindTime  int64
 	pkgloadTime  int64
 	analysisTime int64
-
-	maxPkgloadTime int64
-	maxPkgloadPath string
 }
 
 // runner unifies both `lint` and `optimize` modes.
 type runner struct {
 	targets []string
 	autofix bool
+
+	analyzer *perfguard.Analyzer
 
 	debugEnabled bool
 
@@ -162,9 +162,12 @@ func (r *runner) Run() error {
 		return fmt.Errorf("load packages: %w", err)
 	}
 
-	analyzer, err := r.createAnalyzer()
-	if err != nil {
-		return fmt.Errorf("create analyzer: %w", err)
+	{
+		analyzer, err := r.createAnalyzer()
+		if err != nil {
+			return fmt.Errorf("create analyzer: %w", err)
+		}
+		r.analyzer = analyzer
 	}
 
 	if r.heatmap != nil {
@@ -190,57 +193,81 @@ func (r *runner) Run() error {
 		}
 	}
 
+	// Small batches -- slow analysis.
+	// Batches that are too big -- we'll get out of resources trying
+	// loading all of the packages into memory.
+	// TODO: batch size should not be static.
+	// It should depend on the package relative complexity.
+	// For example, we can load hundreds of small packages even on a potatoe computer.
+	// For packages with tons of dependencies we can't afford that.
+	//
+	// Also note that packages.Load utilizes parallelism.
+	// So it makes sense to adjust it to the number of CPUs available.
+	batchMaxSize := 8 + (runtime.NumCPU() * 4)
+	if batchMaxSize > 80 {
+		batchMaxSize = 80
+	}
+
 	target := &perfguard.Target{}
-	for i, ref := range targetPackages {
-		r.printDebugf("loading %s package (%d/%d)", ref.path, i+1, len(targetPackages))
-		pkg, err := r.loadPackage(ctx, fileSet, ref)
+	numProcessed := 0
+	batchTargets := make([]string, batchMaxSize)
+	todoTargets := targetPackages
+	for len(todoTargets) != 0 {
+		batchSize := batchMaxSize
+		if batchSize > len(todoTargets) {
+			batchSize = len(todoTargets)
+		}
+		for i, ref := range todoTargets[:batchSize] {
+			batchTargets[i] = ref.path
+			if r.debugEnabled {
+				r.printDebugf("loading %s package (%d/%d)", ref.path, numProcessed+i+1, len(targetPackages))
+			}
+		}
+		todoTargets = todoTargets[batchSize:]
+		batchPackages, err := r.loadPackages(ctx, fileSet, batchTargets[:batchSize])
 		if err != nil {
 			return err
 		}
-		r.printDebugf("analyzing %s package (%d/%d)", ref.path, i+1, len(targetPackages))
+		for i, pkg := range batchPackages {
+			targetPkgPath := batchTargets[i]
+			if r.debugEnabled {
+				r.printDebugf("analyzing %s package (%d/%d)", targetPkgPath, numProcessed+i+1, len(targetPackages))
+			}
 
-		r.pkgWarnings = r.pkgWarnings[:0]
-		target.Files = target.Files[:0]
-		for _, f := range pkg.Syntax {
-			if r.heatmapFiles != nil {
-				filename := fileSet.Position(f.Pos()).Filename
-				if _, ok := r.heatmapFiles[filepath.Base(filename)]; !ok {
-					r.numFilesSkipped++
-					continue
+			target.Files = target.Files[:0]
+			for _, f := range pkg.Syntax {
+				if r.heatmapFiles != nil {
+					filename := fileSet.Position(f.Pos()).Filename
+					if _, ok := r.heatmapFiles[filepath.Base(filename)]; !ok {
+						r.numFilesSkipped++
+						continue
+					}
 				}
+				r.numFilesAnalyzed++
+				target.Files = append(target.Files, perfguard.SourceFile{
+					Syntax: f,
+				})
 			}
-			r.numFilesAnalyzed++
-			target.Files = append(target.Files, perfguard.SourceFile{
-				Syntax: f,
-			})
-		}
-		target.Fset = fileSet
-		target.Sizes = pkg.TypesSizes
-		target.Types = pkg.TypesInfo
-		target.Pkg = pkg.Types
-		start := time.Now()
-		err = analyzer.CheckPackage(target)
-		elapsed := time.Since(start)
-		atomic.AddInt64(&r.stats.analysisTime, int64(elapsed))
-		if err != nil {
-			return fmt.Errorf("checking %s: %w", pkg.PkgPath, err)
-		}
-		if len(r.pkgWarnings) != 0 {
-			if err := r.handleWarnings(target); err != nil {
-				return err
+			target.Fset = fileSet
+			target.Sizes = pkg.TypesSizes
+			target.Types = pkg.TypesInfo
+			target.Pkg = pkg.Types
+
+			if err := r.analyzePackage(target); err != nil {
+				return fmt.Errorf("checking %s: %w", pkg.PkgPath, err)
 			}
 		}
+		numProcessed += batchSize
 	}
 
 	timeElapsed := time.Since(startTime)
 
+	r.printDebugf("batch size: %d", batchMaxSize)
 	if r.numFilesSkipped == 0 {
 		r.printDebugf("analyzed %d files", r.numFilesAnalyzed)
 	} else {
 		r.printDebugf("analyzed %d files (%d skipped)", r.numFilesAnalyzed, r.numFilesSkipped)
 	}
-	r.printDebugf("packages.Load slowest time: %s", time.Duration(r.stats.maxPkgloadTime))
-	r.printDebugf("packages.Load slowest path: %s", r.stats.maxPkgloadPath)
 	r.printDebugf("packages.Load calls: %d", r.numLoadCalls)
 	r.printDebugf("packages.Load time: %s", time.Duration(r.stats.pkgloadTime))
 	r.printDebugf("find packages time: %s", time.Duration(r.stats.pkgfindTime))
@@ -254,6 +281,23 @@ func (r *runner) Run() error {
 		}
 	}
 
+	return nil
+}
+
+func (r *runner) analyzePackage(target *perfguard.Target) error {
+	r.pkgWarnings = r.pkgWarnings[:0]
+	start := time.Now()
+	err := r.analyzer.CheckPackage(target)
+	elapsed := time.Since(start)
+	atomic.AddInt64(&r.stats.analysisTime, int64(elapsed))
+	if err != nil {
+		return err
+	}
+	if len(r.pkgWarnings) != 0 {
+		if err := r.handleWarnings(target); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -372,7 +416,7 @@ func (r *runner) handleWarnings(target *perfguard.Target) error {
 	return nil
 }
 
-func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, ref packageRef) (*packages.Package, error) {
+func (r *runner) loadPackages(ctx context.Context, fset *token.FileSet, targets []string) ([]*packages.Package, error) {
 	r.numLoadCalls++
 
 	loadMode := packages.NeedName |
@@ -388,7 +432,7 @@ func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, ref packa
 		Context: ctx,
 	}
 	start := time.Now()
-	loaded, err := packages.Load(config, ref.path)
+	loaded, err := packages.Load(config, targets...)
 	elapsed := int64(time.Since(start))
 	atomic.AddInt64(&r.stats.pkgloadTime, elapsed)
 	if err != nil {
@@ -397,21 +441,19 @@ func (r *runner) loadPackage(ctx context.Context, fset *token.FileSet, ref packa
 	if err := ctx.Err(); err != nil {
 		return nil, fmt.Errorf("context error: %w", err)
 	}
-	if len(loaded) != 1 {
-		return nil, fmt.Errorf("expected 1 package for %s, got %d", ref.path, len(loaded))
-	}
-	pkg := loaded[0]
-	if r.stats.maxPkgloadTime < elapsed {
-		r.stats.maxPkgloadTime = elapsed
-		r.stats.maxPkgloadPath = ref.path
+
+	if len(loaded) != len(targets) {
+		return nil, fmt.Errorf("expected %d packages, got %d", len(targets), len(loaded))
 	}
 
-	if len(pkg.Errors) != 0 {
-		err := pkg.Errors[0]
-		r.pushErrorf(err.Msg, "load %s package: %v", pkg.Name, err)
+	for _, pkg := range loaded {
+		if len(pkg.Errors) != 0 {
+			err := pkg.Errors[0]
+			r.pushErrorf(err.Msg, "load %s package: %v", pkg.Name, err)
+		}
 	}
 
-	return pkg, nil
+	return loaded, nil
 }
 
 type packageRef struct {
