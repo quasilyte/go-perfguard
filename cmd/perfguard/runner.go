@@ -28,6 +28,7 @@ type arguments struct {
 }
 
 type statistics struct {
+	pkgfindTime  int64
 	pkgloadTime  int64
 	analysisTime int64
 
@@ -242,6 +243,7 @@ func (r *runner) Run() error {
 	r.printDebugf("packages.Load slowest path: %s", r.stats.maxPkgloadPath)
 	r.printDebugf("packages.Load calls: %d", r.numLoadCalls)
 	r.printDebugf("packages.Load time: %s", time.Duration(r.stats.pkgloadTime))
+	r.printDebugf("find packages time: %s", time.Duration(r.stats.pkgfindTime))
 	r.printDebugf("analysis time: %s", time.Duration(r.stats.analysisTime))
 	r.printDebugf("total time: %s", timeElapsed)
 
@@ -430,7 +432,10 @@ func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets 
 		Fset:    fset,
 		Context: ctx,
 	}
+	start := time.Now()
 	pkgs, err := packages.Load(config, targets...)
+	elapsed := int64(time.Since(start))
+	r.stats.pkgfindTime += elapsed
 	if err != nil {
 		return nil, err
 	}
