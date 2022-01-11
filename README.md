@@ -20,6 +20,9 @@ perfguard key features:
 * Profile-guided analysis in `perfguard optimize` mode
 * Most found issues are auto-fixable with `--fix` argument (quickfixes)
 * Easy to extend with custom rules (no recompilation needed)
+* Can analyze big projects* even if they have some compilation errors
+
+> (*) It doesn't try to load analysis targets into memory all at once.
 
 Here are some examples of what it can do for you:
 
