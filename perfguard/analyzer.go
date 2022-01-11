@@ -11,6 +11,7 @@ import (
 	"github.com/quasilyte/go-ruleguard/ruleguard/ir"
 	"github.com/quasilyte/perf-heatmap/heatmap"
 
+	"github.com/quasilyte/go-perfguard/perfguard/lint"
 	"github.com/quasilyte/go-perfguard/perfguard/rulesdata"
 )
 
@@ -19,8 +20,11 @@ import (
 
 type analyzer struct {
 	rulesEngine *ruleguard.Engine
-	goVersion   ruleguard.GoVersion
-	config      *Config
+
+	checkers []*targetChecker
+
+	goVersion ruleguard.GoVersion
+	config    *Config
 }
 
 func newAnalyzer() *analyzer {
@@ -29,6 +33,7 @@ func newAnalyzer() *analyzer {
 
 func (a *analyzer) Init(config *Config) error {
 	a.config = config
+	a.checkers = createCheckers(config)
 	return a.initRulesEngine()
 }
 
@@ -68,8 +73,16 @@ func (a *analyzer) initRulesEngine() error {
 	return nil
 }
 
-func (a *analyzer) CheckPackage(target *Target) error {
-	return a.runRules(target)
+func (a *analyzer) CheckPackage(target *lint.Target) error {
+	if err := a.runRules(target); err != nil {
+		return err
+	}
+	for _, c := range a.checkers {
+		if err := c.CheckTarget(target); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (a *analyzer) getTypeName(typeExpr ast.Expr) string {
@@ -109,8 +122,8 @@ func (a *analyzer) minHeatLevel(info *ruleguard.GoRuleInfo) int {
 	return 0
 }
 
-func (a *analyzer) runRules(target *Target) error {
-	runContext := ruleguard.RunContext{
+func (a *analyzer) runRules(target *lint.Target) error {
+	ruleguardContext := ruleguard.RunContext{
 		Pkg:         target.Pkg,
 		Types:       target.Types,
 		Sizes:       target.Sizes,
@@ -119,9 +132,9 @@ func (a *analyzer) runRules(target *Target) error {
 		TruncateLen: 100,
 	}
 
-	var currentFile *SourceFile
+	var currentFile *lint.SourceFile
 
-	runContext.Report = func(data *ruleguard.ReportData) {
+	ruleguardContext.Report = func(data *ruleguard.ReportData) {
 		startPos := target.Fset.Position(data.Node.Pos())
 
 		if a.config.Heatmap != nil {
@@ -151,10 +164,10 @@ func (a *analyzer) runRules(target *Target) error {
 			}
 		}
 
-		var fix *QuickFix
+		var fix *lint.QuickFix
 		if data.Suggestion != nil {
 			s := data.Suggestion
-			fix = &QuickFix{
+			fix = &lint.QuickFix{
 				From:        s.From,
 				To:          s.To,
 				Replacement: make([]byte, len(s.Replacement)),
@@ -163,7 +176,7 @@ func (a *analyzer) runRules(target *Target) error {
 		}
 
 		message := strings.ReplaceAll(data.Message, "\n", `\n`)
-		a.config.Warn(Warning{
+		a.config.Warn(lint.Warning{
 			Filename: startPos.Filename,
 			Line:     startPos.Line,
 			Tag:      data.RuleInfo.Group.Name,
@@ -174,7 +187,7 @@ func (a *analyzer) runRules(target *Target) error {
 
 	for i := range target.Files {
 		currentFile = &target.Files[i]
-		if err := a.rulesEngine.Run(&runContext, currentFile.Syntax); err != nil {
+		if err := a.rulesEngine.Run(&ruleguardContext, currentFile.Syntax); err != nil {
 			return err
 		}
 	}

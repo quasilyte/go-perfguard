@@ -19,6 +19,7 @@ import (
 	"github.com/quasilyte/go-perfguard/internal/imports"
 	"github.com/quasilyte/go-perfguard/internal/quickfix"
 	"github.com/quasilyte/go-perfguard/perfguard"
+	"github.com/quasilyte/go-perfguard/perfguard/lint"
 	"github.com/quasilyte/perf-heatmap/heatmap"
 	"golang.org/x/tools/go/packages"
 )
@@ -65,7 +66,7 @@ type runner struct {
 	stdout io.Writer
 	stderr io.Writer
 
-	pkgWarnings []perfguard.Warning
+	pkgWarnings []lint.Warning
 
 	// We try to avoid reporting more errors than necessary.
 	// There is a hard limit on how many errors we'll print.
@@ -208,7 +209,7 @@ func (r *runner) Run() error {
 		batchMaxSize = 80
 	}
 
-	target := &perfguard.Target{}
+	target := &lint.Target{}
 	numProcessed := 0
 	batchTargets := make([]string, batchMaxSize)
 	todoTargets := targetPackages
@@ -244,7 +245,7 @@ func (r *runner) Run() error {
 					}
 				}
 				r.numFilesAnalyzed++
-				target.Files = append(target.Files, perfguard.SourceFile{
+				target.Files = append(target.Files, lint.SourceFile{
 					Syntax: f,
 				})
 			}
@@ -284,7 +285,7 @@ func (r *runner) Run() error {
 	return nil
 }
 
-func (r *runner) analyzePackage(target *perfguard.Target) error {
+func (r *runner) analyzePackage(target *lint.Target) error {
 	r.pkgWarnings = r.pkgWarnings[:0]
 	start := time.Now()
 	err := r.analyzer.CheckPackage(target)
@@ -321,11 +322,11 @@ func (r *runner) createAnalyzer() (*perfguard.Analyzer, error) {
 	return a, nil
 }
 
-func (r *runner) appendWarning(w perfguard.Warning) {
+func (r *runner) appendWarning(w lint.Warning) {
 	r.pkgWarnings = append(r.pkgWarnings, w)
 }
 
-func (r *runner) reportWarning(w *perfguard.Warning) {
+func (r *runner) reportWarning(w *lint.Warning) {
 	filename := w.Filename
 	line := strconv.Itoa(w.Line)
 	ruleName := w.Tag
@@ -346,12 +347,12 @@ func (r *runner) reportWarning(w *perfguard.Warning) {
 	fmt.Fprintf(r.stdout, "%s:%s: %s: %s\n", filename, line, ruleName, message)
 }
 
-func (r *runner) handleWarnings(target *perfguard.Target) error {
+func (r *runner) handleWarnings(target *lint.Target) error {
 	// TODO: don't run imports fixing for every modified file?
 	// We can infer which rules may affect the imports set.
 
 	type warningWithFix struct {
-		w   *perfguard.Warning
+		w   *lint.Warning
 		fix quickfix.TextEdit
 	}
 
