@@ -60,6 +60,16 @@ func sprintConcat2(m dsl.Matcher) {
 		Suggest(`$x + ": " + $y`)
 }
 
+//doc:summary Detects Write calls that should be rewritten as io.WriteString
+//doc:tags    o2 score3
+//doc:before  w.Write([]byte(s))
+//doc:after   io.WriteString(w, s)
+func writeString2(m dsl.Matcher) {
+	m.Match(`$w.Write([]byte($s))`).
+		Where(m["w"].Type.Is("io.Writer") && m["s"].Type.Is(`string`) && m["s"].Const).
+		Suggest("io.WriteString($w, $s)")
+}
+
 //doc:summary Detects range loops that copy large value on every iteration
 //doc:tags    o1 score2
 func rangeValueCopy(m dsl.Matcher) {
