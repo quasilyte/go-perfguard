@@ -34,7 +34,7 @@ func regexpCompile(m dsl.Matcher) {
 
 //doc:summary Detects sprint calls that can be rewritten as a string concat
 //doc:tags    o2 score2
-func sprintConcat2(m dsl.Matcher) {
+func sprintfConcat2(m dsl.Matcher) {
 	// It's impractical to implement this kind of analysis via the rules.
 	// I've added a few most common patterns here just in case, but
 	// we need to make a generalized form of this optimization later.

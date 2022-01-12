@@ -215,7 +215,7 @@ func stringsJoinConcat(m dsl.Matcher) {
 //doc:tags    o1 score3
 //doc:before  fmt.Sprintf("%s%s", x, y)
 //doc:after   x + y
-func sprintConcat(m dsl.Matcher) {
+func sprintfConcat(m dsl.Matcher) {
 	m.Match(`fmt.Sprintf("%s%s", $x, $y)`).
 		Where(m["x"].Type.Is(`string`) && m["y"].Type.Is(`string`)).
 		Suggest(`$x + $y`)

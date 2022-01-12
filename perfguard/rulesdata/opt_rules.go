@@ -50,7 +50,7 @@ var Opt = &ir.File{
 		},
 		{
 			Line:        37,
-			Name:        "sprintConcat2",
+			Name:        "sprintfConcat2",
 			MatcherName: "m",
 			DocTags:     []string{"o2", "score2"},
 			DocSummary:  "Detects sprint calls that can be rewritten as a string concat",
