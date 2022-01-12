@@ -2,11 +2,12 @@ package main
 
 import (
 	"bytes"
+	"strings"
 )
 
 func main() {
 	{
-		var buf bytes.Buffer
+		var buf strings.Builder
 		buf.Write([]byte("hello, "))
 		buf.Write([]byte("world"))
 		println(buf.String())
@@ -27,7 +28,7 @@ func main() {
 	}
 
 	{
-		var buf bytes.Buffer
+		var buf strings.Builder
 		if _, err := buf.Write([]byte("hello, ")); err != nil {
 			panic(err)
 		}

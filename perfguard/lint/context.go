@@ -1,30 +1,56 @@
 package lint
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
-	"go/printer"
-	"go/types"
+	"path/filepath"
 	"strings"
+
+	"github.com/quasilyte/perf-heatmap/heatmap"
 )
 
 type Context struct {
-	Target *Target
+	*SharedContext
 
-	tag  string
-	warn func(Warning)
+	tag          string
+	minHeatLevel int
 }
 
-func (ctx *Context) SetWarnFunc(fn func(Warning)) {
-	ctx.warn = fn
+func NewContext(tag string, minHeatLevel int) Context {
+	return Context{
+		tag:          tag,
+		minHeatLevel: minHeatLevel,
+	}
 }
 
-func (ctx *Context) SetTag(tag string) {
-	ctx.tag = tag
+type SuggestParams struct {
+	OldNode ast.Node
+	NewNode ast.Node
+
+	HotNodes []ast.Node
 }
 
-func (ctx *Context) SuggestNode(oldNode, newNode ast.Node) {
+func (ctx *Context) SuggestNode(params SuggestParams) {
+	oldNode := params.OldNode
+	newNode := params.NewNode
+
+	if len(params.HotNodes) == 0 {
+		if !ctx.matchesHeatmap(oldNode) {
+			return
+		}
+	} else {
+		matches := false
+		for _, heatNode := range params.HotNodes {
+			if ctx.matchesHeatmap(heatNode) {
+				matches = true
+				break
+			}
+		}
+		if !matches {
+			return
+		}
+	}
+
 	startPos := ctx.Target.Fset.Position(oldNode.Pos())
 
 	var b strings.Builder
@@ -34,7 +60,7 @@ func (ctx *Context) SuggestNode(oldNode, newNode ast.Node) {
 	b.Write(replacement)
 	message := strings.ReplaceAll(b.String(), "\n", `\n`)
 
-	ctx.warn(Warning{
+	ctx.Warn(Warning{
 		Filename: startPos.Filename,
 		Line:     startPos.Line,
 		Tag:      ctx.tag,
@@ -45,14 +71,6 @@ func (ctx *Context) SuggestNode(oldNode, newNode ast.Node) {
 			Replacement: replacement,
 		},
 	})
-}
-
-func (ctx *Context) NodeText(n ast.Node) []byte {
-	var buf bytes.Buffer
-	if err := printer.Fprint(&buf, ctx.Target.Fset, n); err != nil {
-		return nil
-	}
-	return buf.Bytes()
 }
 
 func (ctx *Context) Report(n ast.Node, format string, args ...interface{}) {
@@ -66,7 +84,7 @@ func (ctx *Context) Report(n ast.Node, format string, args ...interface{}) {
 	}
 	message = strings.ReplaceAll(message, "\n", `\n`)
 
-	ctx.warn(Warning{
+	ctx.Warn(Warning{
 		Filename: startPos.Filename,
 		Line:     startPos.Line,
 		Tag:      ctx.tag,
@@ -74,23 +92,31 @@ func (ctx *Context) Report(n ast.Node, format string, args ...interface{}) {
 	})
 }
 
-// TypeOf returns the type of expression x.
-//
-// Unlike TypesInfo.TypeOf, it never returns nil.
-// Instead, it returns the Invalid type as a sentinel UnknownType value.
-func (ctx *Context) TypeOf(x ast.Expr) types.Type {
-	typ := ctx.Target.Types.TypeOf(x)
-	if typ != nil {
-		return typ
+func (ctx *Context) matchesHeatmap(n ast.Node) bool {
+	if ctx.Heatmap == nil {
+		return true
 	}
-	// Usually it means that some incorrect type info was loaded
-	// or the analyzed package was only partially (?) correct.
-	// To avoid nil pointer panics we can return a sentinel value
-	// that will fail most type assertions as well as kind checks
-	// (if the call side expects a *types.Basic).
-	return UnknownType
+	minLevel := ctx.minHeatLevel
+	if minLevel == 0 {
+		return true
+	}
+	startPos := ctx.Target.Fset.Position(n.Pos())
+	endPos := ctx.Target.Fset.Position(n.End())
+	lineFrom := startPos.Line
+	lineTo := endPos.Line
+	isHot := false
+	key := heatmap.Key{
+		TypeName: ctx.TypeName,
+		FuncName: ctx.FuncName,
+		Filename: filepath.Base(startPos.Filename),
+		PkgName:  ctx.Target.Pkg.Name(),
+	}
+	ctx.Heatmap.QueryLineRange(key, lineFrom, lineTo, func(line int, level heatmap.HeatLevel) bool {
+		if level.Global >= minLevel {
+			isHot = true
+			return false
+		}
+		return true
+	})
+	return isHot
 }
-
-// UnknownType is a special sentinel value that is returned from the CheckerContext.TypeOf
-// method instead of the nil type.
-var UnknownType types.Type = types.Typ[types.Invalid]
