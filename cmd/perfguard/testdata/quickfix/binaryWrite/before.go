@@ -15,6 +15,13 @@ func main() {
 	}
 
 	{
+		var buf strings.Builder
+		binary.Write(&buf, binary.LittleEndian, "hello, ")
+		binary.Write(&buf, binary.BigEndian, "world")
+		println(buf.String())
+	}
+
+	{
 		buf := &bytes.Buffer{}
 		binary.Write(buf, binary.LittleEndian, []byte("hello, "))
 		binary.Write(buf, binary.BigEndian, []byte("world"))
@@ -34,6 +41,17 @@ func main() {
 			panic(err)
 		}
 		if err := binary.Write(&buf, binary.BigEndian, []byte("world")); err != nil {
+			panic(err)
+		}
+		println(buf.String())
+	}
+
+	{
+		var buf strings.Builder
+		if err := binary.Write(&buf, binary.LittleEndian, "hello, "); err != nil {
+			panic(err)
+		}
+		if err := binary.Write(&buf, binary.BigEndian, "world"); err != nil {
 			panic(err)
 		}
 		println(buf.String())

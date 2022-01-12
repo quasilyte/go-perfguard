@@ -3724,6 +3724,73 @@ var Universal = &ir.File{
 						},
 					},
 				},
+				{
+					Line:            726,
+					SyntaxPatterns:  []ir.PatternString{{Line: 726, Value: "$err := binary.Write($w, $_, $s)"}},
+					ReportTemplate:  "$$ => _, $err := $w.WriteString($s)",
+					SuggestTemplate: "_, $err := $w.WriteString($s)",
+					WhereExpr: ir.FilterExpr{
+						Line: 727,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"s\"].Type.Is(`string`) && m[\"w\"].Type.HasMethod(`io.StringWriter.WriteString`)",
+						Args: []ir.FilterExpr{
+							{
+								Line:  727,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"s\"].Type.Is(`string`)",
+								Value: "s",
+								Args:  []ir.FilterExpr{{Line: 727, Op: ir.FilterStringOp, Src: "`string`", Value: "string"}},
+							},
+							{
+								Line:  727,
+								Op:    ir.FilterVarTypeHasMethodOp,
+								Src:   "m[\"w\"].Type.HasMethod(`io.StringWriter.WriteString`)",
+								Value: "w",
+								Args:  []ir.FilterExpr{{Line: 727, Op: ir.FilterStringOp, Src: "`io.StringWriter.WriteString`", Value: "io.StringWriter.WriteString"}},
+							},
+						},
+					},
+				},
+				{
+					Line:            730,
+					SyntaxPatterns:  []ir.PatternString{{Line: 730, Value: "binary.Write($w, $_, $s)"}},
+					ReportTemplate:  "$$ => $w.WriteString($s)",
+					SuggestTemplate: "$w.WriteString($s)",
+					WhereExpr: ir.FilterExpr{
+						Line: 731,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"$$\"].Node.Parent().Is(`ExprStmt`) && m[\"s\"].Type.Is(`string`) && m[\"w\"].Type.HasMethod(`io.StringWriter.WriteString`)",
+						Args: []ir.FilterExpr{
+							{
+								Line: 731,
+								Op:   ir.FilterAndOp,
+								Src:  "m[\"$$\"].Node.Parent().Is(`ExprStmt`) && m[\"s\"].Type.Is(`string`)",
+								Args: []ir.FilterExpr{
+									{
+										Line: 731,
+										Op:   ir.FilterRootNodeParentIsOp,
+										Src:  "m[\"$$\"].Node.Parent().Is(`ExprStmt`)",
+										Args: []ir.FilterExpr{{Line: 731, Op: ir.FilterStringOp, Src: "`ExprStmt`", Value: "ExprStmt"}},
+									},
+									{
+										Line:  731,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"s\"].Type.Is(`string`)",
+										Value: "s",
+										Args:  []ir.FilterExpr{{Line: 731, Op: ir.FilterStringOp, Src: "`string`", Value: "string"}},
+									},
+								},
+							},
+							{
+								Line:  731,
+								Op:    ir.FilterVarTypeHasMethodOp,
+								Src:   "m[\"w\"].Type.HasMethod(`io.StringWriter.WriteString`)",
+								Value: "w",
+								Args:  []ir.FilterExpr{{Line: 731, Op: ir.FilterStringOp, Src: "`io.StringWriter.WriteString`", Value: "io.StringWriter.WriteString"}},
+							},
+						},
+					},
+				},
 			},
 		},
 	},
