@@ -85,6 +85,19 @@ func Ignore(b []byte) {
 			panic(err2)
 		}
 	}
+
+	{
+		var w io.Writer
+		binary.Write(w, binary.LittleEndian, 29)
+		binary.Write(w, binary.BigEndian, 29)
+	}
+
+	{
+		var i int
+		buf := bytes.Buffer{}
+		binary.Write(&buf, binary.LittleEndian, uint32(i))
+		binary.Write(&buf, binary.BigEndian, uint32(i))
+	}
 }
 
 func checkError(err error) {}

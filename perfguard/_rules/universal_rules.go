@@ -720,6 +720,6 @@ func binaryWrite(m dsl.Matcher) {
 		Suggest(`_, $err := $w.Write($b)`)
 
 	m.Match(`binary.Write($w, $_, $b)`).
-		Where(m["$$"].Node.Parent().Is(`ExprStmt`)).
+		Where(m["$$"].Node.Parent().Is(`ExprStmt`) && m["b"].Type.Is(`[]byte`)).
 		Suggest(`$w.Write($b)`)
 }
