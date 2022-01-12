@@ -3705,9 +3705,23 @@ var Universal = &ir.File{
 					SuggestTemplate: "$w.Write($b)",
 					WhereExpr: ir.FilterExpr{
 						Line: 723,
-						Op:   ir.FilterRootNodeParentIsOp,
-						Src:  "m[\"$$\"].Node.Parent().Is(`ExprStmt`)",
-						Args: []ir.FilterExpr{{Line: 723, Op: ir.FilterStringOp, Src: "`ExprStmt`", Value: "ExprStmt"}},
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"$$\"].Node.Parent().Is(`ExprStmt`) && m[\"b\"].Type.Is(`[]byte`)",
+						Args: []ir.FilterExpr{
+							{
+								Line: 723,
+								Op:   ir.FilterRootNodeParentIsOp,
+								Src:  "m[\"$$\"].Node.Parent().Is(`ExprStmt`)",
+								Args: []ir.FilterExpr{{Line: 723, Op: ir.FilterStringOp, Src: "`ExprStmt`", Value: "ExprStmt"}},
+							},
+							{
+								Line:  723,
+								Op:    ir.FilterVarTypeIsOp,
+								Src:   "m[\"b\"].Type.Is(`[]byte`)",
+								Value: "b",
+								Args:  []ir.FilterExpr{{Line: 723, Op: ir.FilterStringOp, Src: "`[]byte`", Value: "[]byte"}},
+							},
+						},
 					},
 				},
 			},
