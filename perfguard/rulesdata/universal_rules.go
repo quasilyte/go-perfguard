@@ -861,7 +861,7 @@ var Universal = &ir.File{
 		},
 		{
 			Line:        218,
-			Name:        "sprintConcat",
+			Name:        "sprintfConcat",
 			MatcherName: "m",
 			DocTags:     []string{"o1", "score3"},
 			DocSummary:  "Detects sprint calls that can be rewritten as a string concat",
