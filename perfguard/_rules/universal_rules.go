@@ -225,6 +225,15 @@ func sprintConcat(m dsl.Matcher) {
 		Suggest(`$x.String() + $y.String()`)
 }
 
+//doc:summary Detects sprintf calls that are used to create an error
+//doc:tags    o1 score2
+//doc:before  errors.New(fmt.Sprintf("%s:%d", file, line))
+//doc:after   fmt.Errorf("%s:%d", file, line)
+func sprintfError(m dsl.Matcher) {
+	m.Match(`errors.New(fmt.Sprintf($format, $*args))`).
+		Suggest(`fmt.Errorf($format, $args)`)
+}
+
 //doc:summary Detects fmt uses that can be replaced with strconv
 //doc:tags    o1 score2
 //doc:before  fmt.Sprintf("%d", i)
