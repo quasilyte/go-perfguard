@@ -27,12 +27,16 @@ import (
 type arguments struct {
 	heatmapFile      string
 	heatmapThreshold float64
+
+	autogen bool
 }
 
 type statistics struct {
 	pkgfindTime  int64
 	pkgloadTime  int64
 	analysisTime int64
+
+	numAutogenFiles int
 }
 
 // runner unifies both `lint` and `optimize` modes.
@@ -244,6 +248,14 @@ func (r *runner) Run() error {
 						continue
 					}
 				}
+				isAutogen := isAutogenFile(f)
+				if isAutogen {
+					r.stats.numAutogenFiles++
+					if !r.args.autogen {
+						r.numFilesSkipped++
+						continue
+					}
+				}
 				r.numFilesAnalyzed++
 				target.Files = append(target.Files, lint.SourceFile{
 					Syntax: f,
@@ -269,6 +281,7 @@ func (r *runner) Run() error {
 	} else {
 		r.printDebugf("analyzed %d files (%d skipped)", r.numFilesAnalyzed, r.numFilesSkipped)
 	}
+	r.printDebugf("autogen files: %d", r.stats.numAutogenFiles)
 	r.printDebugf("packages.Load calls: %d", r.numLoadCalls)
 	r.printDebugf("packages.Load time: %s", time.Duration(r.stats.pkgloadTime))
 	r.printDebugf("find packages time: %s", time.Duration(r.stats.pkgfindTime))
