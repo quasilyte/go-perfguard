@@ -3,11 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+	"strings"
 )
 
 func main() {
 	{
-		var buf bytes.Buffer
+		var buf strings.Builder
 		binary.Write(&buf, binary.LittleEndian, []byte("hello, "))
 		binary.Write(&buf, binary.BigEndian, []byte("world"))
 		println(buf.String())
@@ -28,7 +29,7 @@ func main() {
 	}
 
 	{
-		var buf bytes.Buffer
+		var buf strings.Builder
 		if err := binary.Write(&buf, binary.LittleEndian, []byte("hello, ")); err != nil {
 			panic(err)
 		}

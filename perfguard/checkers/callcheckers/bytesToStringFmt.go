@@ -8,6 +8,7 @@ import (
 	"github.com/quasilyte/go-perfguard/internal/resolve"
 	"github.com/quasilyte/go-perfguard/internal/typeis"
 	"github.com/quasilyte/go-perfguard/perfguard/checkers"
+	"github.com/quasilyte/go-perfguard/perfguard/lint"
 )
 
 func init() {
@@ -22,7 +23,7 @@ func init() {
 
 type BytesToStringFmtChecker struct{}
 
-func (c *BytesToStringFmtChecker) CheckCall(ctx *checkers.CallContext, call *ast.CallExpr) error {
+func (c *BytesToStringFmtChecker) CheckCall(ctx *lint.Context, call *ast.CallExpr) error {
 	if call.Ellipsis.IsValid() {
 		return nil // Skip variadic calls
 	}
@@ -77,7 +78,10 @@ func (c *BytesToStringFmtChecker) CheckCall(ctx *checkers.CallContext, call *ast
 		if !typeis.ByteSlice(srcType.Underlying()) {
 			continue
 		}
-		ctx.SuggestNode(convExpr, convInfo.Arg)
+		ctx.SuggestNode(lint.SuggestParams{
+			OldNode: convExpr,
+			NewNode: convInfo.Arg,
+		})
 	}
 
 	return nil

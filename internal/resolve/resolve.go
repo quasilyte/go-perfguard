@@ -54,3 +54,28 @@ func ConvExpr(typesInfo *types.Info, e ast.Expr) ConvInfo {
 	info.Arg = call.Args[0]
 	return info
 }
+
+func SplitFuncName(fn *ast.FuncDecl) (typeName, funcName string) {
+	if fn == nil {
+		return "", ""
+	}
+	funcName = fn.Name.Name
+	if fn.Recv != nil && len(fn.Recv.List) != 0 {
+		typeName = getTypeName(fn.Recv.List[0].Type)
+	}
+	return typeName, funcName
+}
+
+func getTypeName(typeExpr ast.Expr) string {
+	switch typ := typeExpr.(type) {
+	case *ast.Ident:
+		return typ.Name
+	case *ast.StarExpr:
+		return getTypeName(typ.X)
+	case *ast.ParenExpr:
+		return getTypeName(typ.X)
+
+	default:
+		return ""
+	}
+}

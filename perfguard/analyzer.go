@@ -2,7 +2,6 @@ package perfguard
 
 import (
 	"fmt"
-	"go/ast"
 	"go/token"
 	"path/filepath"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"github.com/quasilyte/go-ruleguard/ruleguard/ir"
 	"github.com/quasilyte/perf-heatmap/heatmap"
 
+	"github.com/quasilyte/go-perfguard/internal/resolve"
 	"github.com/quasilyte/go-perfguard/perfguard/lint"
 	"github.com/quasilyte/go-perfguard/perfguard/rulesdata"
 )
@@ -85,31 +85,6 @@ func (a *analyzer) CheckPackage(target *lint.Target) error {
 	return nil
 }
 
-func (a *analyzer) getTypeName(typeExpr ast.Expr) string {
-	switch typ := typeExpr.(type) {
-	case *ast.Ident:
-		return typ.Name
-	case *ast.StarExpr:
-		return a.getTypeName(typ.X)
-	case *ast.ParenExpr:
-		return a.getTypeName(typ.X)
-
-	default:
-		return ""
-	}
-}
-
-func (a *analyzer) splitFuncName(fn *ast.FuncDecl) (typeName, funcName string) {
-	if fn == nil {
-		return "", ""
-	}
-	funcName = fn.Name.Name
-	if fn.Recv != nil && len(fn.Recv.List) != 0 {
-		typeName = a.getTypeName(fn.Recv.List[0].Type)
-	}
-	return typeName, funcName
-}
-
 func (a *analyzer) minHeatLevel(info *ruleguard.GoRuleInfo) int {
 	for _, tag := range info.Group.DocTags {
 		switch tag {
@@ -144,7 +119,7 @@ func (a *analyzer) runRules(target *lint.Target) error {
 				lineFrom := startPos.Line
 				lineTo := endPos.Line
 				isHot := false
-				typeName, funcName := a.splitFuncName(data.Func)
+				typeName, funcName := resolve.SplitFuncName(data.Func)
 				key := heatmap.Key{
 					TypeName: typeName,
 					FuncName: funcName,

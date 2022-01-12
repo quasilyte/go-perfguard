@@ -21,3 +21,11 @@ func ByteSlice(typ types.Type) bool {
 	}
 	return false
 }
+
+func Named(typ types.Type, pkgPath, typeName string) bool {
+	if namedType, ok := typ.(*types.Named); ok {
+		obj := namedType.Obj()
+		return obj.Name() == typeName && obj.Pkg().Path() == pkgPath
+	}
+	return false
+}
