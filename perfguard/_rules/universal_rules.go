@@ -656,7 +656,7 @@ func rangeToAppend(m dsl.Matcher) {
 }
 
 //doc:summary Detects range loops that can be turned into a single copy call
-//doc:tags    o1 score3
+//doc:tags    o1 score4
 func rangeToCopy(m dsl.Matcher) {
 	m.Match(
 		`for $i := range $src { $dst[$i] = $src[$i] }`,
@@ -665,6 +665,16 @@ func rangeToCopy(m dsl.Matcher) {
 		Where(m["src"].Type.Is(`[]$_`)).
 		Suggest(`copy($dst, $src)`).
 		Report(`for ... { ... } => copy($dst, $src)`)
+}
+
+//doc:summary Detects loops where slice dst=src and they can be replaced with a copy call
+//doc:tags    o1 score4
+func sliceSelfCopy(m dsl.Matcher) {
+	m.Match(
+		`for $i := 0; i < $n; $i++ { $s[$i] = $s[$offset+$i] }`).
+		Where(m["s"].Type.Is(`[]$_`)).
+		Suggest(`copy($s[:$n], $s[$offset:])`).
+		Report(`for ... { ... } => copy($s[:$n], $s[$offset:])`)
 }
 
 //doc:summary Detects a range over []rune(string) where copying to a new slice is redundant
