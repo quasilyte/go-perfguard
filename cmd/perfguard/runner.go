@@ -188,7 +188,7 @@ func (r *runner) Run() error {
 			if _, ok := r.heatmapPackages[ref.name]; ok {
 				filtered = append(filtered, ref)
 			} else {
-				r.printDebugf("skip %s package", ref.path)
+				r.printDebugf("skip %s (%s) package", ref.name, ref.path)
 				numSkipped++
 			}
 		}
@@ -514,7 +514,11 @@ func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets 
 	if len(pkgs) == 1 {
 		pkg := pkgs[0]
 		if pkg.PkgPath == "command-line-arguments" && len(targets) == 1 {
-			ref := packageRef{id: pkg.ID, path: targets[0]}
+			ref := packageRef{
+				id:   pkg.ID,
+				name: pkg.Name,
+				path: targets[0],
+			}
 			return []packageRef{ref}, nil
 		}
 	}

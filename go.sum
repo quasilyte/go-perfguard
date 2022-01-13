@@ -61,6 +61,8 @@ github.com/quasilyte/gogrep v0.0.0-20220104235416-e471a266cab5 h1:HJoZW+y9lDdp8P
 github.com/quasilyte/gogrep v0.0.0-20220104235416-e471a266cab5/go.mod h1:wSEyW6O61xRV6zb6My3HxrQ5/8ke7NE2OayqCHa3xRM=
 github.com/quasilyte/perf-heatmap v0.0.0-20211220153856-7361377975b8 h1:XTVqxdjLyMjPMSOaHFsjIqeu1EeUensbK97c2I29In8=
 github.com/quasilyte/perf-heatmap v0.0.0-20211220153856-7361377975b8/go.mod h1:mPJZP5qrgK90IzVVdmPOOJhTXyy65WoldUR1QPeh6AU=
+github.com/quasilyte/perf-heatmap v0.0.0-20220113135715-5506accae633 h1:EIB7/hq0g4lSoRJ/umDxXu3rpaCL2O/CtWaMKIZ7w6g=
+github.com/quasilyte/perf-heatmap v0.0.0-20220113135715-5506accae633/go.mod h1:mPJZP5qrgK90IzVVdmPOOJhTXyy65WoldUR1QPeh6AU=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.4.1/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
