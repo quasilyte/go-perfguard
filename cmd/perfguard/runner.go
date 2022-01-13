@@ -7,6 +7,7 @@ import (
 	"go/format"
 	"go/token"
 	"io"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -32,6 +33,11 @@ type arguments struct {
 }
 
 type statistics struct {
+	numSamples    int
+	maxSampleTime time.Duration
+	minSampleTime time.Duration
+	avgSampleTime time.Duration
+
 	pkgfindTime  int64
 	pkgloadTime  int64
 	analysisTime int64
@@ -276,6 +282,12 @@ func (r *runner) Run() error {
 	timeElapsed := time.Since(startTime)
 
 	r.printDebugf("batch size: %d", batchMaxSize)
+	if r.heatmap != nil {
+		r.printDebugf("lines covered by samples: %d", r.stats.numSamples)
+		r.printDebugf("max time sample: %s", r.stats.maxSampleTime)
+		r.printDebugf("avg time sample: %s", r.stats.avgSampleTime)
+		r.printDebugf("min time sample: %s", r.stats.minSampleTime)
+	}
 	if r.numFilesSkipped == 0 {
 		r.printDebugf("analyzed %d files", r.numFilesAnalyzed)
 	} else {
@@ -563,13 +575,27 @@ func (r *runner) findPackages(ctx context.Context, fset *token.FileSet, targets 
 func (r *runner) inspectHeatmap() {
 	r.heatmapPackages = make(map[string]struct{})
 	r.heatmapFiles = make(map[string]struct{})
+	var totalDuration time.Duration
+	r.stats.minSampleTime = time.Duration(math.MaxInt64)
 	r.heatmap.Inspect(func(l heatmap.LineStats) {
+		d := time.Duration(l.Value)
 		if l.GlobalHeatLevel == 0 {
 			return
+		}
+		r.stats.numSamples++
+		totalDuration += d
+		if r.stats.maxSampleTime < d {
+			r.stats.maxSampleTime = d
+		}
+		if r.stats.minSampleTime > d {
+			r.stats.minSampleTime = d
 		}
 		r.heatmapPackages[l.Func.PkgName] = struct{}{}
 		r.heatmapFiles[filepath.Base(l.Func.Filename)] = struct{}{}
 	})
+	if r.stats.numSamples != 0 {
+		r.stats.avgSampleTime = totalDuration / time.Duration(r.stats.numSamples)
+	}
 }
 
 func (r *runner) createHeatmap() (*heatmap.Index, error) {
