@@ -734,6 +734,19 @@ func reflectType(m dsl.Matcher) {
 		Suggest(`reflect.TypeOf($x).String()`)
 }
 
+//doc:summary Detects array copies that can be optimized
+//doc:tags    o1 score2
+func arrayCopy(m dsl.Matcher) {
+	// TODO: how to handle copy($x[:], $y[:]) when it's
+	// pointers to arrays, not just arrays?
+	// Also: handle copy((*$x)[:], (*$y)[:])?
+
+	m.Match(`copy($x[:], $y[:])`).
+		Where(m["x"].Type.Is(`[$_]$_`) && m["y"].Type.Is(`[$_]$_`) &&
+			m["x"].Type.Size == m["y"].Type.Size).
+		Suggest(`$x = $y`)
+}
+
 //doc:summary Detects binary.Write uses that can be optimized
 //doc:tags    o1 score3
 func binaryWrite(m dsl.Matcher) {

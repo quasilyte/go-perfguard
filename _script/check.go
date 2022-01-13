@@ -7,6 +7,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func main() {
@@ -60,9 +63,14 @@ func (c *checker) checkAutogen() error {
 	}
 
 	for i, filename := range filenames {
-		data := contents[i]
+		oldData := contents[i]
 		newData := newContents[i]
-		if !bytes.Equal(data, newData) {
+		if !bytes.Equal(oldData, newData) {
+			diff := cmp.Diff(
+				strings.Split(string(oldData), "\n"),
+				strings.Split(string(newData), "\n"),
+			)
+			log.Printf("diff (-old +new):\n%s", diff)
 			return fmt.Errorf("rulesdata for %s is outdated, run 'go generate ./perfguard'", filename)
 		}
 	}
