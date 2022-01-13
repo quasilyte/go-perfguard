@@ -30,7 +30,7 @@ Here are some examples of what it can do for you:
 
 ## Quick start
 
-If you want to install the ruleguard from source, it's as simple as:
+If you want to install the perfguard from source, it's as simple as:
 
 ```bash
 # Installs a `perfguard` binary under your `$(go env GOPATH)/bin`
