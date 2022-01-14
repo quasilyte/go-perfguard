@@ -8,7 +8,7 @@ require (
 	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd
 	github.com/quasilyte/go-ruleguard v0.3.16-0.20220113092427-60b3b255b443
 	github.com/quasilyte/go-ruleguard/dsl v0.3.14-0.20220113092427-60b3b255b443
-	github.com/quasilyte/perf-heatmap v0.0.0-20220113135715-5506accae633
+	github.com/quasilyte/perf-heatmap v0.0.0-20220114152049-8847f34749f7
 	golang.org/x/tools v0.1.9-0.20220107172756-94bfe6897a14
 )
 

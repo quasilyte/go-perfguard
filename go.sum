@@ -63,6 +63,8 @@ github.com/quasilyte/perf-heatmap v0.0.0-20211220153856-7361377975b8 h1:XTVqxdjL
 github.com/quasilyte/perf-heatmap v0.0.0-20211220153856-7361377975b8/go.mod h1:mPJZP5qrgK90IzVVdmPOOJhTXyy65WoldUR1QPeh6AU=
 github.com/quasilyte/perf-heatmap v0.0.0-20220113135715-5506accae633 h1:EIB7/hq0g4lSoRJ/umDxXu3rpaCL2O/CtWaMKIZ7w6g=
 github.com/quasilyte/perf-heatmap v0.0.0-20220113135715-5506accae633/go.mod h1:mPJZP5qrgK90IzVVdmPOOJhTXyy65WoldUR1QPeh6AU=
+github.com/quasilyte/perf-heatmap v0.0.0-20220114152049-8847f34749f7 h1:wuW9NftRIbJrzux9JKrBmr7JkYOa65kk6E88mR0Qkuk=
+github.com/quasilyte/perf-heatmap v0.0.0-20220114152049-8847f34749f7/go.mod h1:mPJZP5qrgK90IzVVdmPOOJhTXyy65WoldUR1QPeh6AU=
 github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 h1:M8mH9eK4OUR4lu7Gd+PU1fV2/qnDNfzT635KRSObncs=
 github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567/go.mod h1:DWNGW8A4Y+GyBgPuaQJuWiy0XYftx4Xm/y5Jqk9I6VQ=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

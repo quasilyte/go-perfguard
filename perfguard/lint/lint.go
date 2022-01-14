@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"time"
 )
 
 type Warning struct {
@@ -12,6 +13,8 @@ type Warning struct {
 	Tag      string
 	Text     string
 	Fix      *QuickFix
+
+	SamplesTime time.Duration
 }
 
 type QuickFix struct {
