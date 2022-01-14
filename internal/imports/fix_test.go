@@ -606,6 +606,23 @@ import (
 
 func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`,
 		},
+
+		// Replace a single import.
+		// TODO: do not insert '(' ')' here?
+		{`
+package example
+
+import "fmt"
+
+func f(x int) string { return strconv.Itoa(v) }`, `
+package example
+
+import (
+	"strconv"
+)
+
+func f(x int) string { return strconv.Itoa(v) }`,
+		},
 	}
 
 	for i := range tests {
@@ -618,6 +635,7 @@ func f(x otherlib.T, y lib.T, r io.Reader, b *strings.Builder) {}`,
 					"rand":    "math/rand",
 					"errors":  "errors",
 					"io":      "io",
+					"strconv": "strconv",
 				},
 				Packages: map[string]string{
 					"errors": "github.com/pkg/errors",
