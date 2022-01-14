@@ -31,6 +31,15 @@ Here are some examples of what it can do for you:
 * Suggest more optimized functions from stdlib
 * Recognize expensive operations in hot paths that can be lifted
 
+## Quick start
+
+If you want to install the perfguard from source, it's as simple as:
+
+```bash
+# Installs a `perfguard` binary under your `$(go env GOPATH)/bin`
+$ go install -v github.com/quasilyte/go-perfguard/cmd/perfguard@latest
+```
+
 ## Using perfguard
 
 It's recommended that you collect CPU profiles on realistic workflows.
