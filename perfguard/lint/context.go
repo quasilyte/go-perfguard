@@ -114,12 +114,16 @@ func (ctx *Context) matchesHeatmap(n ast.Node, samplesValue *int64) bool {
 		Filename: filepath.Base(startPos.Filename),
 		PkgName:  ctx.Target.Pkg.Name(),
 	}
+	totalValue := int64(0)
 	ctx.Heatmap.QueryLineRange(key, lineFrom, lineTo, func(l heatmap.LineStats) bool {
 		if l.GlobalHeatLevel >= minLevel {
 			isHot = true
-			*samplesValue += l.Value
 		}
+		totalValue += l.Value
 		return true
 	})
+	if isHot {
+		*samplesValue = totalValue
+	}
 	return isHot
 }

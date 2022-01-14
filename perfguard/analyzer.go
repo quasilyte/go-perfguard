@@ -128,16 +128,18 @@ func (a *analyzer) runRules(target *lint.Target) error {
 					Filename: filepath.Base(startPos.Filename),
 					PkgName:  target.Pkg.Name(),
 				}
+				totalValue := int64(0)
 				a.config.Heatmap.QueryLineRange(key, lineFrom, lineTo, func(l heatmap.LineStats) bool {
 					if l.GlobalHeatLevel >= minLevel {
 						isHot = true
-						samplesTime += time.Duration(l.Value)
 					}
+					totalValue += l.Value
 					return true
 				})
 				if !isHot {
 					return
 				}
+				samplesTime = time.Duration(totalValue)
 			}
 		}
 
