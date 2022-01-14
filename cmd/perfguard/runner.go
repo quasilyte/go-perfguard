@@ -22,6 +22,7 @@ import (
 	"github.com/quasilyte/go-perfguard/perfguard"
 	"github.com/quasilyte/go-perfguard/perfguard/lint"
 	"github.com/quasilyte/perf-heatmap/heatmap"
+	"github.com/quasilyte/stdinfo"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -405,8 +406,9 @@ func (r *runner) handleWarnings(target *lint.Target) error {
 		fixablePerFile[filename] = append(fixablePerFile[filename], warningWithFix{w: w, fix: fix})
 	}
 
-	// TODO.
-	importsConfig := imports.FixConfig{}
+	importsConfig := imports.FixConfig{
+		StdlibPackages: stdinfo.PathByName,
+	}
 
 	for filename, pairs := range fixablePerFile {
 		quickfix.Sort(pairs, func(i int) quickfix.TextEdit {
