@@ -5,6 +5,7 @@ import (
 	"go/token"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/quasilyte/go-ruleguard/ruleguard"
 	"github.com/quasilyte/go-ruleguard/ruleguard/ir"
@@ -112,6 +113,7 @@ func (a *analyzer) runRules(target *lint.Target) error {
 	ruleguardContext.Report = func(data *ruleguard.ReportData) {
 		startPos := target.Fset.Position(data.Node.Pos())
 
+		samplesTime := time.Duration(0)
 		if a.config.Heatmap != nil {
 			minLevel := a.minHeatLevel(&data.RuleInfo)
 			if minLevel != 0 {
@@ -126,10 +128,10 @@ func (a *analyzer) runRules(target *lint.Target) error {
 					Filename: filepath.Base(startPos.Filename),
 					PkgName:  target.Pkg.Name(),
 				}
-				a.config.Heatmap.QueryLineRange(key, lineFrom, lineTo, func(line int, level heatmap.HeatLevel) bool {
-					if level.Global >= minLevel {
+				a.config.Heatmap.QueryLineRange(key, lineFrom, lineTo, func(l heatmap.LineStats) bool {
+					if l.GlobalHeatLevel >= minLevel {
 						isHot = true
-						return false
+						samplesTime += time.Duration(l.Value)
 					}
 					return true
 				})
@@ -152,11 +154,12 @@ func (a *analyzer) runRules(target *lint.Target) error {
 
 		message := strings.ReplaceAll(data.Message, "\n", `\n`)
 		a.config.Warn(lint.Warning{
-			Filename: startPos.Filename,
-			Line:     startPos.Line,
-			Tag:      data.RuleInfo.Group.Name,
-			Text:     message,
-			Fix:      fix,
+			Filename:    startPos.Filename,
+			Line:        startPos.Line,
+			Tag:         data.RuleInfo.Group.Name,
+			Text:        message,
+			Fix:         fix,
+			SamplesTime: samplesTime,
 		})
 	}
 

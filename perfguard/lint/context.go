@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/quasilyte/perf-heatmap/heatmap"
 )
@@ -34,14 +35,15 @@ func (ctx *Context) SuggestNode(params SuggestParams) {
 	oldNode := params.OldNode
 	newNode := params.NewNode
 
+	samplesValue := int64(0)
 	if len(params.HotNodes) == 0 {
-		if !ctx.matchesHeatmap(oldNode) {
+		if !ctx.matchesHeatmap(oldNode, &samplesValue) {
 			return
 		}
 	} else {
 		matches := false
 		for _, heatNode := range params.HotNodes {
-			if ctx.matchesHeatmap(heatNode) {
+			if ctx.matchesHeatmap(heatNode, &samplesValue) {
 				matches = true
 				break
 			}
@@ -70,6 +72,7 @@ func (ctx *Context) SuggestNode(params SuggestParams) {
 			To:          oldNode.End(),
 			Replacement: replacement,
 		},
+		SamplesTime: time.Duration(samplesValue),
 	})
 }
 
@@ -92,7 +95,7 @@ func (ctx *Context) Report(n ast.Node, format string, args ...interface{}) {
 	})
 }
 
-func (ctx *Context) matchesHeatmap(n ast.Node) bool {
+func (ctx *Context) matchesHeatmap(n ast.Node, samplesValue *int64) bool {
 	if ctx.Heatmap == nil {
 		return true
 	}
@@ -111,10 +114,10 @@ func (ctx *Context) matchesHeatmap(n ast.Node) bool {
 		Filename: filepath.Base(startPos.Filename),
 		PkgName:  ctx.Target.Pkg.Name(),
 	}
-	ctx.Heatmap.QueryLineRange(key, lineFrom, lineTo, func(line int, level heatmap.HeatLevel) bool {
-		if level.Global >= minLevel {
+	ctx.Heatmap.QueryLineRange(key, lineFrom, lineTo, func(l heatmap.LineStats) bool {
+		if l.GlobalHeatLevel >= minLevel {
 			isHot = true
-			return false
+			*samplesValue += l.Value
 		}
 		return true
 	})

@@ -39,6 +39,8 @@ type statistics struct {
 	minSampleTime time.Duration
 	avgSampleTime time.Duration
 
+	affectedSampleTime time.Duration
+
 	pkgfindTime  int64
 	pkgloadTime  int64
 	analysisTime int64
@@ -288,6 +290,7 @@ func (r *runner) Run() error {
 		r.printDebugf("max time sample: %s", r.stats.maxSampleTime)
 		r.printDebugf("avg time sample: %s", r.stats.avgSampleTime)
 		r.printDebugf("min time sample: %s", r.stats.minSampleTime)
+		r.printDebugf("affected samples time: %s", r.stats.affectedSampleTime)
 	}
 	if r.numFilesSkipped == 0 {
 		r.printDebugf("analyzed %d files", r.numFilesAnalyzed)
@@ -370,7 +373,11 @@ func (r *runner) reportWarning(w *lint.Warning) {
 		ruleName = "\033[93m" + ruleName + "\033[0m"
 		message = strings.Replace(message, " => ", " \033[35;1m=>\033[0m ", 1)
 	}
-	fmt.Fprintf(r.stdout, "%s:%s: %s: %s\n", filename, line, ruleName, message)
+	var timeString = ""
+	if r.heatmap != nil && w.SamplesTime != 0 {
+		timeString = " (" + w.SamplesTime.String() + ")"
+	}
+	fmt.Fprintf(r.stdout, "%s:%s: %s%s: %s\n", filename, line, ruleName, timeString, message)
 }
 
 func (r *runner) handleWarnings(target *lint.Target) error {
@@ -386,6 +393,9 @@ func (r *runner) handleWarnings(target *lint.Target) error {
 	fixablePerFile := make(map[string][]warningWithFix)
 	for i := range r.pkgWarnings {
 		w := &r.pkgWarnings[i]
+
+		r.stats.affectedSampleTime += w.SamplesTime
+
 		if !r.autofix || w.Fix == nil {
 			r.reportWarning(w)
 			continue
