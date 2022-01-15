@@ -27,6 +27,16 @@ func Ignore(m map[string]int) {
 	{
 		m[getString()] = m[getString()] + 1
 	}
+
+	{
+		type counter struct {
+			value int
+		}
+		m := make(map[int]*counter)
+		m[10].value++
+		m[10].value += 1
+		m[10].value = m[10].value + 1
+	}
 }
 
 func getString() string { return "" }
