@@ -217,7 +217,7 @@ func stringsJoinConcat(m dsl.Matcher) {
 //doc:tags    o1 score3
 //doc:before  fmt.Sprintf("%s%s", x, y)
 //doc:after   x + y
-func sprintConcat(m dsl.Matcher) {
+func sprintfConcat(m dsl.Matcher) {
 	m.Match(`fmt.Sprintf("%s%s", $x, $y)`).
 		Where(m["x"].Type.Is(`string`) && m["y"].Type.Is(`string`)).
 		Suggest(`$x + $y`)
@@ -225,6 +225,15 @@ func sprintConcat(m dsl.Matcher) {
 	m.Match(`fmt.Sprintf("%s%s", $x, $y)`).
 		Where(m["x"].Type.Implements(`fmt.Stringer`) && m["y"].Type.Implements(`fmt.Stringer`)).
 		Suggest(`$x.String() + $y.String()`)
+}
+
+//doc:summary Detects sprintf calls that are used to create an error
+//doc:tags    o1 score2
+//doc:before  errors.New(fmt.Sprintf("%s:%d", file, line))
+//doc:after   fmt.Errorf("%s:%d", file, line)
+func sprintfError(m dsl.Matcher) {
+	m.Match(`errors.New(fmt.Sprintf($format, $*args))`).
+		Suggest(`fmt.Errorf($format, $args)`)
 }
 
 //doc:summary Detects fmt uses that can be replaced with strconv
@@ -657,6 +666,28 @@ func rangeToAppend(m dsl.Matcher) {
 		Report(`for ... { ... } => $dst = append($dst, $src...)`)
 }
 
+//doc:summary Detects range loops that can be turned into a single copy call
+//doc:tags    o1 score4
+func rangeToCopy(m dsl.Matcher) {
+	m.Match(
+		`for $i := range $src { $dst[$i] = $src[$i] }`,
+		`for $i, $x := range $src { $dst[$i] = $x }`,
+		`for $i := 0; $i < len($src); $i++ { $dst[$i] = $src[$i] }`).
+		Where(m["src"].Type.Is(`[]$_`)).
+		Suggest(`copy($dst, $src)`).
+		Report(`for ... { ... } => copy($dst, $src)`)
+}
+
+//doc:summary Detects loops where slice dst=src and they can be replaced with a copy call
+//doc:tags    o1 score4
+func sliceSelfCopy(m dsl.Matcher) {
+	m.Match(
+		`for $i := 0; i < $n; $i++ { $s[$i] = $s[$offset+$i] }`).
+		Where(m["s"].Type.Is(`[]$_`)).
+		Suggest(`copy($s[:$n], $s[$offset:])`).
+		Report(`for ... { ... } => copy($s[:$n], $s[$offset:])`)
+}
+
 //doc:summary Detects a range over []rune(string) where copying to a new slice is redundant
 //doc:tags    o1 score3
 func rangeRuneSlice(m dsl.Matcher) {
@@ -714,6 +745,19 @@ func reflectType(m dsl.Matcher) {
 		Suggest(`reflect.TypeOf($x).String()`)
 }
 
+//doc:summary Detects array copies that can be optimized
+//doc:tags    o1 score2
+func arrayCopy(m dsl.Matcher) {
+	// TODO: how to handle copy($x[:], $y[:]) when it's
+	// pointers to arrays, not just arrays?
+	// Also: handle copy((*$x)[:], (*$y)[:])?
+
+	m.Match(`copy($x[:], $y[:])`).
+		Where(m["x"].Type.Is(`[$_]$_`) && m["y"].Type.Is(`[$_]$_`) &&
+			m["x"].Type.Size == m["y"].Type.Size).
+		Suggest(`$x = $y`)
+}
+
 //doc:summary Detects binary.Write uses that can be optimized
 //doc:tags    o1 score3
 func binaryWrite(m dsl.Matcher) {
@@ -722,6 +766,14 @@ func binaryWrite(m dsl.Matcher) {
 		Suggest(`_, $err := $w.Write($b)`)
 
 	m.Match(`binary.Write($w, $_, $b)`).
-		Where(m["$$"].Node.Parent().Is(`ExprStmt`)).
+		Where(m["$$"].Node.Parent().Is(`ExprStmt`) && m["b"].Type.Is(`[]byte`)).
 		Suggest(`$w.Write($b)`)
+
+	m.Match(`$err := binary.Write($w, $_, $s)`).
+		Where(m["s"].Type.Is(`string`) && m["w"].Type.HasMethod(`io.StringWriter.WriteString`)).
+		Suggest(`_, $err := $w.WriteString($s)`)
+
+	m.Match(`binary.Write($w, $_, $s)`).
+		Where(m["$$"].Node.Parent().Is(`ExprStmt`) && m["s"].Type.Is(`string`) && m["w"].Type.HasMethod(`io.StringWriter.WriteString`)).
+		Suggest(`$w.WriteString($s)`)
 }

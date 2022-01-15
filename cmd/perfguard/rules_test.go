@@ -25,18 +25,18 @@ func TestRules(t *testing.T) {
 		if _, ok := testVersionConstraints[key]; ok {
 			continue
 		}
-		runRulesTest(t, key)
+		runLintTest(t, "rulestest", key)
 	}
 }
 
-func runRulesTest(t *testing.T, name string) {
+func runLintTest(t *testing.T, dirName, name string) {
 	t.Helper()
 	t.Run(name, func(t *testing.T) {
-		dir := filepath.Join("testdata", "rulestest", name)
+		dir := filepath.Join("testdata", dirName, name)
 		args := []string{
 			"--abs",
 			"--no-color",
-			"./testdata/rulestest/" + name + "/...",
+			"./testdata/" + dirName + "/" + name + "/...",
 		}
 
 		var stdout bytes.Buffer

@@ -10,16 +10,11 @@ func cmdOptimize(stdout, stderr io.Writer, args []string) error {
 	r := newRunner(stdout, stderr)
 
 	fs := flag.NewFlagSet("perfguard optimize", flag.ExitOnError)
-	fs.StringVar(&r.heatmapFile, "heatmap", "",
+	addCommonFlags(r, fs)
+	fs.StringVar(&r.args.heatmapFile, "heatmap", "",
 		`a CPU profile that will be used to build a heatmap, needed for IsHot() filters`)
-	fs.Float64Var(&r.heatmapThreshold, "heatmap-threshold", 0.25,
+	fs.Float64Var(&r.args.heatmapThreshold, "heatmap-threshold", 0.25,
 		`a threshold argument used to create a heatmap, see perf-heatmap docs on it`)
-	fs.BoolVar(&r.autofix, "fix", false,
-		`apply the suggested fixes automatically, where possible`)
-	fs.StringVar(&r.goVersion, "go", "",
-		`select the Go version to target; leave as string for the latest`)
-	fs.BoolVar(&r.absFilenames, "abs", false,
-		`print absolute filenames in the output`)
 	noColor := fs.Bool("no-color", false, `disable colored output`)
 	_ = fs.Parse(args)
 
@@ -27,7 +22,7 @@ func cmdOptimize(stdout, stderr io.Writer, args []string) error {
 	r.loadOptRules = true
 	r.coloredOutput = !*noColor
 
-	if r.heatmapFile == "" {
+	if r.args.heatmapFile == "" {
 		return errors.New("CPU profile is required, see --heatmap argument")
 	}
 

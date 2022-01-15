@@ -34,8 +34,14 @@ func main() {
 
 		{
 			Name:        "version",
-			Description: "print ktest version info",
+			Description: "print perfguard version info",
 			Do:          versionMain,
+		},
+
+		{
+			Name:        "env",
+			Description: "print perfguard-related env variables and their values",
+			Do:          envMain,
 		},
 	}
 
@@ -48,6 +54,19 @@ func versionMain(args []string) {
 	} else {
 		fmt.Printf("perfguard version %s\nbuilt on: %s\nos: %s\ncommit: %s\n",
 			BuildVersion, BuildTime, BuildOSUname, BuildCommit)
+	}
+}
+
+func envMain(args []string) {
+	varInfoList := []struct {
+		name    string
+		comment string
+	}{
+		{"PERFGUARD_DEBUG", "if set to 1, enables debug prints"},
+	}
+
+	for _, info := range varInfoList {
+		fmt.Printf("%s=%q # %s\n", info.name, os.Getenv(info.name), info.comment)
 	}
 }
 

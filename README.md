@@ -20,6 +20,9 @@ perfguard key features:
 * Profile-guided analysis in `perfguard optimize` mode
 * Most found issues are auto-fixable with `--fix` argument (quickfixes)
 * Easy to extend with custom rules (no recompilation needed)
+* Can analyze big projects* even if they have some compilation errors
+
+> (*) It doesn't try to load analysis targets into memory all at once.
 
 Here are some examples of what it can do for you:
 
@@ -27,6 +30,15 @@ Here are some examples of what it can do for you:
 * Reduce the amounts of heap allocations
 * Suggest more optimized functions from stdlib
 * Recognize expensive operations in hot paths that can be lifted
+
+## Quick start
+
+If you want to install the perfguard from source, it's as simple as:
+
+```bash
+# Installs a `perfguard` binary under your `$(go env GOPATH)/bin`
+$ go install -v github.com/quasilyte/go-perfguard/cmd/perfguard@latest
+```
 
 ## Using perfguard
 

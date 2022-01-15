@@ -1,19 +1,18 @@
 package perfguard
 
 import (
-	"bytes"
 	"fmt"
-	"go/ast"
 	"go/token"
-	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
-	"github.com/google/pprof/profile"
 	"github.com/quasilyte/go-ruleguard/ruleguard"
 	"github.com/quasilyte/go-ruleguard/ruleguard/ir"
 	"github.com/quasilyte/perf-heatmap/heatmap"
 
+	"github.com/quasilyte/go-perfguard/internal/resolve"
+	"github.com/quasilyte/go-perfguard/perfguard/lint"
 	"github.com/quasilyte/go-perfguard/perfguard/rulesdata"
 )
 
@@ -22,9 +21,11 @@ import (
 
 type analyzer struct {
 	rulesEngine *ruleguard.Engine
-	goVersion   ruleguard.GoVersion
-	heatmap     *heatmap.Index
-	config      *Config
+
+	checkers []*targetChecker
+
+	goVersion ruleguard.GoVersion
+	config    *Config
 }
 
 func newAnalyzer() *analyzer {
@@ -33,33 +34,8 @@ func newAnalyzer() *analyzer {
 
 func (a *analyzer) Init(config *Config) error {
 	a.config = config
-	if err := a.initRulesEngine(); err != nil {
-		return err
-	}
-
-	return a.initHeatmap(config)
-}
-
-func (a *analyzer) initHeatmap(config *Config) error {
-	if config.HeatmapFile == "" {
-		return nil
-	}
-	data, err := os.ReadFile(config.HeatmapFile)
-	if err != nil {
-		return err
-	}
-	pprofProfile, err := profile.Parse(bytes.NewReader(data))
-	if err != nil {
-		return err
-	}
-	index := heatmap.NewIndex(heatmap.IndexConfig{
-		Threshold: config.HeatmapThreshold,
-	})
-	if err := index.AddProfile(pprofProfile); err != nil {
-		return err
-	}
-	a.heatmap = index
-	return nil
+	a.checkers = createCheckers(config)
+	return a.initRulesEngine()
 }
 
 func (a *analyzer) initRulesEngine() error {
@@ -98,33 +74,16 @@ func (a *analyzer) initRulesEngine() error {
 	return nil
 }
 
-func (a *analyzer) CheckPackage(target *Target) error {
-	return a.runRules(target)
-}
-
-func (a *analyzer) getTypeName(typeExpr ast.Expr) string {
-	switch typ := typeExpr.(type) {
-	case *ast.Ident:
-		return typ.Name
-	case *ast.StarExpr:
-		return a.getTypeName(typ.X)
-	case *ast.ParenExpr:
-		return a.getTypeName(typ.X)
-
-	default:
-		return ""
+func (a *analyzer) CheckPackage(target *lint.Target) error {
+	if err := a.runRules(target); err != nil {
+		return err
 	}
-}
-
-func (a *analyzer) splitFuncName(fn *ast.FuncDecl) (typeName, funcName string) {
-	if fn == nil {
-		return "", ""
+	for _, c := range a.checkers {
+		if err := c.CheckTarget(target); err != nil {
+			return err
+		}
 	}
-	funcName = fn.Name.Name
-	if fn.Recv != nil && len(fn.Recv.List) != 0 {
-		typeName = a.getTypeName(fn.Recv.List[0].Type)
-	}
-	return typeName, funcName
+	return nil
 }
 
 func (a *analyzer) minHeatLevel(info *ruleguard.GoRuleInfo) int {
@@ -139,8 +98,8 @@ func (a *analyzer) minHeatLevel(info *ruleguard.GoRuleInfo) int {
 	return 0
 }
 
-func (a *analyzer) runRules(target *Target) error {
-	runContext := ruleguard.RunContext{
+func (a *analyzer) runRules(target *lint.Target) error {
+	ruleguardContext := ruleguard.RunContext{
 		Pkg:         target.Pkg,
 		Types:       target.Types,
 		Sizes:       target.Sizes,
@@ -149,42 +108,45 @@ func (a *analyzer) runRules(target *Target) error {
 		TruncateLen: 100,
 	}
 
-	var currentFile *SourceFile
+	var currentFile *lint.SourceFile
 
-	runContext.Report = func(data *ruleguard.ReportData) {
+	ruleguardContext.Report = func(data *ruleguard.ReportData) {
 		startPos := target.Fset.Position(data.Node.Pos())
 
-		if a.heatmap != nil {
+		samplesTime := time.Duration(0)
+		if a.config.Heatmap != nil {
 			minLevel := a.minHeatLevel(&data.RuleInfo)
 			if minLevel != 0 {
 				endPos := target.Fset.Position(data.Node.End())
 				lineFrom := startPos.Line
 				lineTo := endPos.Line
 				isHot := false
-				typeName, funcName := a.splitFuncName(data.Func)
+				typeName, funcName := resolve.SplitFuncName(data.Func)
 				key := heatmap.Key{
 					TypeName: typeName,
 					FuncName: funcName,
 					Filename: filepath.Base(startPos.Filename),
 					PkgName:  target.Pkg.Name(),
 				}
-				a.heatmap.QueryLineRange(key, lineFrom, lineTo, func(line int, level heatmap.HeatLevel) bool {
-					if level.Global >= minLevel {
+				totalValue := int64(0)
+				a.config.Heatmap.QueryLineRange(key, lineFrom, lineTo, func(l heatmap.LineStats) bool {
+					if l.GlobalHeatLevel >= minLevel {
 						isHot = true
-						return false
 					}
+					totalValue += l.Value
 					return true
 				})
 				if !isHot {
 					return
 				}
+				samplesTime = time.Duration(totalValue)
 			}
 		}
 
-		var fix *QuickFix
+		var fix *lint.QuickFix
 		if data.Suggestion != nil {
 			s := data.Suggestion
-			fix = &QuickFix{
+			fix = &lint.QuickFix{
 				From:        s.From,
 				To:          s.To,
 				Replacement: make([]byte, len(s.Replacement)),
@@ -193,18 +155,19 @@ func (a *analyzer) runRules(target *Target) error {
 		}
 
 		message := strings.ReplaceAll(data.Message, "\n", `\n`)
-		a.config.Warn(Warning{
-			Filename: startPos.Filename,
-			Line:     startPos.Line,
-			Tag:      data.RuleInfo.Group.Name,
-			Text:     message,
-			Fix:      fix,
+		a.config.Warn(lint.Warning{
+			Filename:    startPos.Filename,
+			Line:        startPos.Line,
+			Tag:         data.RuleInfo.Group.Name,
+			Text:        message,
+			Fix:         fix,
+			SamplesTime: samplesTime,
 		})
 	}
 
 	for i := range target.Files {
 		currentFile = &target.Files[i]
-		if err := a.rulesEngine.Run(&runContext, currentFile.Syntax); err != nil {
+		if err := a.rulesEngine.Run(&ruleguardContext, currentFile.Syntax); err != nil {
 			return err
 		}
 	}

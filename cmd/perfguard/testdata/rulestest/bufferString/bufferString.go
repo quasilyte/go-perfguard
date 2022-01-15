@@ -38,6 +38,8 @@ func Warn(buf *bytes.Buffer, s string, b []byte) {
 		_ = strings.HasPrefix(buf1.String(), buf2.String()) // want `strings.HasPrefix(buf1.String(), buf2.String()) => bytes.HasPrefix(buf1.Bytes(), buf2.Bytes())`
 		_ = strings.HasSuffix(buf1.String(), buf2.String()) // want `strings.HasSuffix(buf1.String(), buf2.String()) => bytes.HasSuffix(buf1.Bytes(), buf2.Bytes())`
 		_ = strings.EqualFold(buf1.String(), buf2.String()) // want `strings.EqualFold(buf1.String(), buf2.String()) => bytes.EqualFold(buf1.Bytes(), buf2.Bytes())`
+		_ = buf1.Bytes()
+		_ = buf2.Bytes()
 	}
 
 	{
@@ -46,6 +48,7 @@ func Warn(buf *bytes.Buffer, s string, b []byte) {
 		_ = strings.HasPrefix(buf1.String(), "foo") // want `trings.HasPrefix(buf1.String(), "foo") => bytes.HasPrefix(buf1.Bytes(), []byte("foo"))`
 		_ = strings.HasSuffix(buf1.String(), "foo") // want `strings.HasSuffix(buf1.String(), "foo") => bytes.HasSuffix(buf1.Bytes(), []byte("foo"))`
 		_ = strings.EqualFold(buf1.String(), "foo") // want `strings.EqualFold(buf1.String(), "foo") => bytes.EqualFold(buf1.Bytes(), []byte("foo"))`
+		_ = buf1.Bytes()
 	}
 }
 

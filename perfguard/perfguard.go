@@ -1,11 +1,9 @@
 package perfguard
 
 import (
-	"go/ast"
-	"go/token"
-	"go/types"
-
+	"github.com/quasilyte/go-perfguard/perfguard/lint"
 	"github.com/quasilyte/go-ruleguard/dsl"
+	"github.com/quasilyte/perf-heatmap/heatmap"
 )
 
 // This is a temporary kludge to make DSL a direct dependency.
@@ -21,23 +19,8 @@ func NewAnalyzer() *Analyzer {
 	}
 }
 
-type Warning struct {
-	Filename string
-	Line     int
-	Tag      string
-	Text     string
-	Fix      *QuickFix
-}
-
-type QuickFix struct {
-	From        token.Pos
-	To          token.Pos
-	Replacement []byte
-}
-
 type Config struct {
-	HeatmapFile      string
-	HeatmapThreshold float64
+	Heatmap *heatmap.Index
 
 	GoVersion string
 
@@ -45,25 +28,13 @@ type Config struct {
 	LoadLintRules      bool
 	LoadUniversalRules bool
 
-	Warn func(Warning)
+	Warn func(lint.Warning)
 }
 
 func (a *Analyzer) Init(config *Config) error {
 	return a.impl.Init(config)
 }
 
-type SourceFile struct {
-	Syntax *ast.File
-}
-
-type Target struct {
-	Pkg   *types.Package
-	Fset  *token.FileSet
-	Types *types.Info
-	Sizes types.Sizes
-	Files []SourceFile
-}
-
-func (a *Analyzer) CheckPackage(target *Target) error {
+func (a *Analyzer) CheckPackage(target *lint.Target) error {
 	return a.impl.CheckPackage(target)
 }

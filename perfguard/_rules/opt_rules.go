@@ -34,7 +34,7 @@ func regexpCompile(m dsl.Matcher) {
 
 //doc:summary Detects sprint calls that can be rewritten as a string concat
 //doc:tags    o2 score2
-func sprintConcat2(m dsl.Matcher) {
+func sprintfConcat2(m dsl.Matcher) {
 	// It's impractical to implement this kind of analysis via the rules.
 	// I've added a few most common patterns here just in case, but
 	// we need to make a generalized form of this optimization later.
@@ -60,10 +60,29 @@ func sprintConcat2(m dsl.Matcher) {
 		Suggest(`$x + ": " + $y`)
 }
 
+//doc:summary Detects Write calls that should be rewritten as io.WriteString
+//doc:tags    o2 score3
+//doc:before  w.Write([]byte(s))
+//doc:after   io.WriteString(w, s)
+func writeString2(m dsl.Matcher) {
+	m.Match(`$w.Write([]byte($s))`).
+		Where(m["w"].Type.Is("io.Writer") && m["s"].Type.Is(`string`) && m["s"].Const).
+		Suggest("io.WriteString($w, $s)")
+}
+
 //doc:summary Detects range loops that copy large value on every iteration
 //doc:tags    o1 score2
 func rangeValueCopy(m dsl.Matcher) {
+	// TODO: move to a hand-written checker so we can provide a quickfix for this.
 	m.Match(`for $_, $v := range $_ { $*_ }`, `for $_, $v = range $_ { $*_ }`).
 		Where(m["v"].Type.Size > 128).
 		Report(`every iteration copies a large object into $v`)
+}
+
+//doc:summary Detects errors.New that can be allocated exactly once
+//doc:tags    o1 score3
+func constErrorNew(m dsl.Matcher) {
+	m.Match(`errors.New($x)`).
+		Where(m["x"].Const).
+		Report(`errors with const message can be a global var, allocated only once`)
 }

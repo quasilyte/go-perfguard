@@ -11,10 +11,12 @@ ci-lint:
 	go install github.com/quasilyte/go-consistent@latest
 	$(GOPATH_DIR)/bin/go-consistent ./cmd/... ./perfguard/... ./internal/...
 	go build -o bin/perfguard ./cmd/perfguard && ./bin/perfguard lint ./...
+	go run ./_script/check.go
 	@echo "everything is OK"
 
 lint:
 	golangci-lint run ./...
+	go run ./_script/check.go
 	@echo "everything is OK"
 
 .PHONY: ci-lint lint test
