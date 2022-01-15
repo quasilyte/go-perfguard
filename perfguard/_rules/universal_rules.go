@@ -37,6 +37,9 @@ var Bundle = dsl.Bundle{}
 //
 // score5 is something that can make the code several times faster
 // or make it zero allocations (as opposed to the replaced form).
+//
+// A reformat tag means that applying the suggested quickfix requires
+// reformat to be executed unconditionally.
 
 //doc:summary Detects use cases for strings.Cut
 //doc:tags    o1 score3
@@ -488,6 +491,23 @@ func sliceClear(m dsl.Matcher) {
 		Where(m["zero"].Value.Int() == 0).
 		Suggest(`for $i := range $xs { $xs[$i] = $zero }`).
 		Report(`for ... { ... } => for $i := range $xs { $xs[$i] = $zero }`)
+}
+
+//doc:summary Detects cases where map clear idiom can be used
+//doc:tags    o1 score2 reformat
+//doc:before  o.set = make(map[string]int, len(o.set))
+//doc:after   for k := range o.set { delete(o.set, k) }
+func mapClear(m dsl.Matcher) {
+	m.Match(`$m = make(map[$_]$_, len($m))`).
+		Suggest(`for k := range $m { delete($m, k) }`)
+}
+
+//doc:summary Detects map increment patterns that can be rewritten
+//doc:tags    o1 score2
+func mapInc(m dsl.Matcher) {
+	m.Match(`$m[$k] = $m[$k] + 1`, `$m[$k] += 1`).
+		Where(m["m"].Type.Is(`map[$_]$_`) && m["k"].Pure).
+		Suggest(`$m[$k]++`)
 }
 
 //doc:summary Detects expressions like []rune(s)[0] that may cause unwanted rune slice allocation

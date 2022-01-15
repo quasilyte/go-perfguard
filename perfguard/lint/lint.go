@@ -21,6 +21,7 @@ type QuickFix struct {
 	From        token.Pos
 	To          token.Pos
 	Replacement []byte
+	Reformat    bool
 }
 
 type SourceFile struct {
