@@ -800,7 +800,8 @@ func binaryWrite(m dsl.Matcher) {
 //doc:tags    o1 score3
 func syncPoolNonPtr(m dsl.Matcher) {
 	m.Match(`$x.Put($y)`).
-		Where(m["x"].Type.Is("sync.Pool") && !m["y"].Type.Is("*$_")).
+			Where(m["x"].Type.Is("sync.Pool") &&
+					(!m["y"].Type.Is("*$_") && !m["y"].Type.Is("[]$_") && !m["y"].Type.Is("chan $_") && !m["y"].Type.Is("map[$_]$_"))).
 		Report(`don't use sync.Pool on non pointer objects`).
 		At(m["y"])
 }
