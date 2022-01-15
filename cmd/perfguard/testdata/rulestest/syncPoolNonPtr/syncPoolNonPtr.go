@@ -42,7 +42,7 @@ func foo() {
 	s.Put(0)    // want `don't use sync.Pool on non pointer objects`
 	s.Put("")   // want `don't use sync.Pool on non pointer objects`
 
-	s.Put([]int{123, 213})
+	s.Put([]int{123, 213}) // want `don't use sync.Pool on non pointer objects`
 	s.Put(make(chan string))
 	s.Put(make(map[int]int, 10))
 }
