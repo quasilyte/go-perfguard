@@ -13,8 +13,6 @@ type e struct {
 }
 type uu struct {
 	a [102]byte
-	r string
-	d int
 }
 
 func foo() {
@@ -47,4 +45,10 @@ func foo() {
 	s.Put([]int{123, 213})
 	s.Put(make(chan string))
 	s.Put(make(map[int]int, 10))
+}
+
+func (rec *r) FooBar() {
+	k := sync.Pool{}
+
+	k.Put(rec)
 }
