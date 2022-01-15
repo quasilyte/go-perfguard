@@ -3971,7 +3971,7 @@ var Universal = &ir.File{
 				WhereExpr: ir.FilterExpr{
 					Line: 803,
 					Op:   ir.FilterAndOp,
-					Src:  "m[\"x\"].Type.Is(\"sync.Pool\") &&\n\t((!m[\"y\"].Type.Is(\"*$_\") && !m[\"y\"].Type.Is(\"chan $_\") &&\n\t\t!m[\"y\"].Type.Is(\"map[$_]$_\") && !m[\"y\"].Type.Is(\"interface{}\") &&\n\t\t!m[\"y\"].Type.Is(`types.Signature`) && !m[\"y\"].Type.Is(`uintptr`)) && !m[\"y\"].Type.Is(`[]$_`))",
+					Src:  "m[\"x\"].Type.Is(\"sync.Pool\") &&\n\t((!m[\"y\"].Type.Is(\"*$_\") && !m[\"y\"].Type.Is(\"chan $_\") &&\n\t\t!m[\"y\"].Type.Is(\"map[$_]$_\") && !m[\"y\"].Type.Is(\"interface{}\") &&\n\t\t!m[\"y\"].Type.Is(`types.Signature`) && !m[\"y\"].Type.Is(`types.UnsafePointer`)) && !m[\"y\"].Type.Is(`[]$_`))",
 					Args: []ir.FilterExpr{
 						{
 							Line:  803,
@@ -3983,12 +3983,12 @@ var Universal = &ir.File{
 						{
 							Line: 804,
 							Op:   ir.FilterAndOp,
-							Src:  "((!m[\"y\"].Type.Is(\"*$_\") && !m[\"y\"].Type.Is(\"chan $_\") &&\n\t!m[\"y\"].Type.Is(\"map[$_]$_\") && !m[\"y\"].Type.Is(\"interface{}\") &&\n\t!m[\"y\"].Type.Is(`types.Signature`) && !m[\"y\"].Type.Is(`uintptr`)) && !m[\"y\"].Type.Is(`[]$_`))",
+							Src:  "((!m[\"y\"].Type.Is(\"*$_\") && !m[\"y\"].Type.Is(\"chan $_\") &&\n\t!m[\"y\"].Type.Is(\"map[$_]$_\") && !m[\"y\"].Type.Is(\"interface{}\") &&\n\t!m[\"y\"].Type.Is(`types.Signature`) && !m[\"y\"].Type.Is(`types.UnsafePointer`)) && !m[\"y\"].Type.Is(`[]$_`))",
 							Args: []ir.FilterExpr{
 								{
 									Line: 804,
 									Op:   ir.FilterAndOp,
-									Src:  "(!m[\"y\"].Type.Is(\"*$_\") && !m[\"y\"].Type.Is(\"chan $_\") &&\n\t!m[\"y\"].Type.Is(\"map[$_]$_\") && !m[\"y\"].Type.Is(\"interface{}\") &&\n\t!m[\"y\"].Type.Is(`types.Signature`) && !m[\"y\"].Type.Is(`uintptr`))",
+									Src:  "(!m[\"y\"].Type.Is(\"*$_\") && !m[\"y\"].Type.Is(\"chan $_\") &&\n\t!m[\"y\"].Type.Is(\"map[$_]$_\") && !m[\"y\"].Type.Is(\"interface{}\") &&\n\t!m[\"y\"].Type.Is(`types.Signature`) && !m[\"y\"].Type.Is(`types.UnsafePointer`))",
 									Args: []ir.FilterExpr{
 										{
 											Line: 804,
@@ -4081,13 +4081,13 @@ var Universal = &ir.File{
 										{
 											Line: 806,
 											Op:   ir.FilterNotOp,
-											Src:  "!m[\"y\"].Type.Is(`uintptr`)",
+											Src:  "!m[\"y\"].Type.Is(`types.UnsafePointer`)",
 											Args: []ir.FilterExpr{{
 												Line:  806,
 												Op:    ir.FilterVarTypeIsOp,
-												Src:   "m[\"y\"].Type.Is(`uintptr`)",
+												Src:   "m[\"y\"].Type.Is(`types.UnsafePointer`)",
 												Value: "y",
-												Args:  []ir.FilterExpr{{Line: 806, Op: ir.FilterStringOp, Src: "`uintptr`", Value: "uintptr"}},
+												Args:  []ir.FilterExpr{{Line: 806, Op: ir.FilterStringOp, Src: "`types.UnsafePointer`", Value: "types.UnsafePointer"}},
 											}},
 										},
 									},
