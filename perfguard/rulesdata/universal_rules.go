@@ -3971,7 +3971,7 @@ var Universal = &ir.File{
 				WhereExpr: ir.FilterExpr{
 					Line: 803,
 					Op:   ir.FilterAndOp,
-					Src:  "m[\"x\"].Type.Is(\"sync.Pool\") && !m[\"y\"].Type.Is(\"*$_\")",
+					Src:  "m[\"x\"].Type.Is(\"sync.Pool\") &&\n\t(!m[\"y\"].Type.Is(\"*$_\") && !m[\"y\"].Type.Is(\"[]$_\") && !m[\"y\"].Type.Is(\"chan $_\") && !m[\"y\"].Type.Is(\"map[$_]$_\"))",
 					Args: []ir.FilterExpr{
 						{
 							Line:  803,
@@ -3981,16 +3981,73 @@ var Universal = &ir.File{
 							Args:  []ir.FilterExpr{{Line: 803, Op: ir.FilterStringOp, Src: "\"sync.Pool\"", Value: "sync.Pool"}},
 						},
 						{
-							Line: 803,
-							Op:   ir.FilterNotOp,
-							Src:  "!m[\"y\"].Type.Is(\"*$_\")",
-							Args: []ir.FilterExpr{{
-								Line:  803,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"y\"].Type.Is(\"*$_\")",
-								Value: "y",
-								Args:  []ir.FilterExpr{{Line: 803, Op: ir.FilterStringOp, Src: "\"*$_\"", Value: "*$_"}},
-							}},
+							Line: 804,
+							Op:   ir.FilterAndOp,
+							Src:  "(!m[\"y\"].Type.Is(\"*$_\") && !m[\"y\"].Type.Is(\"[]$_\") && !m[\"y\"].Type.Is(\"chan $_\") && !m[\"y\"].Type.Is(\"map[$_]$_\"))",
+							Args: []ir.FilterExpr{
+								{
+									Line: 804,
+									Op:   ir.FilterAndOp,
+									Src:  "!m[\"y\"].Type.Is(\"*$_\") && !m[\"y\"].Type.Is(\"[]$_\") && !m[\"y\"].Type.Is(\"chan $_\")",
+									Args: []ir.FilterExpr{
+										{
+											Line: 804,
+											Op:   ir.FilterAndOp,
+											Src:  "!m[\"y\"].Type.Is(\"*$_\") && !m[\"y\"].Type.Is(\"[]$_\")",
+											Args: []ir.FilterExpr{
+												{
+													Line: 804,
+													Op:   ir.FilterNotOp,
+													Src:  "!m[\"y\"].Type.Is(\"*$_\")",
+													Args: []ir.FilterExpr{{
+														Line:  804,
+														Op:    ir.FilterVarTypeIsOp,
+														Src:   "m[\"y\"].Type.Is(\"*$_\")",
+														Value: "y",
+														Args:  []ir.FilterExpr{{Line: 804, Op: ir.FilterStringOp, Src: "\"*$_\"", Value: "*$_"}},
+													}},
+												},
+												{
+													Line: 804,
+													Op:   ir.FilterNotOp,
+													Src:  "!m[\"y\"].Type.Is(\"[]$_\")",
+													Args: []ir.FilterExpr{{
+														Line:  804,
+														Op:    ir.FilterVarTypeIsOp,
+														Src:   "m[\"y\"].Type.Is(\"[]$_\")",
+														Value: "y",
+														Args:  []ir.FilterExpr{{Line: 804, Op: ir.FilterStringOp, Src: "\"[]$_\"", Value: "[]$_"}},
+													}},
+												},
+											},
+										},
+										{
+											Line: 804,
+											Op:   ir.FilterNotOp,
+											Src:  "!m[\"y\"].Type.Is(\"chan $_\")",
+											Args: []ir.FilterExpr{{
+												Line:  804,
+												Op:    ir.FilterVarTypeIsOp,
+												Src:   "m[\"y\"].Type.Is(\"chan $_\")",
+												Value: "y",
+												Args:  []ir.FilterExpr{{Line: 804, Op: ir.FilterStringOp, Src: "\"chan $_\"", Value: "chan $_"}},
+											}},
+										},
+									},
+								},
+								{
+									Line: 804,
+									Op:   ir.FilterNotOp,
+									Src:  "!m[\"y\"].Type.Is(\"map[$_]$_\")",
+									Args: []ir.FilterExpr{{
+										Line:  804,
+										Op:    ir.FilterVarTypeIsOp,
+										Src:   "m[\"y\"].Type.Is(\"map[$_]$_\")",
+										Value: "y",
+										Args:  []ir.FilterExpr{{Line: 804, Op: ir.FilterStringOp, Src: "\"map[$_]$_\"", Value: "map[$_]$_"}},
+									}},
+								},
+							},
 						},
 					},
 				},
