@@ -795,3 +795,12 @@ func binaryWrite(m dsl.Matcher) {
 		Where(m["$$"].Node.Parent().Is(`ExprStmt`) && m["s"].Type.Is(`string`) && m["w"].Type.HasMethod(`io.StringWriter.WriteString`)).
 		Suggest(`$w.WriteString($s)`)
 }
+
+//doc:summary Detects sync.Pool usage on non pointer objects
+//doc:tags    o1 score3
+func syncPoolNonPtr(m dsl.Matcher) {
+	m.Match(`$x.Put($y)`).
+		Where(m["x"].Type.Is("sync.Pool") && !m["y"].Type.Is("*$_")).
+		Report(`don't use sync.Pool on non pointer objects`).
+		At(m["y"])
+}

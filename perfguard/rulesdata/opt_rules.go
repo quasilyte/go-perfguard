@@ -293,45 +293,6 @@ var Opt = &ir.File{
 				},
 			}},
 		},
-		{
-			Line:        92,
-			Name:        "syncPoolNonPtr",
-			MatcherName: "m",
-			DocTags:     []string{"o1", "score3"},
-			DocSummary:  "Detects sync.Pool usage on non pointer objects",
-			Rules: []ir.Rule{{
-				Line:           93,
-				SyntaxPatterns: []ir.PatternString{{Line: 93, Value: "$x.Put($y)"}},
-				ReportTemplate: "don't use sync.Pool on non pointer objects",
-				WhereExpr: ir.FilterExpr{
-					Line: 94,
-					Op:   ir.FilterAndOp,
-					Src:  "m[\"x\"].Type.Is(\"sync.Pool\") && !m[\"y\"].Type.Is(\"*$_\")",
-					Args: []ir.FilterExpr{
-						{
-							Line:  94,
-							Op:    ir.FilterVarTypeIsOp,
-							Src:   "m[\"x\"].Type.Is(\"sync.Pool\")",
-							Value: "x",
-							Args:  []ir.FilterExpr{{Line: 94, Op: ir.FilterStringOp, Src: "\"sync.Pool\"", Value: "sync.Pool"}},
-						},
-						{
-							Line: 94,
-							Op:   ir.FilterNotOp,
-							Src:  "!m[\"y\"].Type.Is(\"*$_\")",
-							Args: []ir.FilterExpr{{
-								Line:  94,
-								Op:    ir.FilterVarTypeIsOp,
-								Src:   "m[\"y\"].Type.Is(\"*$_\")",
-								Value: "y",
-								Args:  []ir.FilterExpr{{Line: 94, Op: ir.FilterStringOp, Src: "\"*$_\"", Value: "*$_"}},
-							}},
-						},
-					},
-				},
-				LocationVar: "y",
-			}},
-		},
 	},
 }
 
