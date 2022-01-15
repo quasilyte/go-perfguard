@@ -799,11 +799,15 @@ func binaryWrite(m dsl.Matcher) {
 //doc:summary Detects sync.Pool usage on non pointer objects
 //doc:tags    o1 score3
 func syncPoolNonPtr(m dsl.Matcher) {
+	isPointer := func(x dsl.Var) bool {
+		return x.Type.Underlying().Is("*$_") || x.Type.Underlying().Is("chan $_") ||
+			x.Type.Underlying().Is("map[$_]$_") || x.Type.Underlying().Is("interface{}") ||
+			x.Type.Underlying().Is(`types.Signature`) || x.Type.Underlying().Is(`types.UnsafePointer`)
+	}
+
 	m.Match(`$x.Put($y)`).
 		Where(m["x"].Type.Is("sync.Pool") &&
-			(!(m["y"].Type.Is("*$_") || m["y"].Type.Is("chan $_") ||
-				m["y"].Type.Is("map[$_]$_") || m["y"].Type.Is("interface{}") ||
-				m["y"].Type.Is(`types.Signature`) || m["y"].Type.Is(`types.UnsafePointer`)) || m["y"].Type.Is(`[]$_`))).
+			(!isPointer(m["y"]) || m["y"].Type.Underlying().Is(`[]$_`))).
 		Report(`don't use sync.Pool on non pointer objects`).
 		At(m["y"])
 }

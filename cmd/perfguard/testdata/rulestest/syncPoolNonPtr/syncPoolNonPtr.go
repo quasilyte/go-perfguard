@@ -4,16 +4,22 @@ import (
 	"sync"
 )
 
-type r string
-type u struct {
-	l []byte
-}
-type e struct {
-	g string
-}
-type uu struct {
-	a [102]byte
-}
+type (
+	r string
+	u struct {
+		l []byte
+	}
+	e struct {
+		g string
+	}
+	uu struct {
+		a [102]byte
+	}
+	rr     []byte
+	d      []string
+	dd     *d
+	aliasD d
+)
 
 func foo() {
 	var s = sync.Pool{}
@@ -45,6 +51,14 @@ func foo() {
 	s.Put([]int{123, 213}) // want `don't use sync.Pool on non pointer objects`
 	s.Put(make(chan string))
 	s.Put(make(map[int]int, 10))
+
+	s.Put(rr{}) // want `don't use sync.Pool on non pointer objects`
+	s.Put(&rr{})
+
+	var ddObj dd = &d{"123", "1333"}
+	s.Put(ddObj)
+
+	s.Put(aliasD{}) // want `don't use sync.Pool on non pointer objects`
 }
 
 func (rec *r) FooBar() {
