@@ -86,3 +86,12 @@ func constErrorNew(m dsl.Matcher) {
 		Where(m["x"].Const).
 		Report(`errors with const message can be a global var, allocated only once`)
 }
+
+//doc:summary Detects sync.Pool usage on non pointer objects
+//doc:tags    o1 score3
+func syncPoolNonPtr(m dsl.Matcher) {
+	m.Match(`$x.Put($y)`).
+		Where(m["x"].Type.Is("sync.Pool") && !m["y"].Type.Is("*$_")).
+		Report(`don't use sync.Pool on non pointer objects`).
+		At(m["y"])
+}
