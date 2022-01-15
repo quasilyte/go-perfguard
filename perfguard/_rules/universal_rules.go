@@ -488,6 +488,14 @@ func sliceClear(m dsl.Matcher) {
 		Report(`for ... { ... } => for $i := range $xs { $xs[$i] = $zero }`)
 }
 
+//doc:summary Detects map increment patterns that can be rewritten
+//doc:tags    o1 score2
+func mapInc(m dsl.Matcher) {
+	m.Match(`$m[$k] = $m[$k] + 1`, `$m[$k] += 1`).
+		Where(m["m"].Type.Is(`map[$_]$_`) && m["k"].Pure).
+		Suggest(`$m[$k]++`)
+}
+
 //doc:summary Detects expressions like []rune(s)[0] that may cause unwanted rune slice allocation
 //doc:tags    o1 score4
 //doc:before  r := []rune(s)[0]
