@@ -69,6 +69,7 @@ func precompile() error {
 		return fmt.Errorf("compile %s: %v", filename, err)
 	}
 
+	// TODO: build rules info maps, so we don't need to scan tags during the run-time?
 	for i := range irfile.RuleGroups {
 		g := &irfile.RuleGroups[i]
 		tagO := false
@@ -79,6 +80,8 @@ func precompile() error {
 				tagO = true
 			case "score1", "score2", "score3", "score4", "score5":
 				tagScore = true
+			case "reformat":
+				// OK.
 			default:
 				return fmt.Errorf("%s: unknown tag: %s", g.Name, tag)
 			}

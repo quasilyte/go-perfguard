@@ -405,7 +405,7 @@ func (r *runner) handleWarnings(target *lint.Target) error {
 		filename := pos.Filename
 		endPos := target.Fset.Position(w.Fix.To)
 		to := endPos.Offset
-		if pos.Line != endPos.Line {
+		if w.Fix.Reformat || pos.Line != endPos.Line {
 			needFmt[filename] = struct{}{}
 		}
 		fix := quickfix.TextEdit{

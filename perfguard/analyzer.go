@@ -86,6 +86,15 @@ func (a *analyzer) CheckPackage(target *lint.Target) error {
 	return nil
 }
 
+func (a *analyzer) hasReformatTag(info *ruleguard.GoRuleInfo) bool {
+	for _, tag := range info.Group.DocTags {
+		if tag == "reformat" {
+			return true
+		}
+	}
+	return false
+}
+
 func (a *analyzer) minHeatLevel(info *ruleguard.GoRuleInfo) int {
 	for _, tag := range info.Group.DocTags {
 		switch tag {
@@ -150,6 +159,7 @@ func (a *analyzer) runRules(target *lint.Target) error {
 				From:        s.From,
 				To:          s.To,
 				Replacement: make([]byte, len(s.Replacement)),
+				Reformat:    a.hasReformatTag(&data.RuleInfo),
 			}
 			copy(fix.Replacement, s.Replacement)
 		}
