@@ -3958,6 +3958,129 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		{
+			Line:        801,
+			Name:        "syncPoolNonPtr",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score3"},
+			DocSummary:  "Detects sync.Pool usage on non pointer objects",
+			Rules: []ir.Rule{{
+				Line:           808,
+				SyntaxPatterns: []ir.PatternString{{Line: 808, Value: "$x.Put($y)"}},
+				ReportTemplate: "don't use sync.Pool on non pointer objects",
+				WhereExpr: ir.FilterExpr{
+					Line: 809,
+					Op:   ir.FilterAndOp,
+					Src:  "m[\"x\"].Type.Is(\"sync.Pool\") &&\n\t(!isPointer(m[\"y\"]) || m[\"y\"].Type.Underlying().Is(`[]$_`))",
+					Args: []ir.FilterExpr{
+						{
+							Line:  809,
+							Op:    ir.FilterVarTypeIsOp,
+							Src:   "m[\"x\"].Type.Is(\"sync.Pool\")",
+							Value: "x",
+							Args:  []ir.FilterExpr{{Line: 809, Op: ir.FilterStringOp, Src: "\"sync.Pool\"", Value: "sync.Pool"}},
+						},
+						{
+							Line: 810,
+							Op:   ir.FilterOrOp,
+							Src:  "(!isPointer(m[\"y\"]) || m[\"y\"].Type.Underlying().Is(`[]$_`))",
+							Args: []ir.FilterExpr{
+								{
+									Line: 810,
+									Op:   ir.FilterNotOp,
+									Src:  "!isPointer(m[\"y\"])",
+									Args: []ir.FilterExpr{{
+										Line: 810,
+										Op:   ir.FilterOrOp,
+										Src:  "isPointer(m[\"y\"])",
+										Args: []ir.FilterExpr{
+											{
+												Line: 810,
+												Op:   ir.FilterOrOp,
+												Src:  "m[\"y\"].Type.Underlying().Is(\"*$_\") ||\n\n\tm[\"y\"].Type.Underlying().Is(\"chan $_\") ||\n\n\tm[\"y\"].Type.Underlying().Is(\"map[$_]$_\") ||\n\n\tm[\"y\"].Type.Underlying().Is(\"interface{}\") ||\n\n\tm[\"y\"].Type.Underlying().Is(`types.Signature`)",
+												Args: []ir.FilterExpr{
+													{
+														Line: 810,
+														Op:   ir.FilterOrOp,
+														Src:  "m[\"y\"].Type.Underlying().Is(\"*$_\") ||\n\n\tm[\"y\"].Type.Underlying().Is(\"chan $_\") ||\n\n\tm[\"y\"].Type.Underlying().Is(\"map[$_]$_\") ||\n\n\tm[\"y\"].Type.Underlying().Is(\"interface{}\")",
+														Args: []ir.FilterExpr{
+															{
+																Line: 810,
+																Op:   ir.FilterOrOp,
+																Src:  "m[\"y\"].Type.Underlying().Is(\"*$_\") ||\n\n\tm[\"y\"].Type.Underlying().Is(\"chan $_\") ||\n\n\tm[\"y\"].Type.Underlying().Is(\"map[$_]$_\")",
+																Args: []ir.FilterExpr{
+																	{
+																		Line: 810,
+																		Op:   ir.FilterOrOp,
+																		Src:  "m[\"y\"].Type.Underlying().Is(\"*$_\") ||\n\n\tm[\"y\"].Type.Underlying().Is(\"chan $_\")",
+																		Args: []ir.FilterExpr{
+																			{
+																				Line:  810,
+																				Op:    ir.FilterVarTypeUnderlyingIsOp,
+																				Src:   "m[\"y\"].Type.Underlying().Is(\"*$_\")",
+																				Value: "y",
+																				Args:  []ir.FilterExpr{{Line: 803, Op: ir.FilterStringOp, Src: "\"*$_\"", Value: "*$_"}},
+																			},
+																			{
+																				Line:  810,
+																				Op:    ir.FilterVarTypeUnderlyingIsOp,
+																				Src:   "m[\"y\"].Type.Underlying().Is(\"chan $_\")",
+																				Value: "y",
+																				Args:  []ir.FilterExpr{{Line: 803, Op: ir.FilterStringOp, Src: "\"chan $_\"", Value: "chan $_"}},
+																			},
+																		},
+																	},
+																	{
+																		Line:  810,
+																		Op:    ir.FilterVarTypeUnderlyingIsOp,
+																		Src:   "m[\"y\"].Type.Underlying().Is(\"map[$_]$_\")",
+																		Value: "y",
+																		Args:  []ir.FilterExpr{{Line: 804, Op: ir.FilterStringOp, Src: "\"map[$_]$_\"", Value: "map[$_]$_"}},
+																	},
+																},
+															},
+															{
+																Line:  810,
+																Op:    ir.FilterVarTypeUnderlyingIsOp,
+																Src:   "m[\"y\"].Type.Underlying().Is(\"interface{}\")",
+																Value: "y",
+																Args:  []ir.FilterExpr{{Line: 804, Op: ir.FilterStringOp, Src: "\"interface{}\"", Value: "interface{}"}},
+															},
+														},
+													},
+													{
+														Line:  810,
+														Op:    ir.FilterVarTypeUnderlyingIsOp,
+														Src:   "m[\"y\"].Type.Underlying().Is(`types.Signature`)",
+														Value: "y",
+														Args:  []ir.FilterExpr{{Line: 805, Op: ir.FilterStringOp, Src: "`types.Signature`", Value: "types.Signature"}},
+													},
+												},
+											},
+											{
+												Line:  810,
+												Op:    ir.FilterVarTypeUnderlyingIsOp,
+												Src:   "m[\"y\"].Type.Underlying().Is(`types.UnsafePointer`)",
+												Value: "y",
+												Args:  []ir.FilterExpr{{Line: 805, Op: ir.FilterStringOp, Src: "`types.UnsafePointer`", Value: "types.UnsafePointer"}},
+											},
+										},
+									}},
+								},
+								{
+									Line:  810,
+									Op:    ir.FilterVarTypeUnderlyingIsOp,
+									Src:   "m[\"y\"].Type.Underlying().Is(`[]$_`)",
+									Value: "y",
+									Args:  []ir.FilterExpr{{Line: 810, Op: ir.FilterStringOp, Src: "`[]$_`", Value: "[]$_"}},
+								},
+							},
+						},
+					},
+				},
+				LocationVar: "y",
+			}},
+		},
 	},
 }
 
