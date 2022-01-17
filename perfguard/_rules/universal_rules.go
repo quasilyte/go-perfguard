@@ -500,12 +500,25 @@ func mapClear(m dsl.Matcher) {
 		Suggest(`for k := range $m { delete($m, k) }`)
 }
 
-//doc:summary Detects map increment patterns that can be rewritten
+//doc:summary Detects map <op>= patterns that can be rewritten to avoid double hashing
 //doc:tags    o1 score2
-func mapInc(m dsl.Matcher) {
+func mapAssignOp(m dsl.Matcher) {
 	m.Match(`$m[$k] = $m[$k] + 1`, `$m[$k] += 1`).
 		Where(m["m"].Type.Is(`map[$_]$_`) && m["k"].Pure).
 		Suggest(`$m[$k]++`)
+
+	m.Match(`$m[$k] = $m[$k] + $v`).
+		Where(m["m"].Type.Is(`map[$_]$_`) && m["k"].Pure).
+		Suggest(`$m[$k] += $v`)
+	m.Match(`$m[$k] = $m[$k] - $v`).
+		Where(m["m"].Type.Is(`map[$_]$_`) && m["k"].Pure).
+		Suggest(`$m[$k] -= $v`)
+	m.Match(`$m[$k] = $m[$k] * $v`).
+		Where(m["m"].Type.Is(`map[$_]$_`) && m["k"].Pure).
+		Suggest(`$m[$k] *= $v`)
+	m.Match(`$m[$k] = $m[$k] / $v`).
+		Where(m["m"].Type.Is(`map[$_]$_`) && m["k"].Pure).
+		Suggest(`$m[$k] /= $v`)
 }
 
 //doc:summary Detects expressions like []rune(s)[0] that may cause unwanted rune slice allocation
