@@ -10,6 +10,11 @@ func Warn(m map[string]int) {
 		var k string
 		m[k] = m[k] + 1 // want `m[k] = m[k] + 1 => m[k]++`
 		m[k] += 1       // want `m[k] += 1 => m[k]++`
+
+		m[k] = m[k] + 5 // want `m[k] = m[k] + 5 => m[k] += 5`
+		m[k] = m[k] - 5 // want `m[k] = m[k] - 5 => m[k] -= 5`
+		m[k] = m[k] / 2 // want `m[k] = m[k] / 2 => m[k] /= 2`
+		m[k] = m[k] * 4 // want `m[k] = m[k] * 4 => m[k] *= 4`
 	}
 }
 
@@ -22,6 +27,10 @@ func Ignore(m map[string]int) {
 		var k string
 		m[k]++
 		m[k] = m["foo"] + 1
+		m[k] += 5
+		m[k] -= 5
+		m[k] /= 5
+		m[k] *= 15
 	}
 
 	{
