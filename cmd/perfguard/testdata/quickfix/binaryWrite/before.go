@@ -22,7 +22,7 @@ func main() {
 	}
 
 	{
-		buf := &bytes.Buffer{}
+		buf := bytes.NewBuffer(make([]byte, 10))
 		binary.Write(buf, binary.LittleEndian, []byte("hello, "))
 		binary.Write(buf, binary.BigEndian, []byte("world"))
 		println(buf.String())

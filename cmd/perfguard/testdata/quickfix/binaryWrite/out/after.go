@@ -21,7 +21,7 @@ func main() {
 	}
 
 	{
-		buf := &bytes.Buffer{}
+		buf := bytes.NewBuffer(make([]byte, 10))
 		buf.Write([]byte("hello, "))
 		buf.Write([]byte("world"))
 		println(buf.String())
