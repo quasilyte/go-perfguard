@@ -24,7 +24,7 @@ func Warn(buf *bytes.Buffer, s string, b []byte) {
 
 	{
 		var w io.Writer
-		b := &bytes.Buffer{}
+		b := bytes.NewBuffer(make([]byte, 10))
 		fmt.Fprint(w, b.String())        // want `fmt.Fprint(w, b.String()) => w.Write(b.Bytes())`
 		fmt.Fprintf(w, "%s", b.String()) // want `fmt.Fprintf(w, "%s", b.String()) => w.Write(b.Bytes())`
 		fmt.Fprintf(w, "%v", b.String()) // want `fmt.Fprintf(w, "%v", b.String()) => w.Write(b.Bytes())`

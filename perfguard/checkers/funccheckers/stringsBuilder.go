@@ -95,11 +95,16 @@ func (c *stringsBuilderChecker) walk(n ast.Node) bool {
 			return true
 		}
 		// Track `$x := bytes.Buffer{}` variables.
+		// Track `$x := &bytes.Buffer{}` variables.
 		if len(n.Lhs) != 1 || len(n.Rhs) != 1 || n.Tok != token.DEFINE {
 			return true
 		}
 		var typeNode ast.Expr
-		if lit, ok := n.Rhs[0].(*ast.CompositeLit); ok {
+		rhs := n.Rhs[0]
+		if unary, ok := rhs.(*ast.UnaryExpr); ok && unary.Op == token.AND {
+			rhs = unary.X
+		}
+		if lit, ok := rhs.(*ast.CompositeLit); ok {
 			if len(lit.Elts) != 0 || lit.Type == nil {
 				return true
 			}
@@ -120,7 +125,7 @@ func (c *stringsBuilderChecker) walk(n ast.Node) bool {
 			return true
 		}
 		obj := c.ctx.VarOf(name)
-		if c.isBytesBuffer(obj.Type()) {
+		if typeNode != nil && c.isBytesBuffer(obj.Type()) {
 			c.track(obj, typeNode)
 			return false
 		}
@@ -219,6 +224,9 @@ func (c *stringsBuilderChecker) markCallArgs(n *ast.CallExpr) {
 }
 
 func (c *stringsBuilderChecker) isBytesBuffer(typ types.Type) bool {
+	if ptr, ok := typ.(*types.Pointer); ok {
+		typ = ptr.Elem()
+	}
 	return typeis.Named(typ, "bytes", "Buffer")
 }
 

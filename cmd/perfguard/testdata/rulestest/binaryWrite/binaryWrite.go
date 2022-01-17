@@ -77,7 +77,7 @@ func Ignore(b []byte, s string) {
 	}
 
 	{
-		buf := &bytes.Buffer{}
+		buf := bytes.NewBuffer(make([]byte, 10))
 		buf.Write(b)
 	}
 
