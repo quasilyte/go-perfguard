@@ -152,16 +152,17 @@ func (a *analyzer) runRules(target *lint.Target) error {
 			}
 		}
 
-		var fix *lint.QuickFix
+		var fixes []lint.TextEdit
 		if data.Suggestion != nil {
 			s := data.Suggestion
-			fix = &lint.QuickFix{
+			textEdit := lint.TextEdit{
 				From:        s.From,
 				To:          s.To,
 				Replacement: make([]byte, len(s.Replacement)),
 				Reformat:    a.hasReformatTag(&data.RuleInfo),
 			}
-			copy(fix.Replacement, s.Replacement)
+			copy(textEdit.Replacement, s.Replacement)
+			fixes = []lint.TextEdit{textEdit}
 		}
 
 		message := strings.ReplaceAll(data.Message, "\n", `\n`)
@@ -170,7 +171,7 @@ func (a *analyzer) runRules(target *lint.Target) error {
 			Line:        startPos.Line,
 			Tag:         data.RuleInfo.Group.Name,
 			Text:        message,
-			Fix:         fix,
+			Fixes:       fixes,
 			SamplesTime: samplesTime,
 		})
 	}

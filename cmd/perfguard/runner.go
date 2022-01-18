@@ -396,24 +396,26 @@ func (r *runner) handleWarnings(target *lint.Target) error {
 
 		r.stats.affectedSampleTime += w.SamplesTime
 
-		if !r.autofix || w.Fix == nil {
+		if !r.autofix || len(w.Fixes) == 0 {
 			r.reportWarning(w)
 			continue
 		}
-		pos := target.Fset.Position(w.Fix.From)
-		from := pos.Offset
-		filename := pos.Filename
-		endPos := target.Fset.Position(w.Fix.To)
-		to := endPos.Offset
-		if w.Fix.Reformat || pos.Line != endPos.Line {
-			needFmt[filename] = struct{}{}
+		for i := range w.Fixes {
+			pos := target.Fset.Position(w.Fixes[i].From)
+			from := pos.Offset
+			filename := pos.Filename
+			endPos := target.Fset.Position(w.Fixes[i].To)
+			to := endPos.Offset
+			if w.Fixes[i].Reformat || pos.Line != endPos.Line {
+				needFmt[filename] = struct{}{}
+			}
+			fix := quickfix.TextEdit{
+				StartOffset: from,
+				EndOffset:   to,
+				Replacement: w.Fixes[i].Replacement,
+			}
+			fixablePerFile[filename] = append(fixablePerFile[filename], warningWithFix{w: w, fix: fix})
 		}
-		fix := quickfix.TextEdit{
-			StartOffset: from,
-			EndOffset:   to,
-			Replacement: w.Fix.Replacement,
-		}
-		fixablePerFile[filename] = append(fixablePerFile[filename], warningWithFix{w: w, fix: fix})
 	}
 
 	importsConfig := imports.FixConfig{

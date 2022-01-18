@@ -62,16 +62,17 @@ func (ctx *Context) SuggestNode(params SuggestParams) {
 	b.Write(replacement)
 	message := strings.ReplaceAll(b.String(), "\n", `\n`)
 
+	textEdit := TextEdit{
+		From:        oldNode.Pos(),
+		To:          oldNode.End(),
+		Replacement: replacement,
+	}
 	ctx.Warn(Warning{
-		Filename: startPos.Filename,
-		Line:     startPos.Line,
-		Tag:      ctx.tag,
-		Text:     message,
-		Fix: &QuickFix{
-			From:        oldNode.Pos(),
-			To:          oldNode.End(),
-			Replacement: replacement,
-		},
+		Filename:    startPos.Filename,
+		Line:        startPos.Line,
+		Tag:         ctx.tag,
+		Text:        message,
+		Fixes:       []TextEdit{textEdit},
 		SamplesTime: time.Duration(samplesValue),
 	})
 }

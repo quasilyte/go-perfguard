@@ -44,6 +44,9 @@
         "performance",
         "experimental",
       ],
+      "settings": {
+        "hugeParam": {"sizeThreshold": 128}
+      }
     },
   },
 }
