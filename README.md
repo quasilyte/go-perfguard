@@ -28,12 +28,12 @@ Here are some examples of what it can do for you:
 
 * Remove redundant data copying or make it faster
 * Reduce the amounts of heap allocations
-* Suggest more optimized functions from stdlib
+* Suggest more optimized functions or types from stdlib
 * Recognize expensive operations in hot paths that can be lifted
 
-## Quick start
+## Installation
 
-If you want to install the perfguard from source, it's as simple as:
+Installing from source:
 
 ```bash
 # Installs a `perfguard` binary under your `$(go env GOPATH)/bin`
