@@ -33,10 +33,9 @@ Here are some examples of what it can do for you:
 
 ## Installation
 
-Installing from source:
+Install a `perfguard` binary under your `$(go env GOPATH)/bin`:
 
 ```bash
-# Installs a `perfguard` binary under your `$(go env GOPATH)/bin`
 $ go install -v github.com/quasilyte/go-perfguard/cmd/perfguard@latest
 ```
 
