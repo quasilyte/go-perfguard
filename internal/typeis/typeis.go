@@ -13,6 +13,16 @@ func String(typ types.Type) bool {
 	return false
 }
 
+func Slice(typ types.Type) bool {
+	_, ok := typ.(*types.Slice)
+	return ok
+}
+
+func Map(typ types.Type) bool {
+	_, ok := typ.(*types.Map)
+	return ok
+}
+
 func ByteSlice(typ types.Type) bool {
 	if typ, ok := typ.(*types.Slice); ok {
 		if typ, ok := typ.Elem().(*types.Basic); ok {

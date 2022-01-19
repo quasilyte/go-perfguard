@@ -1,4 +1,4 @@
-package callcheckers
+package funccheckers
 
 import (
 	"go/ast"

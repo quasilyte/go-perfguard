@@ -1,10 +1,10 @@
 package rulestest
 
 func Warn() {
-	var dstBytes []byte
+	dstBytes := make([]byte, 0, 10)
 	var srcBytes []byte
 
-	mapOfBytes := make(map[string][]byte)
+	mapOfBytes := make(map[string][]byte, 100)
 
 	for _, b := range srcBytes { // want `for ... { ... } => dstBytes = append(dstBytes, srcBytes...)`
 		dstBytes = append(dstBytes, b)

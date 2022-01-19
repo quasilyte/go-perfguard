@@ -37,7 +37,7 @@ func main() {
 }
 
 func uniq(xs []string) []string {
-	set := make(map[string]bool) // want `change map[T]bool to map[T]struct{}`
+	set := make(map[string]bool, len(xs)) // want `change map[T]bool to map[T]struct{}`
 	for _, x := range xs {
 		set[x] = true
 	}
@@ -50,7 +50,7 @@ func uniq(xs []string) []string {
 }
 
 func intersectionLen(xs, ys []string) int {
-	intersection := map[string]bool{} // want `change map[T]bool to map[T]struct{}`
+	intersection := make(map[string]bool, len(xs)) // want `change map[T]bool to map[T]struct{}`
 	for _, x := range xs {
 		intersection[x] = true
 	}

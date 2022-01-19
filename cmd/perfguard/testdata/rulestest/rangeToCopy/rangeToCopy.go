@@ -54,7 +54,7 @@ func Ignore(srcBytes, dstBytes []byte) {
 
 	{
 		var src []int
-		dst := make(map[int]int)
+		dst := make(map[int]int, len(src))
 		for i, x := range src {
 			dst[i] = x
 		}
