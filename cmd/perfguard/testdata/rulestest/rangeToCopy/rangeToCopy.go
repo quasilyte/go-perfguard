@@ -51,4 +51,15 @@ func Ignore(srcBytes, dstBytes []byte) {
 			ys[i] = xs[i]
 		}
 	}
+
+	{
+		var src []int
+		dst := make(map[int]int)
+		for i, x := range src {
+			dst[i] = x
+		}
+		for i := range src {
+			dst[i] = src[i]
+		}
+	}
 }

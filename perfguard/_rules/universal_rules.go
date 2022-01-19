@@ -704,7 +704,7 @@ func rangeToCopy(m dsl.Matcher) {
 		`for $i := range $src { $dst[$i] = $src[$i] }`,
 		`for $i, $x := range $src { $dst[$i] = $x }`,
 		`for $i := 0; $i < len($src); $i++ { $dst[$i] = $src[$i] }`).
-		Where(m["src"].Type.Is(`[]$_`)).
+		Where(m["src"].Type.Is(`[]$_`) && m["dst"].Type.Is(`[]$_`)).
 		Suggest(`copy($dst, $src)`).
 		Report(`for ... { ... } => copy($dst, $src)`)
 }
