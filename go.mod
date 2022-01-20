@@ -16,6 +16,7 @@ require (
 require (
 	github.com/go-toolsmith/astcopy v1.0.0 // indirect
 	github.com/go-toolsmith/astequal v1.0.1 // indirect
+	github.com/go-toolsmith/typep v1.0.2 // indirect
 	github.com/quasilyte/gogrep v0.0.0-20220104235416-e471a266cab5 // indirect
 	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
