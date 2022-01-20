@@ -6,7 +6,6 @@ import (
 
 	_ "github.com/quasilyte/go-perfguard/perfguard/checkers/callcheckers" // for init()
 	_ "github.com/quasilyte/go-perfguard/perfguard/checkers/funccheckers" // for init()
-	_ "github.com/quasilyte/go-perfguard/perfguard/checkers/stmtcheckers" // for init()
 )
 
 type targetChecker struct {
