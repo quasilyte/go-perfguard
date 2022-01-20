@@ -691,6 +691,15 @@ func rangeExprCopy(m dsl.Matcher) {
 		At(m["e"])
 }
 
+//doc:summary Detects range loops that can be turned into a single append call
+//doc:tags    o1 score3
+func rangeToAppend(m dsl.Matcher) {
+	m.Match(`for _, $x := range $src { $dst = append($dst, $x) }`).
+		Where(m["src"].Type.Is(`[]$_`) && !m["dst"].Contains(`$x`) && m["src"].Type.IdenticalTo(m["dst"])).
+		Suggest(`$dst = append($dst, $src...)`).
+		Report(`for … { … } => $dst = append($dst, $src...)`)
+}
+
 //doc:summary Detects range loops that can be turned into a single copy call
 //doc:tags    o1 score4
 func rangeToCopy(m dsl.Matcher) {
