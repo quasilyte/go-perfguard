@@ -1,7 +1,6 @@
 package lint
 
 import (
-	"fmt"
 	"go/ast"
 	"go/token"
 	"path/filepath"
@@ -120,22 +119,34 @@ func (ctx *Context) SuggestNode(params SuggestParams) {
 	})
 }
 
-func (ctx *Context) Report(n ast.Node, format string, args ...interface{}) {
-	startPos := ctx.Target.Fset.Position(n.Pos())
+type ReportParams struct {
+	PosNode ast.Node
 
-	var message string
-	if len(args) != 0 {
-		message = fmt.Sprintf(format, args...)
-	} else {
-		message = format
+	Message string
+
+	HotNodes []ast.Node
+}
+
+func (ctx *Context) Report(params ReportParams) {
+	startPos := ctx.Target.Fset.Position(params.PosNode.Pos())
+
+	var hotNodes = params.HotNodes
+	if len(hotNodes) == 0 {
+		hotNodes = []ast.Node{params.PosNode}
 	}
-	message = strings.ReplaceAll(message, "\n", `\n`)
+	samplesValue, matched := ctx.listMatchesHeatmap(hotNodes)
+	if !matched {
+		return
+	}
+
+	message := strings.ReplaceAll(params.Message, "\n", `\n`)
 
 	ctx.Warn(Warning{
-		Filename: startPos.Filename,
-		Line:     startPos.Line,
-		Tag:      ctx.tag,
-		Text:     message,
+		Filename:    startPos.Filename,
+		Line:        startPos.Line,
+		Tag:         ctx.tag,
+		Text:        message,
+		SamplesTime: time.Duration(samplesValue),
 	})
 }
 

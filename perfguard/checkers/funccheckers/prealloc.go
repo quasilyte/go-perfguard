@@ -1,6 +1,7 @@
 package funccheckers
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
@@ -129,7 +130,11 @@ func (c *preallocChecker) CheckFunc(ctx *lint.Context, body *ast.BlockStmt) erro
 				// Report that `var x []T` can be changed to `var x = make([]T, 0, len(bound))`,
 				// but don'e apply an auto fix here.
 				expr := c.ctx.NodeText(candidate.bound)
-				ctx.Report(declValueSpec, "can use len(%s) as make size hint for %s", expr, candidate.obj.Name())
+				ctx.Report(lint.ReportParams{
+					PosNode:  declValueSpec,
+					Message:  fmt.Sprintf("can use len(%s) as make size hint for %s", expr, candidate.obj.Name()),
+					HotNodes: []ast.Node{candidate.hotNode},
+				})
 			} else {
 				makeCall := &ast.CallExpr{
 					Fun: &ast.Ident{Name: "make"},
