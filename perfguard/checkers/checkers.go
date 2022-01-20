@@ -12,6 +12,11 @@ type callCheckerInfo struct {
 	new func() CallChecker
 }
 
+type stmtCheckerInfo struct {
+	doc Doc
+	new func() StmtChecker
+}
+
 type funcCheckerInfo struct {
 	doc Doc
 	new func() FuncChecker
@@ -19,6 +24,7 @@ type funcCheckerInfo struct {
 
 var (
 	callCheckers = make(map[string]callCheckerInfo)
+	stmtCheckers = make(map[string]stmtCheckerInfo)
 	funcCheckers = make(map[string]funcCheckerInfo)
 )
 
@@ -33,6 +39,10 @@ type Doc struct {
 
 type CallChecker interface {
 	CheckCall(ctx *lint.Context, call *ast.CallExpr) error
+}
+
+type StmtChecker interface {
+	CheckStmt(ctx *lint.Context, stmt ast.Stmt) error
 }
 
 type FuncChecker interface {
@@ -53,8 +63,18 @@ func RegisterCallChecker(doc Doc, constructor func() CallChecker) {
 	}
 }
 
+func RegisterStmtChecker(doc Doc, constructor func() StmtChecker) {
+	if _, ok := stmtCheckers[doc.Name]; ok {
+		panic(fmt.Sprintf("%s stmt checker is already registered", doc.Name))
+	}
+	stmtCheckers[doc.Name] = stmtCheckerInfo{
+		doc: doc,
+		new: constructor,
+	}
+}
+
 func RegisterFuncChecker(doc Doc, constructor func() FuncChecker) {
-	if _, ok := callCheckers[doc.Name]; ok {
+	if _, ok := funcCheckers[doc.Name]; ok {
 		panic(fmt.Sprintf("%s func checker is already registered", doc.Name))
 	}
 	funcCheckers[doc.Name] = funcCheckerInfo{
@@ -81,6 +101,16 @@ func Create(filter func(doc Doc) bool) []PackageChecker {
 		}
 	}
 
+	stmtChecker := &stmtcheckerWalker{}
+	for _, c := range stmtCheckers {
+		if filter(c.doc) {
+			stmtChecker.checkers = append(stmtChecker.checkers, stmtcheckerWithContext{
+				ctx: lint.NewContext(c.doc.Name, minHeatLevel(&c.doc)),
+				obj: c.new(),
+			})
+		}
+	}
+
 	funcChecker := &funccheckerWalker{}
 	for _, c := range funcCheckers {
 		if filter(c.doc) {
@@ -94,6 +124,7 @@ func Create(filter func(doc Doc) bool) []PackageChecker {
 	var result []PackageChecker
 	result = append(result,
 		callChecker,
+		stmtChecker,
 		funcChecker)
 
 	return result
