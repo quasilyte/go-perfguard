@@ -156,7 +156,10 @@ func redundantSprint(m dsl.Matcher) {
 		Suggest(`$x`)
 
 	m.Match(`fmt.Sprint($x)`, `fmt.Sprintf("%s", $x)`, `fmt.Sprintf("%v", $x)`).
-		Where(m["x"].Type.ConvertibleTo(`string`) && !m["x"].Type.OfKind("numeric")).
+		Where(
+			m["x"].Type.ConvertibleTo(`string`) &&
+				!m["x"].Type.OfKind("numeric") &&
+				!m["x"].Type.Is(`[]rune`)).
 		Suggest(`string($x)`)
 }
 
