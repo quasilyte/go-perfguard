@@ -707,9 +707,9 @@ func rangeToCopy(m dsl.Matcher) {
 		`for $i := range $src { $dst[$i] = $src[$i] }`,
 		`for $i, $x := range $src { $dst[$i] = $x }`,
 		`for $i := 0; $i < len($src); $i++ { $dst[$i] = $src[$i] }`).
-		Where(m["src"].Type.Is(`[]$_`) && m["dst"].Type.Is(`[]$_`)).
+		Where(m["src"].Type.Is(`[]$_`) && m["src"].Type.IdenticalTo(m["dst"])).
 		Suggest(`copy($dst, $src)`).
-		Report(`for ... { ... } => copy($dst, $src)`)
+		Report(`for … { … } => copy($dst, $src)`)
 }
 
 //doc:summary Detects loops where slice dst=src and they can be replaced with a copy call
