@@ -22,10 +22,15 @@ func main() {
 	}
 	println(intersection(nil, nil) == nil)
 	println(intersection([]int{}, []int{}) == nil)
+
+	m := map[string]string{
+		"a": "b",
+	}
+	copymap(m)
 }
 
 func intersection(xs, ys []int) []int {
-	all := make(map[int]struct{}, len(xs))
+	all := map[int]struct{}{}
 	for _, x := range xs {
 		all[x] = struct{}{}
 	}
@@ -41,7 +46,7 @@ func intersection(xs, ys []int) []int {
 }
 
 func uniq(xs []int) []int {
-	var set map[int]struct{} = make(map[int]struct{}, len(xs))
+	var set map[int]struct{} = make(map[int]struct{})
 	for _, x := range xs {
 		set[x] = struct{}{}
 	}
@@ -51,4 +56,12 @@ func uniq(xs []int) []int {
 	}
 	sort.Ints(result)
 	return result
+}
+
+func copymap(m map[string]string) map[string]string {
+	copied := make(map[string]string, len(m))
+	for k, v := range m {
+		copied[k] = v
+	}
+	return copied
 }

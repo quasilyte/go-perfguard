@@ -255,6 +255,7 @@ func (c *preallocChecker) walk(n ast.Node) bool {
 		if skip {
 			return true
 		}
+		rangeKey, _ := n.Key.(*ast.Ident)
 		var rangeExpr = n.X
 		if !typep.SideEffectFree(c.ctx.Target.Types, rangeExpr) {
 			return true
@@ -276,6 +277,12 @@ func (c *preallocChecker) walk(n ast.Node) bool {
 			rhs := assign.Rhs[0]
 			switch lhs := lhs.(type) {
 			case *ast.IndexExpr:
+				if rangeKey == nil || rangeKey.Name == "_" {
+					continue
+				}
+				if !astequal.Expr(lhs.Index, rangeKey) {
+					continue
+				}
 				indexed, ok := lhs.X.(*ast.Ident)
 				if !ok {
 					continue

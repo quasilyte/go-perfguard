@@ -22,6 +22,11 @@ func main() {
 	}
 	println(intersection(nil, nil) == nil)
 	println(intersection([]int{}, []int{}) == nil)
+
+	m := map[string]string{
+		"a": "b",
+	}
+	copymap(m)
 }
 
 func intersection(xs, ys []int) []int {
@@ -51,4 +56,12 @@ func uniq(xs []int) []int {
 	}
 	sort.Ints(result)
 	return result
+}
+
+func copymap(m map[string]string) map[string]string {
+	copied := map[string]string{}
+	for k, v := range m {
+		copied[k] = v
+	}
+	return copied
 }
