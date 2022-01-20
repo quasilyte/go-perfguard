@@ -3678,12 +3678,12 @@ var Universal = &ir.File{
 					{Line: 708, Value: "for $i, $x := range $src { $dst[$i] = $x }"},
 					{Line: 709, Value: "for $i := 0; $i < len($src); $i++ { $dst[$i] = $src[$i] }"},
 				},
-				ReportTemplate:  "for ... { ... } => copy($dst, $src)",
+				ReportTemplate:  "for … { … } => copy($dst, $src)",
 				SuggestTemplate: "copy($dst, $src)",
 				WhereExpr: ir.FilterExpr{
 					Line: 710,
 					Op:   ir.FilterAndOp,
-					Src:  "m[\"src\"].Type.Is(`[]$_`) && m[\"dst\"].Type.Is(`[]$_`)",
+					Src:  "m[\"src\"].Type.Is(`[]$_`) && m[\"src\"].Type.IdenticalTo(m[\"dst\"])",
 					Args: []ir.FilterExpr{
 						{
 							Line:  710,
@@ -3694,10 +3694,10 @@ var Universal = &ir.File{
 						},
 						{
 							Line:  710,
-							Op:    ir.FilterVarTypeIsOp,
-							Src:   "m[\"dst\"].Type.Is(`[]$_`)",
-							Value: "dst",
-							Args:  []ir.FilterExpr{{Line: 710, Op: ir.FilterStringOp, Src: "`[]$_`", Value: "[]$_"}},
+							Op:    ir.FilterVarTypeIdenticalToOp,
+							Src:   "m[\"src\"].Type.IdenticalTo(m[\"dst\"])",
+							Value: "src",
+							Args:  []ir.FilterExpr{{Line: 0, Op: ir.FilterStringOp, Src: "", Value: "dst"}},
 						},
 					},
 				},
