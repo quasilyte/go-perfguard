@@ -79,6 +79,8 @@ type SuggestParams struct {
 	OldNode ast.Node
 	NewNode ast.Node
 
+	Message string
+
 	HotNodes []ast.Node
 }
 
@@ -97,12 +99,15 @@ func (ctx *Context) SuggestNode(params SuggestParams) {
 
 	startPos := ctx.Target.Fset.Position(oldNode.Pos())
 
-	var b strings.Builder
-	b.Write(ctx.NodeText(oldNode))
-	b.WriteString(" => ")
+	message := params.Message
 	replacement := ctx.NodeText(newNode)
-	b.Write(replacement)
-	message := strings.ReplaceAll(b.String(), "\n", `\n`)
+	if message == "" {
+		var b strings.Builder
+		b.Write(ctx.NodeText(oldNode))
+		b.WriteString(" => ")
+		b.Write(replacement)
+		message = strings.ReplaceAll(b.String(), "\n", `\n`)
+	}
 
 	textEdit := TextEdit{
 		From:        oldNode.Pos(),

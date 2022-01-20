@@ -7,6 +7,7 @@ import (
 	"go/token"
 	"go/types"
 
+	"github.com/go-toolsmith/astfmt"
 	"github.com/quasilyte/go-perfguard/internal/resolve"
 	"github.com/quasilyte/perf-heatmap/heatmap"
 )
@@ -25,6 +26,23 @@ type SharedContext struct {
 	Sym resolve.CallInfo
 
 	Warn func(Warning)
+
+	printer *astfmt.Printer
+}
+
+func (ctx *SharedContext) Reset(target *Target) {
+	ctx.Target = target
+	ctx.printer = nil
+}
+
+func (ctx *SharedContext) Sprintf(format string, args ...interface{}) string {
+	if len(args) == 0 {
+		return format
+	}
+	if ctx.printer == nil {
+		ctx.printer = astfmt.NewPrinter(ctx.Target.Fset)
+	}
+	return ctx.printer.Sprintf(format, args...)
 }
 
 func (ctx *SharedContext) NodeText(n ast.Node) []byte {
