@@ -14,6 +14,10 @@ ci-lint:
 	go run ./_script/check.go
 	@echo "everything is OK"
 
+ci-generate:
+	go generate ./...
+	git diff --exit-code --quiet || (echo "Please run 'go generate ./...' to update precompiled rules."; false)
+
 lint:
 	golangci-lint run ./...
 	go run ./_script/check.go
