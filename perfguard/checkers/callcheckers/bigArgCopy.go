@@ -54,9 +54,11 @@ func (c *bigArgCopyChecker) CheckCall(ctx *lint.Context, call *ast.CallExpr) err
 }
 
 func (c *bigArgCopyChecker) isBig(ctx *lint.Context, typ types.Type) bool {
+	wordSize := ctx.Target.Sizes.Sizeof(types.Typ[types.Uint])
 	size := ctx.Target.Sizes.Sizeof(typ)
+	numWords := size / wordSize
 	if goutil.TypeHasPointers(typ) {
-		return size > 160
+		return numWords > 24
 	}
-	return size > 320
+	return numWords > 48
 }
