@@ -59,7 +59,7 @@ func (c *bigArgCopyChecker) isBig(ctx *lint.Context, typ types.Type) bool {
 	size := ctx.Target.Sizes.Sizeof(typ)
 	numWords := size / wordSize
 	if goutil.TypeHasPointers(typ) {
-		return numWords > 24
+		return numWords > 32
 	}
-	return numWords > 48
+	return numWords > 64
 }
