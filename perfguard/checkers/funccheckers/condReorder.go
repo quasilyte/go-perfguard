@@ -5,6 +5,7 @@ import (
 	"go/token"
 
 	"github.com/go-toolsmith/astcopy"
+	"github.com/quasilyte/go-perfguard/internal/typeis"
 	"github.com/quasilyte/go-perfguard/perfguard/checkers"
 	"github.com/quasilyte/go-perfguard/perfguard/lint"
 )
@@ -187,6 +188,9 @@ func (c *condReorderChecker) exprCost(info *condReorderExprInfo, e ast.Expr) boo
 		}
 
 	case *ast.IndexExpr:
+		if typeis.Map(c.ctx.TypeOf(e.X)) {
+			return false
+		}
 		return c.exprCost(info, e.X) && c.exprCost(info, e.Index)
 	}
 

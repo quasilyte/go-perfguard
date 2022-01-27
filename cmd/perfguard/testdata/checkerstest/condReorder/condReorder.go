@@ -114,6 +114,22 @@ func Ignore5() {
 	}
 }
 
+func Ignore6() {
+	{
+		// Do not reorder map lookups.
+		var m map[string]bool
+		var k string
+		if predicate() && m[k] {
+		}
+		if predicate() || m[k] {
+		}
+		if predicate() && !m[k] {
+		}
+		if predicate() || !m[k] {
+		}
+	}
+}
+
 type trickyObject struct {
 	cond bool
 }
