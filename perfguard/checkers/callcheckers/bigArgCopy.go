@@ -47,6 +47,7 @@ func (c *bigArgCopyChecker) CheckCall(ctx *lint.Context, call *ast.CallExpr) err
 			PosNode: arg,
 			Message: fmt.Sprintf("expensive %s arg copy (%d bytes), consider passing it by pointer",
 				param.Name(), ctx.Target.Sizes.Sizeof(param.Type())),
+			UseFlatSamples: true,
 		})
 	}
 
