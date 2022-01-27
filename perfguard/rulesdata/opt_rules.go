@@ -250,8 +250,8 @@ var Opt = &ir.File{
 			Rules: []ir.Rule{{
 				Line: 77,
 				SyntaxPatterns: []ir.PatternString{
-					{Line: 77, Value: "for $_, $v := range $_ { $*_ }"},
-					{Line: 77, Value: "for $_, $v = range $_ { $*_ }"},
+					{Line: 77, Value: "for $_, $v := range $_"},
+					{Line: 77, Value: "for $_, $v = range $_"},
 				},
 				ReportTemplate: "every iteration copies a large object into $v",
 				WhereExpr: ir.FilterExpr{
