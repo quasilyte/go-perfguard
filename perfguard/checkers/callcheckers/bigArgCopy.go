@@ -23,10 +23,11 @@ func init() {
 type bigArgCopyChecker struct{}
 
 func (c *bigArgCopyChecker) CheckCall(ctx *lint.Context, call *ast.CallExpr) error {
+	c.checkRecv(ctx, call)
+
 	if len(call.Args) == 0 {
 		return nil
 	}
-
 	fnType, ok := ctx.TypeOf(call.Fun).(*types.Signature)
 	if !ok {
 		return nil
@@ -52,6 +53,47 @@ func (c *bigArgCopyChecker) CheckCall(ctx *lint.Context, call *ast.CallExpr) err
 	}
 
 	return nil
+}
+
+func (c *bigArgCopyChecker) checkRecv(ctx *lint.Context, call *ast.CallExpr) {
+	methodExpr, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok {
+		return
+	}
+	arg, ok := methodExpr.X.(*ast.Ident)
+	if !ok {
+		return
+	}
+	obj := ctx.VarOf(arg)
+	typ := obj.Type()
+	if ptr, ok := typ.(*types.Pointer); ok {
+		typ = ptr.Elem()
+	}
+	named, ok := typ.(*types.Named)
+	if !ok {
+		return
+	}
+	// TODO: is there a better way to find the method?
+	// types.LookupFieldOrMethod does linear search.
+	result, _, _ := types.LookupFieldOrMethod(named, true, ctx.Target.Pkg, methodExpr.Sel.Name)
+	methodObject, ok := result.(*types.Func)
+	if !ok {
+		return
+	}
+	methodType := methodObject.Type().(*types.Signature)
+	recv := methodType.Recv()
+	if recv == nil {
+		return
+	}
+	if !c.isBig(ctx, recv.Type()) {
+		return
+	}
+	ctx.Report(lint.ReportParams{
+		PosNode: arg,
+		Message: fmt.Sprintf("expensive %s receiver copy (%d bytes), consider passing it by pointer",
+			arg.Name, ctx.Target.Sizes.Sizeof(recv.Type())),
+		UseFlatSamples: true,
+	})
 }
 
 func (c *bigArgCopyChecker) isBig(ctx *lint.Context, typ types.Type) bool {
