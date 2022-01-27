@@ -36,8 +36,8 @@ type arguments struct {
 }
 
 type statistics struct {
-	issuesReported int
-	issuesFixable  int
+	issuesTotal   int
+	issuesFixable int
 
 	numSamples    int
 	minSampleTime time.Duration
@@ -291,8 +291,12 @@ func (r *runner) Run() error {
 		if r.heatmap != nil && r.stats.affectedSampleTime != 0 {
 			fmt.Fprintf(r.stderr, "Affected samples time: %s\n", r.stats.affectedSampleTime)
 		}
-		fmt.Fprintf(r.stderr, "Found %d issues (%d auto-fixable)\n",
-			r.stats.issuesReported, r.stats.issuesFixable)
+		suffix := "auto-fixable"
+		if r.autofix {
+			suffix = "fixed"
+		}
+		fmt.Fprintf(r.stderr, "Found %d issues (%d %s)\n",
+			r.stats.issuesTotal, r.stats.issuesFixable, suffix)
 	}
 
 	r.printDebugf("batch size: %d", batchMaxSize)
@@ -386,7 +390,6 @@ func (r *runner) reportWarning(w *lint.Warning) {
 	if r.heatmap != nil && w.SamplesTime != 0 {
 		timeString = " (" + w.SamplesTime.String() + ")"
 	}
-	r.stats.issuesReported++
 	fmt.Fprintf(r.stdout, "%s:%s: %s%s: %s\n", filename, line, ruleName, timeString, message)
 }
 
@@ -406,6 +409,7 @@ func (r *runner) handleWarnings(target *lint.Target) error {
 
 		r.stats.affectedSampleTime += w.SamplesTime
 
+		r.stats.issuesTotal++
 		if len(w.Fixes) != 0 {
 			r.stats.issuesFixable++
 		}
