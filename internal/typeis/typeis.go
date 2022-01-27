@@ -23,6 +23,11 @@ func Map(typ types.Type) bool {
 	return ok
 }
 
+func Pointer(typ types.Type) bool {
+	_, ok := typ.(*types.Pointer)
+	return ok
+}
+
 func ByteSlice(typ types.Type) bool {
 	if typ, ok := typ.(*types.Slice); ok {
 		if typ, ok := typ.Elem().(*types.Basic); ok {
