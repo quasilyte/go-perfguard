@@ -36,6 +36,7 @@ func runLintTest(t *testing.T, dirName, name string) {
 		args := []string{
 			"--abs",
 			"--no-color",
+			"--quiet",
 			"./testdata/" + dirName + "/" + name + "/...",
 		}
 
