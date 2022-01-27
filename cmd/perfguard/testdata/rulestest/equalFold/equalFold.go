@@ -52,6 +52,13 @@ func Warn() {
 		_ = bytes.HasPrefix(bytes.ToUpper(b1), b2) // want `bytes.HasPrefix(bytes.ToUpper(b1), b2) => (len(b1) >= len(b2) && bytes.EqualFold(b1[:len(b2)], b2))`
 		_ = bytes.HasSuffix(bytes.ToUpper(b1), b2) // want `bytes.HasSuffix(bytes.ToUpper(b1), b2) => (len(b1) >= len(b2) && bytes.EqualFold(b1[len(b1)-len(b2):], b2))`
 	}
+
+	{
+		var parts []string
+		var someString string
+		_ = strings.ToLower(parts[0]) == someString // want `strings.ToLower(parts[0]) == someString => strings.EqualFold(parts[0], someString)`
+		_ = strings.ToLower(parts[0]) != someString // want `strings.ToLower(parts[0]) != someString => !strings.EqualFold(parts[0], someString)`
+	}
 }
 
 func Ignore() {
@@ -114,5 +121,12 @@ func Ignore() {
 		_ = (len(b1) >= len(b2) && bytes.EqualFold(b1[len(b1)-len(b2):], b2))
 		_ = (len(b1) >= len(b2) && bytes.EqualFold(b1[:len(b2)], b2))
 		_ = (len(b1) >= len(b2) && bytes.EqualFold(b1[len(b1)-len(b2):], b2))
+	}
+
+	{
+		var parts []string
+		var someString string
+		_ = strings.EqualFold(parts[0], someString)
+		_ = !strings.EqualFold(parts[0], someString)
 	}
 }
