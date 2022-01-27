@@ -31,13 +31,16 @@ type arguments struct {
 	heatmapThreshold float64
 
 	autogen bool
+
+	quiet bool
 }
 
 type statistics struct {
+	issuesReported int
+	issuesFixable  int
+
 	numSamples    int
-	maxSampleTime time.Duration
 	minSampleTime time.Duration
-	avgSampleTime time.Duration
 
 	affectedSampleTime time.Duration
 
@@ -284,13 +287,19 @@ func (r *runner) Run() error {
 
 	timeElapsed := time.Since(startTime)
 
+	if !r.args.quiet {
+		if r.heatmap != nil && r.stats.affectedSampleTime != 0 {
+			fmt.Fprintf(r.stderr, "Affected samples time: %s\n", r.stats.affectedSampleTime)
+		}
+		fmt.Fprintf(r.stderr, "Found %d issues (%d auto-fixable)\n",
+			r.stats.issuesReported, r.stats.issuesFixable)
+	}
+
 	r.printDebugf("batch size: %d", batchMaxSize)
+
 	if r.heatmap != nil {
 		r.printDebugf("lines covered by samples: %d", r.stats.numSamples)
-		r.printDebugf("max time sample: %s", r.stats.maxSampleTime)
-		r.printDebugf("avg time sample: %s", r.stats.avgSampleTime)
 		r.printDebugf("min time sample: %s", r.stats.minSampleTime)
-		r.printDebugf("affected samples time: %s", r.stats.affectedSampleTime)
 	}
 	if r.numFilesSkipped == 0 {
 		r.printDebugf("analyzed %d files", r.numFilesAnalyzed)
@@ -377,6 +386,7 @@ func (r *runner) reportWarning(w *lint.Warning) {
 	if r.heatmap != nil && w.SamplesTime != 0 {
 		timeString = " (" + w.SamplesTime.String() + ")"
 	}
+	r.stats.issuesReported++
 	fmt.Fprintf(r.stdout, "%s:%s: %s%s: %s\n", filename, line, ruleName, timeString, message)
 }
 
@@ -395,6 +405,10 @@ func (r *runner) handleWarnings(target *lint.Target) error {
 		w := &r.pkgWarnings[i]
 
 		r.stats.affectedSampleTime += w.SamplesTime
+
+		if len(w.Fixes) != 0 {
+			r.stats.issuesFixable++
+		}
 
 		if !r.autofix || len(w.Fixes) == 0 {
 			r.reportWarning(w)
@@ -602,18 +616,12 @@ func (r *runner) inspectHeatmap() {
 		}
 		r.stats.numSamples++
 		totalDuration += d
-		if r.stats.maxSampleTime < d {
-			r.stats.maxSampleTime = d
-		}
 		if r.stats.minSampleTime > d {
 			r.stats.minSampleTime = d
 		}
 		r.heatmapPackages[l.Func.PkgName] = struct{}{}
 		r.heatmapFiles[filepath.Base(l.Func.Filename)] = struct{}{}
 	})
-	if r.stats.numSamples != 0 {
-		r.stats.avgSampleTime = totalDuration / time.Duration(r.stats.numSamples)
-	}
 }
 
 func (r *runner) createHeatmap() (*heatmap.Index, error) {
