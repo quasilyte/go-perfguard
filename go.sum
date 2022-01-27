@@ -32,6 +32,8 @@ github.com/quasilyte/gogrep v0.0.0-20220120141003-628d8b3623b5 h1:PDWGei+Rf2bBiu
 github.com/quasilyte/gogrep v0.0.0-20220120141003-628d8b3623b5/go.mod h1:wSEyW6O61xRV6zb6My3HxrQ5/8ke7NE2OayqCHa3xRM=
 github.com/quasilyte/perf-heatmap v0.0.0-20220125111806-b76c12232bfe h1:aufkysrEgjSfplAq8bC0X38tQUvpfSdqsUVGfIYt9bk=
 github.com/quasilyte/perf-heatmap v0.0.0-20220125111806-b76c12232bfe/go.mod h1:/2SAjFQkfgsbuwrTm/sOfTJkkpXe8dieAYUgBgeprg4=
+github.com/quasilyte/perf-heatmap v0.0.0-20220127163051-47fae5341e3f h1:LAq0OQb05BDBKWz8fRj3kBEQdBYU6OZb5VvMEFwyqSs=
+github.com/quasilyte/perf-heatmap v0.0.0-20220127163051-47fae5341e3f/go.mod h1:/2SAjFQkfgsbuwrTm/sOfTJkkpXe8dieAYUgBgeprg4=
 github.com/quasilyte/pprofutil v0.0.0-20220125111125-7b67e07006e9 h1:Enc/ujaGfEsWUM9WSEWiH491dm+lOFLqu7+OHP/AQes=
 github.com/quasilyte/pprofutil v0.0.0-20220125111125-7b67e07006e9/go.mod h1:lhNT2ibcgD3lEafvvw2SP+XnIVmWpDdvjJi9US9byiw=
 github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 h1:M8mH9eK4OUR4lu7Gd+PU1fV2/qnDNfzT635KRSObncs=

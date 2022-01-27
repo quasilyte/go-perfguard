@@ -36,6 +36,8 @@ type MultiChangeSuggestParams struct {
 	OldNodes []ast.Node
 	NewNodes []NodeReplacement
 	HotNodes []ast.Node
+
+	UseFlatSamples bool
 }
 
 func (ctx *Context) MultiChangeSuggest(params MultiChangeSuggestParams) {
@@ -43,7 +45,7 @@ func (ctx *Context) MultiChangeSuggest(params MultiChangeSuggestParams) {
 	if len(hotNodes) == 0 {
 		hotNodes = params.OldNodes
 	}
-	samplesValue, matched := ctx.listMatchesHeatmap(hotNodes)
+	samplesValue, matched := ctx.listMatchesHeatmap(hotNodes, params.UseFlatSamples)
 	if !matched {
 		return
 	}
@@ -82,6 +84,8 @@ type SuggestParams struct {
 	Message string
 
 	HotNodes []ast.Node
+
+	UseFlatSamples bool
 }
 
 func (ctx *Context) SuggestNode(params SuggestParams) {
@@ -92,7 +96,7 @@ func (ctx *Context) SuggestNode(params SuggestParams) {
 	if len(hotNodes) == 0 {
 		hotNodes = []ast.Node{oldNode}
 	}
-	samplesValue, matched := ctx.listMatchesHeatmap(hotNodes)
+	samplesValue, matched := ctx.listMatchesHeatmap(hotNodes, params.UseFlatSamples)
 	if !matched {
 		return
 	}
@@ -130,6 +134,8 @@ type ReportParams struct {
 	Message string
 
 	HotNodes []ast.Node
+
+	UseFlatSamples bool
 }
 
 func (ctx *Context) Report(params ReportParams) {
@@ -139,7 +145,7 @@ func (ctx *Context) Report(params ReportParams) {
 	if len(hotNodes) == 0 {
 		hotNodes = []ast.Node{params.PosNode}
 	}
-	samplesValue, matched := ctx.listMatchesHeatmap(hotNodes)
+	samplesValue, matched := ctx.listMatchesHeatmap(hotNodes, params.UseFlatSamples)
 	if !matched {
 		return
 	}
@@ -155,18 +161,26 @@ func (ctx *Context) Report(params ReportParams) {
 	})
 }
 
-func (ctx *Context) listMatchesHeatmap(nodes []ast.Node) (int64, bool) {
+func (ctx *Context) listMatchesHeatmap(nodes []ast.Node, flat bool) (int64, bool) {
 	samplesValue := int64(0)
+	flatSamplesValue := int64(0)
 	matched := false
 	for _, heatNode := range nodes {
-		if ctx.matchesHeatmap(heatNode, &samplesValue) {
+		if ctx.matchesHeatmap(heatNode, &flatSamplesValue, &samplesValue) {
 			matched = true
 		}
 	}
-	return samplesValue, matched
+	value := samplesValue
+	if flat {
+		if flatSamplesValue == 0 && ctx.Heatmap != nil {
+			return 0, false
+		}
+		value = flatSamplesValue
+	}
+	return value, matched
 }
 
-func (ctx *Context) matchesHeatmap(n ast.Node, samplesValue *int64) bool {
+func (ctx *Context) matchesHeatmap(n ast.Node, flat, cumulative *int64) bool {
 	if ctx.Heatmap == nil {
 		return true
 	}
@@ -185,16 +199,19 @@ func (ctx *Context) matchesHeatmap(n ast.Node, samplesValue *int64) bool {
 		Filename: filepath.Base(startPos.Filename),
 		PkgName:  ctx.Target.Pkg.Name(),
 	}
-	totalValue := int64(0)
+	flatValueTotal := int64(0)
+	cumulativeValueTotal := int64(0)
 	ctx.Heatmap.QueryLineRange(key, lineFrom, lineTo, func(l heatmap.LineStats) bool {
 		if l.GlobalHeatLevel >= minLevel {
 			isHot = true
 		}
-		totalValue += l.Value
+		cumulativeValueTotal += l.Value
+		flatValueTotal += l.FlatValue
 		return true
 	})
 	if isHot {
-		*samplesValue += totalValue
+		*cumulative += cumulativeValueTotal
+		*flat += flatValueTotal
 	}
 	return isHot
 }
