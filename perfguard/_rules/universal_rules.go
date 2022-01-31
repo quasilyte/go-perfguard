@@ -779,6 +779,16 @@ func reflectType(m dsl.Matcher) {
 		Suggest(`reflect.TypeOf($x).String()`)
 }
 
+//doc:summary Detects reflect Value.Type().Kind() that can be simplified to Value.Kind()
+//doc:tags    o1 score2
+//doc:before  v.Type().Kind()
+//doc:after   v.Kind()
+func reflectValueKind(m dsl.Matcher) {
+	m.Match(`$x.Type().Kind()`).
+		Where(m["x"].Type.Is(`reflect.Value`)).
+		Suggest(`$x.Kind()`)
+}
+
 //doc:summary Detects array copies that can be optimized
 //doc:tags    o1 score2
 func arrayCopy(m dsl.Matcher) {
