@@ -365,6 +365,10 @@ func stringCopyElim(m dsl.Matcher) {
 		Where(m["s"].Type.Is(`string`)).
 		Suggest(`append($b, $s...)`)
 
+	m.Match(`append($b, string($b2)...)`).
+		Where(m["b2"].Type.Is(`[]byte`)).
+		Suggest(`append($b, $b2...)`)
+
 	m.Match(`len(string($b))`).Where(m["b"].Type.Is(`[]byte`)).Suggest(`len($b)`)
 
 	m.Match(`[]byte(strings.$f(string($b)))`).
