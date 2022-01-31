@@ -12,6 +12,8 @@ func Warn() {
 
 	copy(b, []byte(s)) // want `copy(b, []byte(s)) => copy(b, s)`
 
+	b = append(b, string(b2)...) // want `append(b, string(b2)...) => append(b, b2...)`
+
 	b = append(b, []byte(s)...) // want `append(b, []byte(s)...) => append(b, s...)`
 
 	b = append(b, []byte("okay")...) // want `append(b, []byte("okay")...) => append(b, "okay"...)`
@@ -30,9 +32,12 @@ func Warn() {
 
 func Ignore() {
 	var b []byte
+	var b2 []byte
 	var s string
 
 	copy(b, s)
+
+	b = append(b, b2...)
 
 	{
 		copy := func(int) {}
