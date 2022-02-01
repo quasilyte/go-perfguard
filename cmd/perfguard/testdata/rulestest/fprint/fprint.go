@@ -1,6 +1,7 @@
 package rulestest
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -31,6 +32,14 @@ func Warn(w io.Writer) {
 	io.WriteString(buf, fmt.Sprintln(i, i)) // want `io.WriteString(buf, fmt.Sprintln(i, i)) => fmt.Fprintln(buf, i, i)`
 
 	io.WriteString(os.Stdout, fmt.Sprint(i, i)) // want `io.WriteString(os.Stdout, fmt.Sprint(i, i)) => fmt.Fprint(os.Stdout, i, i)`
+
+	{
+		var bw *bufio.Writer
+		var key, value string
+		if _, err := io.WriteString(bw, fmt.Sprintf("SET %s %s", key, value)); err != nil { // want `io.WriteString(bw, fmt.Sprintf("SET %s %s", key, value)) => fmt.Fprintf(bw, "SET %s %s", key, value)`
+			panic(err)
+		}
+	}
 }
 
 func Ignore() {
