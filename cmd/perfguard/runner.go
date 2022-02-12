@@ -17,13 +17,14 @@ import (
 	"time"
 
 	"github.com/google/pprof/profile"
+	"github.com/quasilyte/perf-heatmap/heatmap"
+	"github.com/quasilyte/stdinfo"
+	"golang.org/x/tools/go/packages"
+
 	"github.com/quasilyte/go-perfguard/internal/imports"
 	"github.com/quasilyte/go-perfguard/internal/quickfix"
 	"github.com/quasilyte/go-perfguard/perfguard"
 	"github.com/quasilyte/go-perfguard/perfguard/lint"
-	"github.com/quasilyte/perf-heatmap/heatmap"
-	"github.com/quasilyte/stdinfo"
-	"golang.org/x/tools/go/packages"
 )
 
 type arguments struct {
@@ -357,7 +358,6 @@ func (r *runner) createAnalyzer() (*perfguard.Analyzer, error) {
 		LoadOptRules:       r.loadOptRules,
 		LoadLintRules:      r.loadLintRules,
 	}
-	perfguard.NewAnalyzer()
 	if err := a.Init(initConfig); err != nil {
 		return nil, err
 	}
