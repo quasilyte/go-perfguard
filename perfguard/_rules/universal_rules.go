@@ -840,3 +840,30 @@ func syncPoolPut(m dsl.Matcher) {
 		Report(`non-pointer values in sync.Pool involve extra allocation`).
 		At(m["y"])
 }
+
+//doc:summary Detects trim calls that can be optimized
+//doc:tags    o1 score2
+//doc:before  strings.TrimFunc(s, unicode.IsSpace)
+//doc:after   strings.TrimSpace(s)
+func trim(m dsl.Matcher) {
+	m.Match(
+		`strings.TrimRight(strings.TrimLeft($s, $x), $x)`,
+		`strings.TrimLeft(strings.TrimRight($s, $x), $x)`,
+	).Where(m["x"].Pure).Suggest(`strings.Trim($s, $x)`)
+	m.Match(
+		`bytes.TrimRight(bytes.TrimLeft($s, $x), $x)`,
+		`bytes.TrimLeft(bytes.TrimRight($s, $x), $x)`,
+	).Where(m["x"].Pure).Suggest(`bytes.Trim($s, $x)`)
+
+	m.Match(`strings.TrimFunc($s, unicode.IsSpace)`).
+		Suggest(`strings.TrimSpace($s)`)
+	m.Match(`bytes.TrimFunc($s, unicode.IsSpace)`).
+		Suggest(`bytes.TrimSpace($s)`)
+
+	m.Match(`strings.Trim($s, $cutset)`).
+		Where(m["cutset"].Const && m["cutset"].Text.Matches(`^"(?: |\\[fnrtv]){3,}"$`)).
+		Suggest(`strings.TrimSpace($s)`)
+	m.Match(`bytes.Trim($s, $cutset)`).
+		Where(m["cutset"].Const && m["cutset"].Text.Matches(`^"(?: |\\[fnrtv]){3,}"$`)).
+		Suggest(`bytes.TrimSpace($s)`)
+}
