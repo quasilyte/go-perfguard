@@ -4254,6 +4254,101 @@ var Universal = &ir.File{
 				LocationVar: "y",
 			}},
 		},
+		{
+			Line:        848,
+			Name:        "trim",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score2"},
+			DocSummary:  "Detects trim calls that can be optimized",
+			DocBefore:   "strings.TrimFunc(s, unicode.IsSpace)",
+			DocAfter:    "strings.TrimSpace(s)",
+			Rules: []ir.Rule{
+				{
+					Line: 849,
+					SyntaxPatterns: []ir.PatternString{
+						{Line: 850, Value: "strings.TrimRight(strings.TrimLeft($s, $x), $x)"},
+						{Line: 851, Value: "strings.TrimLeft(strings.TrimRight($s, $x), $x)"},
+					},
+					ReportTemplate:  "$$ => strings.Trim($s, $x)",
+					SuggestTemplate: "strings.Trim($s, $x)",
+					WhereExpr:       ir.FilterExpr{Line: 852, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
+				},
+				{
+					Line: 853,
+					SyntaxPatterns: []ir.PatternString{
+						{Line: 854, Value: "bytes.TrimRight(bytes.TrimLeft($s, $x), $x)"},
+						{Line: 855, Value: "bytes.TrimLeft(bytes.TrimRight($s, $x), $x)"},
+					},
+					ReportTemplate:  "$$ => bytes.Trim($s, $x)",
+					SuggestTemplate: "bytes.Trim($s, $x)",
+					WhereExpr:       ir.FilterExpr{Line: 856, Op: ir.FilterVarPureOp, Src: "m[\"x\"].Pure", Value: "x"},
+				},
+				{
+					Line:            858,
+					SyntaxPatterns:  []ir.PatternString{{Line: 858, Value: "strings.TrimFunc($s, unicode.IsSpace)"}},
+					ReportTemplate:  "$$ => strings.TrimSpace($s)",
+					SuggestTemplate: "strings.TrimSpace($s)",
+				},
+				{
+					Line:            860,
+					SyntaxPatterns:  []ir.PatternString{{Line: 860, Value: "bytes.TrimFunc($s, unicode.IsSpace)"}},
+					ReportTemplate:  "$$ => bytes.TrimSpace($s)",
+					SuggestTemplate: "bytes.TrimSpace($s)",
+				},
+				{
+					Line:            863,
+					SyntaxPatterns:  []ir.PatternString{{Line: 863, Value: "strings.Trim($s, $cutset)"}},
+					ReportTemplate:  "$$ => strings.TrimSpace($s)",
+					SuggestTemplate: "strings.TrimSpace($s)",
+					WhereExpr: ir.FilterExpr{
+						Line: 864,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"cutset\"].Const && m[\"cutset\"].Text.Matches(`^\"(?: |\\\\[fnrtv]){3,}\"$`)",
+						Args: []ir.FilterExpr{
+							{
+								Line:  864,
+								Op:    ir.FilterVarConstOp,
+								Src:   "m[\"cutset\"].Const",
+								Value: "cutset",
+							},
+							{
+								Line:  864,
+								Op:    ir.FilterVarTextMatchesOp,
+								Src:   "m[\"cutset\"].Text.Matches(`^\"(?: |\\\\[fnrtv]){3,}\"$`)",
+								Value: "cutset",
+								Args:  []ir.FilterExpr{{Line: 864, Op: ir.FilterStringOp, Src: "`^\"(?: |\\\\[fnrtv]){3,}\"$`", Value: "^\"(?: |\\\\[fnrtv]){3,}\"$"}},
+							},
+						},
+					},
+				},
+				{
+					Line:            866,
+					SyntaxPatterns:  []ir.PatternString{{Line: 866, Value: "bytes.Trim($s, $cutset)"}},
+					ReportTemplate:  "$$ => bytes.TrimSpace($s)",
+					SuggestTemplate: "bytes.TrimSpace($s)",
+					WhereExpr: ir.FilterExpr{
+						Line: 867,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"cutset\"].Const && m[\"cutset\"].Text.Matches(`^\"(?: |\\\\[fnrtv]){3,}\"$`)",
+						Args: []ir.FilterExpr{
+							{
+								Line:  867,
+								Op:    ir.FilterVarConstOp,
+								Src:   "m[\"cutset\"].Const",
+								Value: "cutset",
+							},
+							{
+								Line:  867,
+								Op:    ir.FilterVarTextMatchesOp,
+								Src:   "m[\"cutset\"].Text.Matches(`^\"(?: |\\\\[fnrtv]){3,}\"$`)",
+								Value: "cutset",
+								Args:  []ir.FilterExpr{{Line: 867, Op: ir.FilterStringOp, Src: "`^\"(?: |\\\\[fnrtv]){3,}\"$`", Value: "^\"(?: |\\\\[fnrtv]){3,}\"$"}},
+							},
+						},
+					},
+				},
+			},
+		},
 	},
 }
 
