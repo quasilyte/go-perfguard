@@ -3,7 +3,7 @@ project_name: go-perfguard
 
 release:
   github:
-    owner: quasilyte
+    owner: peakle
     name: go-perfguard
 
 builds:
