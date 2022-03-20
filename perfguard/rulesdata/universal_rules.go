@@ -4483,6 +4483,53 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		{
+			Line:        923,
+			Name:        "sliceLit",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score2"},
+			DocSummary:  "Detects suitable places for slice literals",
+			DocBefore:   "append([]byte, b1, b2)",
+			DocAfter:    "[]byte{b1, b2}",
+			Rules: []ir.Rule{
+				{
+					Line:            924,
+					SyntaxPatterns:  []ir.PatternString{{Line: 924, Value: "append([]$typ{$x}, $y)"}},
+					ReportTemplate:  "$$ => []$typ{$x, $y}",
+					SuggestTemplate: "[]$typ{$x, $y}",
+				},
+				{
+					Line:            925,
+					SyntaxPatterns:  []ir.PatternString{{Line: 925, Value: "append([]$typ{$x}, $y, $*rest)"}},
+					ReportTemplate:  "$$ => []$typ{$x, $y, $rest}",
+					SuggestTemplate: "[]$typ{$x, $y, $rest}",
+				},
+				{
+					Line:            927,
+					SyntaxPatterns:  []ir.PatternString{{Line: 927, Value: "append([]$typ{}, $x)"}},
+					ReportTemplate:  "$$ => []$typ{$x}",
+					SuggestTemplate: "[]$typ{$x}",
+				},
+				{
+					Line:            928,
+					SyntaxPatterns:  []ir.PatternString{{Line: 928, Value: "append([]$typ{}, $x, $*rest)"}},
+					ReportTemplate:  "$$ => []$typ{$x, $rest}",
+					SuggestTemplate: "[]$typ{$x, $rest}",
+				},
+				{
+					Line:            930,
+					SyntaxPatterns:  []ir.PatternString{{Line: 930, Value: "append([]$typ(nil), $x)"}},
+					ReportTemplate:  "$$ => []$typ{$x}",
+					SuggestTemplate: "[]$typ{$x}",
+				},
+				{
+					Line:            931,
+					SyntaxPatterns:  []ir.PatternString{{Line: 931, Value: "append([]$typ(nil), $x, $*rest)"}},
+					ReportTemplate:  "$$ => []$typ{$x, $rest}",
+					SuggestTemplate: "[]$typ{$x, $rest}",
+				},
+			},
+		},
 	},
 }
 
