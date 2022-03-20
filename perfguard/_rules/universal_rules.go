@@ -780,6 +780,10 @@ func reflectDeepEqual(m dsl.Matcher) {
 		Where((m["x"].Type.Is(`string`) && m["y"].Type.Is(`string`)) ||
 			(m["x"].Type.OfKind(`numeric`) && m["y"].Type.OfKind(`numeric`))).
 		Suggest(`($x == $y)`)
+
+	m.Match(`reflect.DeepEqual($x, $y{})`, `reflect.DeepEqual($x{}, $y)`).
+		Where(m["x"].Comparable && m["y"].Comparable).
+		Suggest(`($x == $y{})`)
 }
 
 //doc:summary Detects reflect Type() related patterns that can be optimized
