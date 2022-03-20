@@ -28,6 +28,11 @@ func Warn() {
 		_ = []byte(strings.TrimSuffix(string(b), s))                          // want `[]byte(strings.TrimSuffix(string(b), s)) => bytes.TrimSuffix(b, []byte(s))`
 		_ = []byte(strings.TrimSuffix(string(b), strings.TrimPrefix(s, "/"))) // want `[]byte(strings.TrimSuffix(string(b), strings.TrimPrefix(s, "/"))) => bytes.TrimSuffix(b, []byte(strings.TrimPrefix(s, "/")))`
 	}
+
+	{
+		_ = bytes.NewReader([]byte(s))   // want `bytes.NewReader([]byte(s)) => strings.NewReader(s)`
+		_ = strings.NewReader(string(b)) // want `strings.NewReader(string(b)) => bytes.NewReader(b)`
+	}
 }
 
 func Ignore() {
@@ -51,5 +56,10 @@ func Ignore() {
 
 		_ = bytes.TrimSuffix(b, []byte(s))
 		_ = bytes.TrimSuffix(b, []byte(strings.TrimPrefix(s, "/")))
+	}
+
+	{
+		_ = strings.NewReader(s)
+		_ = bytes.NewReader(b)
 	}
 }
