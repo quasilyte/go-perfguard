@@ -23,6 +23,18 @@ func Warn() {
 		_ = reflect.DeepEqual(i1, i2)  // want `reflect.DeepEqual(i1, i2) => (i1 == i2)`
 		_ = !reflect.DeepEqual(i1, i2) // want `reflect.DeepEqual(i1, i2) => (i1 == i2)`
 	}
+
+	{
+		var x comparable1
+		_ = reflect.DeepEqual(x, comparable1{}) // want `reflect.DeepEqual(x, comparable1{}) => (x == comparable1{})`
+		_ = reflect.DeepEqual(comparable1{}, x) // want `reflect.DeepEqual(comparable1{}, x) => (comparable1 == x{})`
+	}
+
+	{
+		var x comparable2
+		_ = reflect.DeepEqual(x, comparable2{}) // want `reflect.DeepEqual(x, comparable2{}) => (x == comparable2{})`
+		_ = reflect.DeepEqual(comparable2{}, x) // want `reflect.DeepEqual(comparable2{}, x) => (comparable2 == x{})`
+	}
 }
 
 func Ignore() {
@@ -45,4 +57,30 @@ func Ignore() {
 		_ = !(i1 == i2)
 		_ = i1 != i2
 	}
+
+	{
+		var x, y comparable1
+		_ = reflect.DeepEqual(x, y)
+		_ = reflect.DeepEqual(y, x)
+	}
+
+	{
+		var x uncomparable
+		_ = reflect.DeepEqual(x, uncomparable{})
+		_ = reflect.DeepEqual(uncomparable{}, x)
+	}
+}
+
+type comparable1 struct {
+	a string
+}
+
+type comparable2 struct {
+	comparable1
+	x int
+	y [4]byte
+}
+
+type uncomparable struct {
+	_ [0]func()
 }
