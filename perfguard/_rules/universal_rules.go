@@ -190,6 +190,13 @@ func redundantFprint(m dsl.Matcher) {
 //doc:before  dst := append([]int(nil), src...)
 //doc:after   dst := make([]int, len(src)); copy(dst, src)
 func sliceClone(m dsl.Matcher) {
+	// This double append is faster as it performs the operation in 1 allocation
+	// instead of two (see https://github.com/golang/go/issues/47454).
+	// It makes the code slightly more complex, but that's OK for o2 level rule.
+	m.Match(`append([]byte($s), $s2...)`).
+		Where(m["s"].Type.Is(`string`) && m["s"].Pure).
+		Suggest(`append(append(make([]byte, 0, len($s)+len($s2)), $s...), $s2...)`)
+
 	m.Match(`$dst = append([]$elem(nil), $src...)`, `$dst = append([]$elem{}, $src...)`).
 		Where(!m["elem"].Type.HasPointers()).
 		Suggest(`$dst = make([]$elem, len($src)); copy($dst, $src)`)

@@ -23,6 +23,14 @@ func Warn(b1, b2 []byte) {
 		_ = dst2
 	}
 
+	{
+		var s string
+		var otherString string
+		_ = append([]byte("abc"), s...)        // want `append([]byte("abc"), s...) => append(append(make([]byte, 0, len("abc")+len(s)), "abc"...), s...)`
+		_ = append([]byte(otherString), s...)  // want `append([]byte(otherString), s...) => append(append(make([]byte, 0, len(otherString)+len(s)), otherString...), s...)`
+		_ = append([]byte(otherString), b1...) // want `append([]byte(otherString), b1...) => append(append(make([]byte, 0, len(otherString)+len(b1)), otherString...), b1...)`
+	}
+
 	_ = b1
 	_ = b2
 }
@@ -65,6 +73,22 @@ func Ignore(b1, b2 []byte) {
 		_ = dst2
 	}
 
+	{
+		var s string
+		var otherString string
+		_ = append(append(make([]byte, 0, len("abc")+len(s)), "abc"...), s...)
+		_ = append(append(make([]byte, 0, len(otherString)+len(s)), otherString...), s...)
+		_ = append(append(make([]byte, 0, len(otherString)+len(b1)), otherString...), b1...)
+
+		// The impure expression makeString() disables the rewrite rule.
+		_ = append([]byte(makeString()), s...)
+
+		// b1 is []byte, so []byte(b1) causes no extra allocations.
+		_ = append([]byte(b1), b2...)
+	}
+
 	_ = b1
 	_ = b2
 }
+
+func makeString() string { return "" }
