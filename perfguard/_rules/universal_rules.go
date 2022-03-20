@@ -915,3 +915,18 @@ func bytesCompare(m dsl.Matcher) {
 	m.Match(`bytes.Compare($a, $b) == 0`).Suggest(`bytes.Equal($a, $b)`)
 	m.Match(`bytes.Compare($a, $b) != 0`).Suggest(`!bytes.Equal($a, $b)`)
 }
+
+//doc:summary Detects suitable places for slice literals
+//doc:tags    o1 score2
+//doc:before  append([]byte, b1, b2)
+//doc:after   []byte{b1, b2}
+func sliceLit(m dsl.Matcher) {
+	m.Match(`append([]$typ{$x}, $y)`).Suggest(`[]$typ{$x, $y}`)
+	m.Match(`append([]$typ{$x}, $y, $*rest)`).Suggest(`[]$typ{$x, $y, $rest}`)
+
+	m.Match(`append([]$typ{}, $x)`).Suggest(`[]$typ{$x}`)
+	m.Match(`append([]$typ{}, $x, $*rest)`).Suggest(`[]$typ{$x, $rest}`)
+
+	m.Match(`append([]$typ(nil), $x)`).Suggest(`[]$typ{$x}`)
+	m.Match(`append([]$typ(nil), $x, $*rest)`).Suggest(`[]$typ{$x, $rest}`)
+}

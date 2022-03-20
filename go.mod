@@ -18,7 +18,7 @@ require (
 )
 
 require (
-	github.com/quasilyte/gogrep v0.0.0-20220120141003-628d8b3623b5 // indirect
+	github.com/quasilyte/gogrep v0.0.0-20220320171548-f7f5e21cda54 // indirect
 	github.com/quasilyte/pprofutil v0.0.0-20220125111125-7b67e07006e9 // indirect
 	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
