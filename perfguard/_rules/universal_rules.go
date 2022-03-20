@@ -874,3 +874,44 @@ func trim(m dsl.Matcher) {
 		Where(m["cutset"].Const && m["cutset"].Text.Matches(`^"(?: |\\[fnrtv]){3,}"$`)).
 		Suggest(`bytes.TrimSpace($s)`)
 }
+
+//doc:summary Detects redundant nil checks
+//doc:tags    o1 score1
+//doc:before  b == nil || len(b) == 0
+//doc:after   len(b) == 0
+func redundantNilCheck(m dsl.Matcher) {
+	m.Match(`$b == nil || len($b) == 0`, `len($b) == 0 || $b == nil`).
+		Where(m["b"].Pure).
+		Suggest(`len($b) == 0`)
+	m.Match(`$b == nil || cap($b) == 0`, `cap($b) == 0 || $b == nil`).
+		Where(m["b"].Pure).
+		Suggest(`cap($b) == 0`)
+}
+
+//doc:summary Detects strings.Compare calls that can be optimized
+//doc:tags    o1 score1
+//doc:before  strings.Compare(s1, s2) == 0
+//doc:after   s1 == s2
+func stringsCompare(m dsl.Matcher) {
+	m.Match(`strings.Compare($a, $b) == 0`).Suggest(`$a == $b`)
+	m.Match(`strings.Compare($a, $b) != 0`).Suggest(`$a != $b`)
+
+	m.Match(`strings.Compare($a, $b) >= 0`, `strings.Compare($a, $b) != -1`).
+		Suggest(`$a >= $b`)
+	m.Match(`strings.Compare($a, $b) <= 0`, `strings.Compare($a, $b) != 1`).
+		Suggest(`$a <= $b`)
+
+	m.Match(`strings.Compare($a, $b) == -1`, `strings.Compare($a, $b) < 0`).
+		Suggest(`$a < $b`)
+	m.Match(`strings.Compare($a, $b) == 1`, `strings.Compare($a, $b) > 0`).
+		Suggest(`$a > $b`)
+}
+
+//doc:summary Detects bytes.Compare calls that can be optimized
+//doc:tags    o1 score1
+//doc:before  bytes.Compare(b1, b1) == 0
+//doc:after   bytes.Equal(b1, b2)
+func bytesCompare(m dsl.Matcher) {
+	m.Match(`bytes.Compare($a, $b) == 0`).Suggest(`bytes.Equal($a, $b)`)
+	m.Match(`bytes.Compare($a, $b) != 0`).Suggest(`!bytes.Equal($a, $b)`)
+}

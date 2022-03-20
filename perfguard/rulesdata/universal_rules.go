@@ -4370,6 +4370,119 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		{
+			Line:        882,
+			Name:        "redundantNilCheck",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score1"},
+			DocSummary:  "Detects redundant nil checks",
+			DocBefore:   "b == nil || len(b) == 0",
+			DocAfter:    "len(b) == 0",
+			Rules: []ir.Rule{
+				{
+					Line: 883,
+					SyntaxPatterns: []ir.PatternString{
+						{Line: 883, Value: "$b == nil || len($b) == 0"},
+						{Line: 883, Value: "len($b) == 0 || $b == nil"},
+					},
+					ReportTemplate:  "$$ => len($b) == 0",
+					SuggestTemplate: "len($b) == 0",
+					WhereExpr:       ir.FilterExpr{Line: 884, Op: ir.FilterVarPureOp, Src: "m[\"b\"].Pure", Value: "b"},
+				},
+				{
+					Line: 886,
+					SyntaxPatterns: []ir.PatternString{
+						{Line: 886, Value: "$b == nil || cap($b) == 0"},
+						{Line: 886, Value: "cap($b) == 0 || $b == nil"},
+					},
+					ReportTemplate:  "$$ => cap($b) == 0",
+					SuggestTemplate: "cap($b) == 0",
+					WhereExpr:       ir.FilterExpr{Line: 887, Op: ir.FilterVarPureOp, Src: "m[\"b\"].Pure", Value: "b"},
+				},
+			},
+		},
+		{
+			Line:        895,
+			Name:        "stringsCompare",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score1"},
+			DocSummary:  "Detects strings.Compare calls that can be optimized",
+			DocBefore:   "strings.Compare(s1, s2) == 0",
+			DocAfter:    "s1 == s2",
+			Rules: []ir.Rule{
+				{
+					Line:            896,
+					SyntaxPatterns:  []ir.PatternString{{Line: 896, Value: "strings.Compare($a, $b) == 0"}},
+					ReportTemplate:  "$$ => $a == $b",
+					SuggestTemplate: "$a == $b",
+				},
+				{
+					Line:            897,
+					SyntaxPatterns:  []ir.PatternString{{Line: 897, Value: "strings.Compare($a, $b) != 0"}},
+					ReportTemplate:  "$$ => $a != $b",
+					SuggestTemplate: "$a != $b",
+				},
+				{
+					Line: 899,
+					SyntaxPatterns: []ir.PatternString{
+						{Line: 899, Value: "strings.Compare($a, $b) >= 0"},
+						{Line: 899, Value: "strings.Compare($a, $b) != -1"},
+					},
+					ReportTemplate:  "$$ => $a >= $b",
+					SuggestTemplate: "$a >= $b",
+				},
+				{
+					Line: 901,
+					SyntaxPatterns: []ir.PatternString{
+						{Line: 901, Value: "strings.Compare($a, $b) <= 0"},
+						{Line: 901, Value: "strings.Compare($a, $b) != 1"},
+					},
+					ReportTemplate:  "$$ => $a <= $b",
+					SuggestTemplate: "$a <= $b",
+				},
+				{
+					Line: 904,
+					SyntaxPatterns: []ir.PatternString{
+						{Line: 904, Value: "strings.Compare($a, $b) == -1"},
+						{Line: 904, Value: "strings.Compare($a, $b) < 0"},
+					},
+					ReportTemplate:  "$$ => $a < $b",
+					SuggestTemplate: "$a < $b",
+				},
+				{
+					Line: 906,
+					SyntaxPatterns: []ir.PatternString{
+						{Line: 906, Value: "strings.Compare($a, $b) == 1"},
+						{Line: 906, Value: "strings.Compare($a, $b) > 0"},
+					},
+					ReportTemplate:  "$$ => $a > $b",
+					SuggestTemplate: "$a > $b",
+				},
+			},
+		},
+		{
+			Line:        914,
+			Name:        "bytesCompare",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score1"},
+			DocSummary:  "Detects bytes.Compare calls that can be optimized",
+			DocBefore:   "bytes.Compare(b1, b1) == 0",
+			DocAfter:    "bytes.Equal(b1, b2)",
+			Rules: []ir.Rule{
+				{
+					Line:            915,
+					SyntaxPatterns:  []ir.PatternString{{Line: 915, Value: "bytes.Compare($a, $b) == 0"}},
+					ReportTemplate:  "$$ => bytes.Equal($a, $b)",
+					SuggestTemplate: "bytes.Equal($a, $b)",
+				},
+				{
+					Line:            916,
+					SyntaxPatterns:  []ir.PatternString{{Line: 916, Value: "bytes.Compare($a, $b) != 0"}},
+					ReportTemplate:  "$$ => !bytes.Equal($a, $b)",
+					SuggestTemplate: "!bytes.Equal($a, $b)",
+				},
+			},
+		},
 	},
 }
 
