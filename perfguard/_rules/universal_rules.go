@@ -942,3 +942,12 @@ func sliceLit(m dsl.Matcher) {
 	m.Match(`append([]$typ(nil), $x)`).Suggest(`[]$typ{$x}`)
 	m.Match(`append([]$typ(nil), $x, $*rest)`).Suggest(`[]$typ{$x, $rest}`)
 }
+
+//doc:summary Detects math package expressions that can be optimized
+//doc:tags    o1 score1
+//doc:before  math.Abs(x) * math.Abs(y)
+//doc:after   math.Abs(x * y)
+func mathExpr(m dsl.Matcher) {
+	m.Match(`math.Abs($x) * math.Abs($y)`).Suggest(`math.Abs(($x) * ($y))`)
+	m.Match(`math.Abs($x) / math.Abs($y)`).Suggest(`math.Abs(($x) / ($y))`)
+}

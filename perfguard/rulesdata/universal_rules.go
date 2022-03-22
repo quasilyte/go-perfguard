@@ -4584,6 +4584,29 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		{
+			Line:        950,
+			Name:        "mathExpr",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score1"},
+			DocSummary:  "Detects math package expressions that can be optimized",
+			DocBefore:   "math.Abs(x) * math.Abs(y)",
+			DocAfter:    "math.Abs(x * y)",
+			Rules: []ir.Rule{
+				{
+					Line:            951,
+					SyntaxPatterns:  []ir.PatternString{{Line: 951, Value: "math.Abs($x) * math.Abs($y)"}},
+					ReportTemplate:  "$$ => math.Abs(($x) * ($y))",
+					SuggestTemplate: "math.Abs(($x) * ($y))",
+				},
+				{
+					Line:            952,
+					SyntaxPatterns:  []ir.PatternString{{Line: 952, Value: "math.Abs($x) / math.Abs($y)"}},
+					ReportTemplate:  "$$ => math.Abs(($x) / ($y))",
+					SuggestTemplate: "math.Abs(($x) / ($y))",
+				},
+			},
+		},
 	},
 }
 
