@@ -4607,6 +4607,113 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		{
+			Line:        959,
+			Name:        "ioCopy",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score3"},
+			DocSummary:  "Detects io.Copy calls that can be optimized",
+			DocBefore:   "io.Copy(dst, src)",
+			DocAfter:    "src.WriteTo(dst)",
+			Rules: []ir.Rule{
+				{
+					Line:            963,
+					SyntaxPatterns:  []ir.PatternString{{Line: 963, Value: "io.Copy($dst, bytes.NewReader($data))"}},
+					ReportTemplate:  "$$ => $dst.Write($data)",
+					SuggestTemplate: "$dst.Write($data)",
+					WhereExpr: ir.FilterExpr{
+						Line: 964,
+						Op:   ir.FilterRootNodeParentIsOp,
+						Src:  "m[\"$$\"].Node.Parent().Is(`ExprStmt`)",
+						Args: []ir.FilterExpr{{Line: 964, Op: ir.FilterStringOp, Src: "`ExprStmt`", Value: "ExprStmt"}},
+					},
+				},
+				{
+					Line:            966,
+					SyntaxPatterns:  []ir.PatternString{{Line: 966, Value: "io.Copy($dst, strings.NewReader($data))"}},
+					ReportTemplate:  "$$ => $dst.WriteString($data)",
+					SuggestTemplate: "$dst.WriteString($data)",
+					WhereExpr: ir.FilterExpr{
+						Line: 967,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"$$\"].Node.Parent().Is(`ExprStmt`) && m[\"dst\"].Type.HasMethod(`io.StringWriter.WriteString`)",
+						Args: []ir.FilterExpr{
+							{
+								Line: 967,
+								Op:   ir.FilterRootNodeParentIsOp,
+								Src:  "m[\"$$\"].Node.Parent().Is(`ExprStmt`)",
+								Args: []ir.FilterExpr{{Line: 967, Op: ir.FilterStringOp, Src: "`ExprStmt`", Value: "ExprStmt"}},
+							},
+							{
+								Line:  967,
+								Op:    ir.FilterVarTypeHasMethodOp,
+								Src:   "m[\"dst\"].Type.HasMethod(`io.StringWriter.WriteString`)",
+								Value: "dst",
+								Args:  []ir.FilterExpr{{Line: 967, Op: ir.FilterStringOp, Src: "`io.StringWriter.WriteString`", Value: "io.StringWriter.WriteString"}},
+							},
+						},
+					},
+				},
+				{
+					Line:            970,
+					SyntaxPatterns:  []ir.PatternString{{Line: 970, Value: "io.Copy($dst, $src)"}},
+					ReportTemplate:  "$$ => $src.WriteTo($dst)",
+					SuggestTemplate: "$src.WriteTo($dst)",
+					WhereExpr: ir.FilterExpr{
+						Line: 971,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"dst\"].Pure && m[\"dst\"].Pure && m[\"src\"].Type.HasMethod(`io.WriterTo.WriteTo`)",
+						Args: []ir.FilterExpr{
+							{
+								Line: 971,
+								Op:   ir.FilterAndOp,
+								Src:  "m[\"dst\"].Pure && m[\"dst\"].Pure",
+								Args: []ir.FilterExpr{
+									{Line: 971, Op: ir.FilterVarPureOp, Src: "m[\"dst\"].Pure", Value: "dst"},
+									{Line: 971, Op: ir.FilterVarPureOp, Src: "m[\"dst\"].Pure", Value: "dst"},
+								},
+							},
+							{
+								Line:  971,
+								Op:    ir.FilterVarTypeHasMethodOp,
+								Src:   "m[\"src\"].Type.HasMethod(`io.WriterTo.WriteTo`)",
+								Value: "src",
+								Args:  []ir.FilterExpr{{Line: 971, Op: ir.FilterStringOp, Src: "`io.WriterTo.WriteTo`", Value: "io.WriterTo.WriteTo"}},
+							},
+						},
+					},
+				},
+				{
+					Line:            974,
+					SyntaxPatterns:  []ir.PatternString{{Line: 974, Value: "io.Copy($dst, $src)"}},
+					ReportTemplate:  "$$ => $dst.ReadFrom($src)",
+					SuggestTemplate: "$dst.ReadFrom($src)",
+					WhereExpr: ir.FilterExpr{
+						Line: 975,
+						Op:   ir.FilterAndOp,
+						Src:  "m[\"dst\"].Pure && m[\"dst\"].Pure && m[\"dst\"].Type.HasMethod(`io.ReaderFrom.ReadFrom`)",
+						Args: []ir.FilterExpr{
+							{
+								Line: 975,
+								Op:   ir.FilterAndOp,
+								Src:  "m[\"dst\"].Pure && m[\"dst\"].Pure",
+								Args: []ir.FilterExpr{
+									{Line: 975, Op: ir.FilterVarPureOp, Src: "m[\"dst\"].Pure", Value: "dst"},
+									{Line: 975, Op: ir.FilterVarPureOp, Src: "m[\"dst\"].Pure", Value: "dst"},
+								},
+							},
+							{
+								Line:  975,
+								Op:    ir.FilterVarTypeHasMethodOp,
+								Src:   "m[\"dst\"].Type.HasMethod(`io.ReaderFrom.ReadFrom`)",
+								Value: "dst",
+								Args:  []ir.FilterExpr{{Line: 975, Op: ir.FilterStringOp, Src: "`io.ReaderFrom.ReadFrom`", Value: "io.ReaderFrom.ReadFrom"}},
+							},
+						},
+					},
+				},
+			},
+		},
 	},
 }
 
