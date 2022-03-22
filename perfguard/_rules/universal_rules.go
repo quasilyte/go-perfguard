@@ -975,3 +975,20 @@ func ioCopy(m dsl.Matcher) {
 		Where(m["dst"].Pure && m["dst"].Pure && m["dst"].Type.HasMethod(`io.ReaderFrom.ReadFrom`)).
 		Suggest(`$dst.ReadFrom($src)`)
 }
+
+//doc:summary Detects places where bufio should and shouldn't be used
+//doc:tags    o1 score4
+//doc:before  bufio.Reader(bytes.NewReader(data))
+//doc:after   bytes.NewReader(data)
+func bufio(m dsl.Matcher) {
+	isInmemoryReader := func(r dsl.Var) bool {
+		return r.Type.Is(`*bytes.Reader`) ||
+			r.Type.Is(`*bytes.Buffer`) ||
+			r.Type.Is(`*strings.Reader`)
+	}
+	// Wrapping efficient in-memory reader into bufio.Reader is
+	// not a good idea. This will lead to a performance regression.
+	m.Match(`bufio.NewReader($r)`).
+		Where(isInmemoryReader(m["r"]) && m["$$"].SinkType.Is(`io.Reader`)).
+		Suggest(`$r`)
+}

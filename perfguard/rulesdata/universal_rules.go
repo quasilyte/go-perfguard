@@ -4714,6 +4714,70 @@ var Universal = &ir.File{
 				},
 			},
 		},
+		{
+			Line:        983,
+			Name:        "bufio",
+			MatcherName: "m",
+			DocTags:     []string{"o1", "score4"},
+			DocSummary:  "Detects places where bufio should and shouldn't be used",
+			DocBefore:   "bufio.Reader(bytes.NewReader(data))",
+			DocAfter:    "bytes.NewReader(data)",
+			Rules: []ir.Rule{{
+				Line:            991,
+				SyntaxPatterns:  []ir.PatternString{{Line: 991, Value: "bufio.NewReader($r)"}},
+				ReportTemplate:  "$$ => $r",
+				SuggestTemplate: "$r",
+				WhereExpr: ir.FilterExpr{
+					Line: 992,
+					Op:   ir.FilterAndOp,
+					Src:  "isInmemoryReader(m[\"r\"]) && m[\"$$\"].SinkType.Is(`io.Reader`)",
+					Args: []ir.FilterExpr{
+						{
+							Line: 992,
+							Op:   ir.FilterOrOp,
+							Src:  "isInmemoryReader(m[\"r\"])",
+							Args: []ir.FilterExpr{
+								{
+									Line: 992,
+									Op:   ir.FilterOrOp,
+									Src:  "m[\"r\"].Type.Is(`*bytes.Reader`) ||\n\n\tm[\"r\"].Type.Is(`*bytes.Buffer`)",
+									Args: []ir.FilterExpr{
+										{
+											Line:  992,
+											Op:    ir.FilterVarTypeIsOp,
+											Src:   "m[\"r\"].Type.Is(`*bytes.Reader`)",
+											Value: "r",
+											Args:  []ir.FilterExpr{{Line: 985, Op: ir.FilterStringOp, Src: "`*bytes.Reader`", Value: "*bytes.Reader"}},
+										},
+										{
+											Line:  992,
+											Op:    ir.FilterVarTypeIsOp,
+											Src:   "m[\"r\"].Type.Is(`*bytes.Buffer`)",
+											Value: "r",
+											Args:  []ir.FilterExpr{{Line: 986, Op: ir.FilterStringOp, Src: "`*bytes.Buffer`", Value: "*bytes.Buffer"}},
+										},
+									},
+								},
+								{
+									Line:  992,
+									Op:    ir.FilterVarTypeIsOp,
+									Src:   "m[\"r\"].Type.Is(`*strings.Reader`)",
+									Value: "r",
+									Args:  []ir.FilterExpr{{Line: 987, Op: ir.FilterStringOp, Src: "`*strings.Reader`", Value: "*strings.Reader"}},
+								},
+							},
+						},
+						{
+							Line:  992,
+							Op:    ir.FilterRootSinkTypeIsOp,
+							Src:   "m[\"$$\"].SinkType.Is(`io.Reader`)",
+							Value: "$$",
+							Args:  []ir.FilterExpr{{Line: 992, Op: ir.FilterStringOp, Src: "`io.Reader`", Value: "io.Reader"}},
+						},
+					},
+				},
+			}},
+		},
 	},
 }
 
