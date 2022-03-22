@@ -951,3 +951,27 @@ func mathExpr(m dsl.Matcher) {
 	m.Match(`math.Abs($x) * math.Abs($y)`).Suggest(`math.Abs(($x) * ($y))`)
 	m.Match(`math.Abs($x) / math.Abs($y)`).Suggest(`math.Abs(($x) / ($y))`)
 }
+
+//doc:summary Detects io.Copy calls that can be optimized
+//doc:tags    o1 score3
+//doc:before  io.Copy(dst, src)
+//doc:after   src.WriteTo(dst)
+func ioCopy(m dsl.Matcher) {
+	// Since Write() methods return (int, error) instead of
+	// (int64, error), we need to be careful not to replace
+	// the call in expression context where it can affect the types inference.
+	m.Match(`io.Copy($dst, bytes.NewReader($data))`).
+		Where(m["$$"].Node.Parent().Is(`ExprStmt`)).
+		Suggest(`$dst.Write($data)`)
+	m.Match(`io.Copy($dst, strings.NewReader($data))`).
+		Where(m["$$"].Node.Parent().Is(`ExprStmt`) && m["dst"].Type.HasMethod(`io.StringWriter.WriteString`)).
+		Suggest(`$dst.WriteString($data)`)
+
+	m.Match(`io.Copy($dst, $src)`).
+		Where(m["dst"].Pure && m["dst"].Pure && m["src"].Type.HasMethod(`io.WriterTo.WriteTo`)).
+		Suggest(`$src.WriteTo($dst)`)
+
+	m.Match(`io.Copy($dst, $src)`).
+		Where(m["dst"].Pure && m["dst"].Pure && m["dst"].Type.HasMethod(`io.ReaderFrom.ReadFrom`)).
+		Suggest(`$dst.ReadFrom($src)`)
+}
