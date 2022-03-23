@@ -46,8 +46,12 @@ func ConvExpr(typesInfo *types.Info, e ast.Expr) ConvInfo {
 	if !ok || len(call.Args) != 1 {
 		return info
 	}
-	typ := typesInfo.TypeOf(e)
+	typ := typesInfo.TypeOf(call.Fun)
 	if typ == nil {
+		return info
+	}
+	typ = typ.Underlying()
+	if _, isFunc := typ.(*types.Signature); isFunc {
 		return info
 	}
 	info.DstType = typ
