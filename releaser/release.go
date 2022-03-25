@@ -42,7 +42,7 @@ func main() {
 		{"windows", "arm64"},
 	}
 
-	err := os.Mkdir(releaseDir, 0755)
+	err := os.Mkdir(releaseDir, 0o755)
 	if err != nil && !errors.Is(err, os.ErrExist) {
 		log.Printf("on release dir: %s", err)
 		return
@@ -68,9 +68,7 @@ func prepareArchive(checksums io.Writer, platform platformInfo, version string) 
 
 	buildCmd := exec.Command("make", "build")
 	buildCmd.Env = append([]string{}, os.Environ()...) // Copy env slice
-	buildCmd.Env = append(buildCmd.Env, "GOOS="+platform.goos)
-	buildCmd.Env = append(buildCmd.Env, "GOARCH="+platform.goarch)
-	buildCmd.Env = append(buildCmd.Env, "CGO_ENABLED=0")
+	buildCmd.Env = append(buildCmd.Env, "GOOS="+platform.goos, "GOARCH="+platform.goarch, "CGO_ENABLED=0")
 	out, err := buildCmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("run %s: %v: %s", buildCmd, err, out)
