@@ -1,4 +1,5 @@
 GOPATH_DIR=`go env GOPATH`
+VERSION=$(shell git describe --tags)
 
 test:
 	go test -count 2 -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
@@ -20,3 +21,9 @@ lint:
 	@echo "everything is OK"
 
 .PHONY: ci-lint lint test
+
+build:
+	go build -o bin/perfguard -ldflags "-s -w -X ./cmd/perfguard.BuildVersion=${VERSION}" ./cmd/perfguard
+
+draft-release:
+	go run releaser/release.go -version ${VERSION}
