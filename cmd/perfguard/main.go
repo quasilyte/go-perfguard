@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -72,6 +73,11 @@ func envMain(args []string) {
 
 func lintMain(args []string) {
 	if err := cmdLint(os.Stdout, os.Stderr, args); err != nil {
+		if errors.Is(err, ErrIssuesFound) {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
 		log.Fatalf("perfguard lint: error: %+v", err)
 	}
 }
