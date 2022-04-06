@@ -288,8 +288,15 @@ func (r *runner) Run() error {
 
 	timeElapsed := time.Since(startTime)
 
-	if !r.args.quiet && r.heatmap != nil && r.stats.affectedSampleTime != 0 {
-		fmt.Fprintf(r.stderr, "Affected samples time: %s\n", r.stats.affectedSampleTime)
+	if !r.args.quiet {
+		if r.heatmap != nil && r.stats.affectedSampleTime != 0 {
+			fmt.Fprintf(r.stderr, "Affected samples time: %s\n", r.stats.affectedSampleTime)
+		}
+		suffix := "auto-fixable"
+		if r.autofix {
+			suffix = "fixed"
+		}
+		fmt.Fprintf(r.stderr, "Found %d issues (%d %s)\n", r.stats.issuesTotal, r.stats.issuesFixable, suffix)
 	}
 
 	r.printDebugf("batch size: %d", batchMaxSize)

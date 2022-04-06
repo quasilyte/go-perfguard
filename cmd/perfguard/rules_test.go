@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -43,10 +42,8 @@ func runLintTest(t *testing.T, dirName, name string) {
 
 		var stdout bytes.Buffer
 		var stderr bytes.Buffer
-		if err := cmdLint(&stdout, &stderr, args); err != nil {
-			if !errors.Is(err, ErrIssuesFound) {
-				t.Fatal(err)
-			}
+		if _, err := cmdLint(&stdout, &stderr, args); err != nil {
+			t.Fatal(err)
 		}
 		if stderr.Len() != 0 {
 			t.Fatalf("errors:\n%s", stderr.String())

@@ -1,15 +1,11 @@
 package main
 
 import (
-	"errors"
 	"flag"
-	"fmt"
 	"io"
 )
 
-var ErrIssuesFound = errors.New("found issues")
-
-func cmdLint(stdout, stderr io.Writer, args []string) error {
+func cmdLint(stdout, stderr io.Writer, args []string) (int, error) {
 	r := newRunner(stdout, stderr)
 
 	fs := flag.NewFlagSet("perfguard optimize", flag.ExitOnError)
@@ -21,17 +17,8 @@ func cmdLint(stdout, stderr io.Writer, args []string) error {
 	r.loadLintRules = true
 	r.coloredOutput = !*noColor
 	if err := r.Run(); err != nil {
-		return err
+		return 0, err
 	}
 
-	if r.stats.issuesTotal != 0 {
-		suffix := "auto-fixable"
-		if r.autofix {
-			suffix = "fixed"
-		}
-
-		return fmt.Errorf("%w: %d (%d %s)", ErrIssuesFound, r.stats.issuesTotal, r.stats.issuesFixable, suffix)
-	}
-
-	return nil
+	return r.stats.issuesTotal, nil
 }
