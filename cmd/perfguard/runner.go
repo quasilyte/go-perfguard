@@ -296,7 +296,8 @@ func (r *runner) Run() error {
 		if r.autofix {
 			suffix = "fixed"
 		}
-		fmt.Fprintf(r.stderr, "Found %d issues (%d %s)\n", r.stats.issuesTotal, r.stats.issuesFixable, suffix)
+		fmt.Fprintf(r.stderr, "Found %d issues (%d %s)\n",
+			r.stats.issuesTotal, r.stats.issuesFixable, suffix)
 	}
 
 	r.printDebugf("batch size: %d", batchMaxSize)
