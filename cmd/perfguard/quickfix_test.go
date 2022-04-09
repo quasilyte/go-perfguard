@@ -50,7 +50,7 @@ func TestQuickFix(t *testing.T) {
 			}
 			var stdout bytes.Buffer
 			var stderr bytes.Buffer
-			if err := cmdLint(&stdout, &stderr, args); err != nil {
+			if _, err := cmdLint(&stdout, &stderr, args); err != nil {
 				t.Fatal(err)
 			}
 			if stderr.Len() != 0 {

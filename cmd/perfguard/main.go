@@ -71,8 +71,13 @@ func envMain(args []string) {
 }
 
 func lintMain(args []string) {
-	if err := cmdLint(os.Stdout, os.Stderr, args); err != nil {
+	issuesCount, err := cmdLint(os.Stdout, os.Stderr, args)
+	if err != nil {
 		log.Fatalf("perfguard lint: error: %+v", err)
+	}
+
+	if issuesCount > 0 {
+		os.Exit(1)
 	}
 }
 
