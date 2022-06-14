@@ -33,7 +33,13 @@ Here are some examples of what it can do for you:
 
 ## Installation
 
-Install a `perfguard` binary under your `$(go env GOPATH)/bin`:
+Install a `perfguard` binary by `curl` under `${YOUR_DIR}`:
+
+```bash
+$ curl -sSfL https://raw.githubusercontent.com/quasilyte/go-perfguard/master/install.sh | sh -s -- -d -b ${YOUR_DIR} v0.0.1
+```
+
+Install a `perfguard` binary by `go install` under your `$(go env GOPATH)/bin`:
 
 ```bash
 $ go install -v github.com/quasilyte/go-perfguard/cmd/perfguard@latest
@@ -43,7 +49,8 @@ $ go install -v github.com/quasilyte/go-perfguard/cmd/perfguard@latest
 
 It's recommended that you collect CPU profiles on realistic workflows.
 
-For a short-lived CLI app it could be a full run. For a long-living app you may want to turn the profiling on for a minute or more, then save it to a file.
+For a short-lived CLI app it could be a full run. For a long-living app you may want to turn the profiling on for a
+minute or more, then save it to a file.
 
 Profiles that are obtained from benchmarks are not representative and may lead to suboptimal results.
 
@@ -66,9 +73,11 @@ To optimize the code from `(3)` we have several choices.
 1. Optimize the library itself
 2. Optimize the whole code base with an explicit vendor
 
-The first option is preferable. You can use the same CPU profile to optimize the library. Run the perfguard on the library source code root just like you did with your application.
+The first option is preferable. You can use the same CPU profile to optimize the library. Run the perfguard on the
+library source code root just like you did with your application.
 
-The second option can work for the cases when you want to deploy an optimized binary while not having a way to fix dependencies using the first option. Follow these steps:
+The second option can work for the cases when you want to deploy an optimized binary while not having a way to fix
+dependencies using the first option. Follow these steps:
 
 ```bash
 # Make dependencies easily available for perfguard.
