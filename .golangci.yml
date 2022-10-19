@@ -6,7 +6,6 @@
   "fast": false,
   "linters": {
     "enable": [
-      "deadcode",
       "errcheck",
       "gas",
       "gocritic",
@@ -20,11 +19,9 @@
       "misspell",
       "nakedret",
       "staticcheck",
-      "structcheck",
       "typecheck",
       "unconvert",
       "unused",
-      "varcheck",
     ],
   },
   "disable": [

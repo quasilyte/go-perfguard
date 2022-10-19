@@ -6,8 +6,8 @@ package imports
 // otherwise a parsing error will be returned.
 //
 // We perform these operations:
-//	1. Remove unused imports from a file.
-//	2. Add missing imports.
+// 1. Remove unused imports from a file.
+// 2. Add missing imports.
 //
 // It does not introduce any formatting changes, unless strictly necessary.
 func Fix(config FixConfig, src []byte) ([]byte, error) {

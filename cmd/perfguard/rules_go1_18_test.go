@@ -15,6 +15,5 @@ func TestRulesGo1_18(t *testing.T) {
 		if ver := testVersionConstraints[key]; ver != "1.18" {
 			continue
 		}
-		runRulesTest(t, key)
 	}
 }
